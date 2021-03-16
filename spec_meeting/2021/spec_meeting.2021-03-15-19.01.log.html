@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">19:01:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">Spec Meeting</span>
+<a name="l-2"></a><span class="tm">19:01:57</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Mar 15 19:01:57 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://www.foss-eda.org/.
+<a name="l-3"></a><span class="tm">19:01:57</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">19:01:57</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'spec_meeting'
+<a name="l-5"></a><span class="tm">19:02:04</span><span class="nk"> &lt;t-bast&gt;</span> beautiful!
+<a name="l-6"></a><span class="tm">19:02:16</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/issues/853</span>
+<a name="l-7"></a><span class="tm">19:02:17</span><span class="nk"> &lt;cdecker&gt;</span> The log upload isn't automated just yet, I'll publish them on github afterwards
+<a name="l-8"></a><span class="tm">19:02:25</span><span class="nk"> &lt;t-bast&gt;</span> Thanks cdecker!
+<a name="l-9"></a><span class="tm">19:02:34</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Update closing fee requirement for anchor outputs</span>
+<a name="l-10"></a><span class="tm">19:02:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/847</span>
+<a name="l-11"></a><span class="tm">19:03:11</span><span class="nk"> &lt;t-bast&gt;</span> As discussed last time, I updated the requirement to only apply to anchor outputs
+<a name="l-12"></a><span class="tm">19:04:17</span><span class="nk"> &lt;ariard&gt;</span> SGTM, if the channel is anchor, the receiver just shrugh about the proposed feerate?
+<a name="l-13"></a><span class="tm">19:04:21</span><span class="nk"> &lt;rusty&gt;</span> Yep, looks good.  I can easily implement this.
+<a name="l-14"></a><span class="tm">19:04:26</span><span class="nk"> &lt;cdecker&gt;</span> Sounds good, I think that was the only nit we found
+<a name="l-15"></a><span class="tm">19:04:54</span><span class="nk"> &lt;lndbot&gt;</span> &lt;johanth&gt; ACK
+<a name="l-16"></a><span class="tm">19:05:08</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> exactly, you go do your negotiation algorithm to bring it closer to what *you* think is a good fee, but you let the peer start with a fee that's decorrelated from the commit tx fee
+<a name="l-17"></a><span class="tm">19:05:10</span><span class="nk"> &lt;jkczyz&gt;</span> hi
+<a name="l-18"></a><span class="tm">19:05:49</span><span class="nk"> &lt;t-bast&gt;</span> hey jkczyz!
+<a name="l-19"></a><span class="tm">19:06:47</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> i think this is smarter you might have a bit of time elapsed since lastest update, mempools fee might be far away
+<a name="l-20"></a><span class="tm">19:07:19</span><span class="nk"> &lt;ariard&gt;</span> in both sense, either higher or lower
+<a name="l-21"></a><span class="tm">19:07:50</span><span class="nk"> &lt;t-bast&gt;</span> yes exactly, this lets you use what's happening on-chain right now as your basis for starting the fee negotiation, regardless of past decisions for the commit tx feerate
+<a name="l-22"></a><span class="tm">19:08:45</span><span class="nk"> &lt;t-bast&gt;</span> BTW since this is linked to the fact that we artificially keep the feerate low for anchor output commit txs, I have a quick Q for the lnd folks who are more advanced there
+<a name="l-23"></a><span class="tm">19:09:00</span><span class="nk"> &lt;t-bast&gt;</span> IIRC lnd by default caps the commit tx feerate at 10 sat/byte, correct?
+<a name="l-24"></a><span class="tm">19:09:20</span><span class="nk"> &lt;t-bast&gt;</span> What does it do when it's below the min-relay-fee (a few weeks ago, the mempool was purging at 11 sat/byte)?
+<a name="l-25"></a><span class="tm">19:10:53</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> you mean the mempool min fee, we don't dynamically update the min-relay-fee?
+<a name="l-26"></a><span class="tm">19:10:59</span><span class="nk"> &lt;ariard&gt;</span> iirc
+<a name="l-27"></a><span class="tm">19:11:26</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> yes mempool-min-fee (the dynamic threshold that changes based on mempool load)
+<a name="l-28"></a><span class="tm">19:11:51</span><span class="nk"> &lt;ariard&gt;</span> min-relay-fee is just a penalty applied for rbf replacement
+<a name="l-29"></a><span class="tm">19:12:43</span><span class="nk"> &lt;t-bast&gt;</span> actually this Q is for everyone implementing anchor outputs with a capped feerate BTW, don't be shy :)
+<a name="l-30"></a><span class="tm">19:12:49</span><span class="nk"> &lt;roasbeef&gt;</span> oh wow, the bot is back!?
+<a name="l-31"></a><span class="tm">19:12:57</span><span class="nk"> &lt;lndbot&gt;</span> &lt;johanth&gt; lnd is currently unaware of this dynamic min relay fee
+<a name="l-32"></a><span class="tm">19:13:07</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> hey, it's 2021, we had to have a bot, credits to cdecker xD
+<a name="l-33"></a><span class="tm">19:13:14</span><span class="nk"> &lt;lndbot&gt;</span> &lt;johanth&gt; So the user must increase it manually if it’s a problem
+<a name="l-34"></a><span class="tm">19:13:46</span><span class="nk"> &lt;cdecker&gt;</span> Not quite automated the bot yet, but working on it, and at least we get a working record now :-)
+<a name="l-35"></a><span class="tm">19:13:48</span><span class="nk"> &lt;ariard&gt;</span> is this 10sat/vbyte feerate applied on commitment ?
+<a name="l-36"></a><span class="tm">19:13:50</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">johanth:</span> ok, that's what I was planning to do as well for eclair: let the user watch macro conditions and increase this pre-emptively if he doesn't feel safe
+<a name="l-37"></a><span class="tm">19:13:54</span><span class="nk"> &lt;roasbeef&gt;</span> we have an issue to expose a flag to modify it (could possibly be a call) that should land in the next release
+<a name="l-38"></a><span class="tm">19:14:07</span><span class="nk"> &lt;lndbot&gt;</span> &lt;johanth&gt; it’s already a flag
+<a name="l-39"></a><span class="tm">19:14:15</span><span class="nk"> &lt;roasbeef&gt;</span> alternatively it could try to watch the full node RPC itself, but light clients don't have access to that fwiw
+<a name="l-40"></a><span class="tm">19:14:20</span><span class="nk"> &lt;roasbeef&gt;</span> ah cool I missed that
+<a name="l-41"></a><span class="tm">19:14:35</span><span class="nk"> &lt;t-bast&gt;</span> I was thinking longer term, that it may make sense to watch your mempool-min-fee, and ensure your commit tx feerate is always at least twice that
+<a name="l-42"></a><span class="tm">19:14:45</span><span class="nk"> &lt;rusty&gt;</span> (In vaguely related stuff, we had an issue that our smoothed "slow" feerate (100 ECONOMICAL) fell below mempool min fee, and it meant users saw sadness if they specified "slow" as the feerate for txs).
+<a name="l-43"></a><span class="tm">19:14:50</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> if you're running a big node, I would advise to use the median of few different full-nodes...
+<a name="l-44"></a><span class="tm">19:14:57</span><span class="nk"> &lt;roasbeef&gt;</span> so w/ #847 there'd be no "cap"? as otherwise rn you know the fee rate can only be so high on a coop close transaction
+<a name="l-45"></a><span class="tm">19:15:06</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> that's clearly a good idea!
+<a name="l-46"></a><span class="tm">19:15:15</span><span class="nk"> &lt;roasbeef&gt;</span> has eclair modified their neogtitation logic to handle tht lack of a fee cap now t-bast ? (well w/ that?)
+<a name="l-47"></a><span class="tm">19:15:37</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes we've updated eclair (but since we haven't turned on anchor outputs, it's still "hidden")
+<a name="l-48"></a><span class="tm">19:15:46</span><span class="nk"> &lt;ariard&gt;</span> generally you should cap the feerate on bumping transaction on the sum value of HTLC at stake
+<a name="l-49"></a><span class="tm">19:15:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> so what's the new policy? pick a new cap based on a multiplier?
+<a name="l-50"></a><span class="tm">19:16:02</span><span class="nk"> &lt;ariard&gt;</span> and _not_ your local balance itself
+<a name="l-51"></a><span class="tm">19:16:04</span><span class="nk"> &lt;roasbeef&gt;</span> (this is for the coop close fee rate btw)
+<a name="l-52"></a><span class="tm">19:16:37</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> right now there's no cap, but we'll introduce one, not sure based on what (maybe locally observed feerate times a small multiplier)
+<a name="l-53"></a><span class="tm">19:17:13</span><span class="nk"> &lt;roasbeef&gt;</span> gotcha yeh that's something that just came to mind, as now a responder can cause the initiator to bleed out more fees if that isn't minded after #847
+<a name="l-54"></a><span class="tm">19:17:26</span><span class="nk"> &lt;t-bast&gt;</span> I think roasbeef is discussing #847 but the rest of the room was talking about commit tx feerate, make sure we don't get confused between the two!
+<a name="l-55"></a><span class="tm">19:17:38</span><span class="nk"> &lt;roasbeef&gt;</span> oh yeah..I was talking about the implicaitnos on coop close
+<a name="l-56"></a><span class="tm">19:18:10</span><span class="nk"> &lt;roasbeef&gt;</span> since rn the intiator knows they'll pay no more than the current commitment fee rate, and both sides cna use CPFP to increase it further if they wish
+<a name="l-57"></a><span class="tm">19:18:39</span><span class="nk"> &lt;t-bast&gt;</span> Regarding #847, I think we can let implementers decide how they tweak their negotiation algorithm to impose a user-configurable cap on the other side
+<a name="l-58"></a><span class="tm">19:18:58</span><span class="nk"> &lt;rusty&gt;</span> We currently (by default) split the difference between our offer and their offer, but we'll cap their offer to the max we consider reasonable I think.
+<a name="l-59"></a><span class="tm">19:19:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#847 </span><span class="cmdline">is really to unblock anchor outputs, because otherwise it cannot be spec compliant in mutual-close scenarios</span>
+<a name="l-60"></a><span class="tm">19:19:18</span><span class="nk"> &lt;roasbeef&gt;</span> feels like we might end up w/ force close scenarios again during co-op close like we did waaay back....
+<a name="l-61"></a><span class="tm">19:19:32</span><span class="nk"> &lt;roasbeef&gt;</span> unless they just now take w/e lowest one they received
+<a name="l-62"></a><span class="tm">19:19:41</span><span class="nk"> &lt;ariard&gt;</span> in case of disagreement, I think that's fine to take the latest feerate agreed by both, if you have a balance on the closing_tx you can still CPFP
+<a name="l-63"></a><span class="tm">19:19:58</span><span class="nk"> &lt;cdecker&gt;</span> Seems gameable if we use the lowest (I could propose something that doesn't confirm)
+<a name="l-64"></a><span class="tm">19:20:06</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> but there can be no "agreement": I send 100 sat/byte, what do you do now?
+<a name="l-65"></a><span class="tm">19:20:29</span><span class="nk"> &lt;roasbeef&gt;</span> there's already a whole can of worms w.r.t the current "negotaition" aside from this...
+<a name="l-66"></a><span class="tm">19:20:44</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> right, in that case you fallback to unilateral close, should we specificy some $CAP in the spec
+<a name="l-67"></a><span class="tm">19:20:52</span><span class="nk"> &lt;ariard&gt;</span> where $CAP is implementation-fulfilled
+<a name="l-68"></a><span class="tm">19:21:00</span><span class="nk"> &lt;roasbeef&gt;</span> it needs to be signllaed tho right?
+<a name="l-69"></a><span class="tm">19:21:08</span><span class="nk"> &lt;roasbeef&gt;</span> coul dbe sent in tlv in shutdown msg?
+<a name="l-70"></a><span class="tm">19:21:10</span><span class="nk"> &lt;t-bast&gt;</span> I agree, implementations need to enforce a cap on the first fee proposed by their peer, but I think it should be implementation-specific (probably user-configured with good defaults)
+<a name="l-71"></a><span class="tm">19:21:27</span><span class="nk"> &lt;niftynei&gt;</span> what happens if the cap's exceeded?
+<a name="l-72"></a><span class="tm">19:21:31</span><span class="nk"> &lt;roasbeef&gt;</span> initiator could communicat their cap right when it starts
+<a name="l-73"></a><span class="tm">19:21:34</span><span class="nk"> &lt;ariard&gt;</span> i dont' think you need to signal it, ignoring it or being above trigger the same effect?
+<a name="l-74"></a><span class="tm">19:21:43</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> you just force-close
+<a name="l-75"></a><span class="tm">19:21:55</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh but it can at least serve as guidance
+<a name="l-76"></a><span class="tm">19:22:08</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> basically you need a cap to decide when a force-close is more economical than what your peer suggest for a mutual close
+<a name="l-77"></a><span class="tm">19:22:20</span><span class="nk"> &lt;niftynei&gt;</span> ... and then use anchors to get the force-close through?
+<a name="l-78"></a><span class="tm">19:22:41</span><span class="nk"> &lt;t-bast&gt;</span> but TBH we should only hit that cap with malicious peers if we use reasonable limits
+<a name="l-79"></a><span class="tm">19:22:46</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> exactly
+<a name="l-80"></a><span class="tm">19:23:08</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> yeh mnore expensive tho, so you want to co-cop close if you're able to as the initiator, also if you have an upfront shutdown addr
+<a name="l-81"></a><span class="tm">19:23:12</span><span class="nk"> &lt;t-bast&gt;</span> non-malicious and non-buggy nodes have no reason to use a ludicrous feerate there
+<a name="l-82"></a><span class="tm">19:23:26</span><span class="nk"> &lt;roasbeef&gt;</span> malicious and skewed fee estimator at indistinguishable here
+<a name="l-83"></a><span class="tm">19:23:30</span><span class="nk"> &lt;rusty&gt;</span> We already have this issue.  You figure out your own preferred range, and only offer signatures within that.  If you can't, fail the close.  If you end up with a signature from them in that range, use it, otherwise resort to unilateral.
+<a name="l-84"></a><span class="tm">19:23:34</span><span class="nk"> &lt;roasbeef&gt;</span> fee estimation itself has no objective "truth"
+<a name="l-85"></a><span class="tm">19:23:52</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> but they might still have a hard time to agree on the required feerate, it depends of your fee estimation and data set available
+<a name="l-86"></a><span class="tm">19:23:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> this adds a new thing to accoutn for as there's no ceiling
+<a name="l-87"></a><span class="tm">19:23:55</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> exactly, that's the only reasonable local strategy
+<a name="l-88"></a><span class="tm">19:24:07</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">roasbeef:</span> yeah it's a "quality" problem, not a "truth" problem
+<a name="l-89"></a><span class="tm">19:24:36</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, but we always had the floor problem, so now you just have to maintain both ends (spoken as someone who hasn't *implemented* this yet tho!)
+<a name="l-90"></a><span class="tm">19:24:56</span><span class="nk"> &lt;roasbeef&gt;</span> floor was also "kinda" already there right? 1 sat/byte
+<a name="l-91"></a><span class="tm">19:25:04</span><span class="nk"> &lt;roasbeef&gt;</span> there is no fee top
+<a name="l-92"></a><span class="tm">19:25:06</span><span class="nk"> &lt;roasbeef&gt;</span> (kek)
+<a name="l-93"></a><span class="tm">19:25:20</span><span class="nk"> &lt;ariard&gt;</span> actually floor should be updated to match dynamic mempool min fee
+<a name="l-94"></a><span class="tm">19:25:49</span><span class="nk"> &lt;roasbeef&gt;</span> even that's just policy tho ariard, it isn't a global param
+<a name="l-95"></a><span class="tm">19:25:59</span><span class="nk"> &lt;roasbeef&gt;</span> as it changes dpending on the size of each node's configured mempool...
+<a name="l-96"></a><span class="tm">19:26:09</span><span class="nk"> &lt;roasbeef&gt;</span> yours can be higher than all your connected peers as an eaxmple
+<a name="l-97"></a><span class="tm">19:26:17</span><span class="nk"> &lt;t-bast&gt;</span> but that's why you should sample it from multiple bitcoin nodes, as ariard suggested
+<a name="l-98"></a><span class="tm">19:26:17</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> yeah your local mempool min fee obv
+<a name="l-99"></a><span class="tm">19:26:44</span><span class="nk"> &lt;t-bast&gt;</span> and always respect your local one otherwise you won't be able to broadcast to your own node xD
+<a name="l-100"></a><span class="tm">19:26:44</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> no multiple bitcoin nodes is to mitigate other things...
+<a name="l-101"></a><span class="tm">19:27:18</span><span class="nk"> &lt;niftynei&gt;</span> for the spec, do we need to add anything about this arbitrary, independently defined cap?
+<a name="l-102"></a><span class="tm">19:27:23</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> it does mitigate that as well, if your node is the only node in the network to accept your tx you're kinda in a bad state
+<a name="l-103"></a><span class="tm">19:27:50</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> maybe I can add a comment to say that implementers should still think about setting an implementation-dependent ceiling
+<a name="l-104"></a><span class="tm">19:27:51</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> imo the initiator should signal their cap in shutdown, which lets the responder mind it and lets them avoid a force close scenario, which is the worst cast for the initiator
+<a name="l-105"></a><span class="tm">19:27:58</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> how do you know your node is the only node in the network to accept your tx without being connected to all the other nodes :) ?
+<a name="l-106"></a><span class="tm">19:28:21</span><span class="nk"> &lt;niftynei&gt;</span> heh we had a thing about signaling cap/min in the dual-funding protocol but i took it out for reasons...
+<a name="l-107"></a><span class="tm">19:28:24</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> not all the others, but you're at least mitigating this risk if you're sampling *a few other nodes* instead of only yours :)
+<a name="l-108"></a><span class="tm">19:28:24</span><span class="nk"> &lt;ariard&gt;</span> you might sample your peers feefilters but that's a bit hacky
+<a name="l-109"></a><span class="tm">19:28:45</span><span class="nk"> &lt;niftynei&gt;</span> i think "signal your fee range for this tx we're co-building" is reasonable
+<a name="l-110"></a><span class="tm">19:29:01</span><span class="nk"> &lt;roasbeef&gt;</span> yeh it's best effort but could help avoid force closes in practice
+<a name="l-111"></a><span class="tm">19:29:31</span><span class="nk"> &lt;niftynei&gt;</span> just gotta make sure the cap you're signaling is in fact a number you're comfortable paying in practice
+<a name="l-112"></a><span class="tm">19:29:33</span><span class="nk"> &lt;niftynei&gt;</span> lol
+<a name="l-113"></a><span class="tm">19:29:46</span><span class="nk"> &lt;t-bast&gt;</span> I'll explore adding a tlv to signal this, and will update the PR
+<a name="l-114"></a><span class="tm">19:29:51</span><span class="nk"> &lt;rusty&gt;</span> Hmm, I think we could have just gone for closer specifying "min, max, preferred" and other side picking a value in that range, TBH (defaulting to preferred if it has no pref)
+<a name="l-115"></a><span class="tm">19:29:52</span><span class="nk"> &lt;roasbeef&gt;</span> gotta think twice before you put in that limit order...
+<a name="l-116"></a><span class="tm">19:29:54</span><span class="nk"> &lt;ariard&gt;</span> i did this for the dlc spec, mentioning bounds to check where bounds are defined by the implementation: https://github.com/discreetlogcontracts/dlcspecs/blob/master/Non-Interactive-Protocol.md
+<a name="l-117"></a><span class="tm">19:30:08</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">roasbeef:</span> lolll
+<a name="l-118"></a><span class="tm">19:30:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to add a tlv to signal accepted feerate bounds in `shutdown`</span>
+<a name="l-119"></a><span class="tm">19:30:20</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> not too late? would be an improvement to the current negotiation, which is basically unboounded and both sides have no hints, the game theory there gets kinda wonky
+<a name="l-120"></a><span class="tm">19:30:29</span><span class="nk"> &lt;roasbeef&gt;</span> but maybe for a larger c hange
+<a name="l-121"></a><span class="tm">19:30:36</span><span class="nk"> &lt;roasbeef&gt;</span> similarly, you prob shouldn't send sigs each time
+<a name="l-122"></a><span class="tm">19:30:59</span><span class="nk"> &lt;roasbeef&gt;</span> do impls throttle the total amt of sigs they send? as otherwise it's also a signing oracle
+<a name="l-123"></a><span class="tm">19:31:12</span><span class="nk"> &lt;ariard&gt;</span> i think a preferred value is useless as counterparties might have diff liquidity preferrences
+<a name="l-124"></a><span class="tm">19:31:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> eclair throttles, yes
+<a name="l-125"></a><span class="tm">19:31:21</span><span class="nk"> &lt;roasbeef&gt;</span> like imagine there's an impl that leaks info re private key bits over time....
+<a name="l-126"></a><span class="tm">19:31:27</span><span class="nk"> &lt;ariard&gt;</span> like one might want the confirm next block the other only don't care if it's a day from now
+<a name="l-127"></a><span class="tm">19:31:37</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> no, we will send infinite sigs if you reconnect, I think.
+<a name="l-128"></a><span class="tm">19:31:37</span><span class="nk"> &lt;niftynei&gt;</span> well if there's just a "here's a range, here's what i'd pick", then the reply can simply be a feerate + a sig at that feerate (within the range bounds)
+<a name="l-129"></a><span class="tm">19:31:55</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> it's at least something to use as a hint, otherwise your "satisficement" has no hints to go off of
+<a name="l-130"></a><span class="tm">19:31:56</span><span class="nk"> &lt;t-bast&gt;</span> I'll explore adding this TLV, there's no hurry to merge 847 so it's a good opportunity to do this work here I think
+<a name="l-131"></a><span class="tm">19:32:30</span><span class="nk"> &lt;t-bast&gt;</span> Shall we start discussing each team's priorities for 2021? I think it's going to be a very interesting discussion to have
+<a name="l-132"></a><span class="tm">19:32:34</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> i mean a preferrence make sense locally but not announced to the counterparty
+<a name="l-133"></a><span class="tm">19:32:50</span><span class="nk"> &lt;roasbeef&gt;</span> an rn there're really not many bounds...like one side can just never budge and may the other side acquiesce
+<a name="l-134"></a><span class="tm">19:32:53</span><span class="nk"> &lt;roasbeef&gt;</span> make*
+<a name="l-135"></a><span class="tm">19:32:57</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> sounds like a nice meta topic
+<a name="l-136"></a><span class="tm">19:33:10</span><span class="nk"> &lt;roasbeef&gt;</span> w/ the way things are going rn, maybe we'll all actually get to meet up in meatspace near the end of the year too?
+<a name="l-137"></a><span class="tm">19:33:29</span><span class="nk"> &lt;cdecker&gt;</span> That'd be such a nice change ^^
+<a name="l-138"></a><span class="tm">19:33:30 </span><span class="nka">* niftynei</span> <span class="ac">knocks on wood</span>
+<a name="l-139"></a><span class="tm">19:33:39</span><span class="nk"> &lt;t-bast&gt;</span> I don't want to be optimistic about that and be disappointed :)
+<a name="l-140"></a><span class="tm">19:33:54</span><span class="nk"> &lt;roasbeef&gt;</span> got my money on fall, FTX should add a "when % of population will be covid vaccinated" event derivative ;)
+<a name="l-141"></a><span class="tm">19:33:55</span><span class="nk"> &lt;t-bast&gt;</span> I'd love to but can't bear the roller-coaster emotional state
+<a name="l-142"></a><span class="tm">19:34:02</span><span class="nk"> &lt;roasbeef&gt;</span> lol
+<a name="l-143"></a><span class="tm">19:34:19</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> but it's low stakes.  I'll only send sigs on feerates I like, and I'll only remember ones similarly.  I have a backup plan, so if my peer plays games, meh.
+<a name="l-144"></a><span class="tm">19:34:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Discuss implementation priorities for 2021</span>
+<a name="l-145"></a><span class="tm">19:34:27</span><span class="nk"> &lt;cdecker&gt;</span> The way switzerland is doing we'll be banned from all other countries :-(
+<a name="l-146"></a><span class="tm">19:34:33</span><span class="nk"> &lt;roasbeef&gt;</span> lolol
+<a name="l-147"></a><span class="tm">19:34:39</span><span class="nk"> &lt;niftynei&gt;</span> if catching covid counts, i'm in b4 lolll
+<a name="l-148"></a><span class="tm">19:34:39</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> xD
+<a name="l-149"></a><span class="tm">19:35:12</span><span class="nk"> &lt;niftynei&gt;</span> *counts as getting vacc'd
+<a name="l-150"></a><span class="tm">19:35:16</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> catching covid, living without electricity, you had a rough early 2021!
+<a name="l-151"></a><span class="tm">19:35:26</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> something something anti-bodies? ;)
+<a name="l-152"></a><span class="tm">19:35:27</span><span class="nk"> &lt;ariard&gt;</span> we still have the option to meet in some sunny place, isolated from the rest
+<a name="l-153"></a><span class="tm">19:35:31</span><span class="nk"> &lt;niftynei&gt;</span> just living in the future lolol
+<a name="l-154"></a><span class="tm">19:35:52</span><span class="nk"> &lt;ariard&gt;</span> don't forget to watch revoked states broadcast during power outage !
+<a name="l-155"></a><span class="tm">19:36:28</span><span class="nk"> &lt;t-bast&gt;</span> So, who wants to go first to share what (big) feature they'd like to see in LN in 2021?
+<a name="l-156"></a><span class="tm">19:37:09</span><span class="nk"> &lt;joost&gt;</span> Maybe it is useful to make the question a bit stricter: "see and also commit significant resources to in 2021" ?
+<a name="l-157"></a><span class="tm">19:37:13</span><span class="nk"> &lt;niftynei&gt;</span> t-bast why don't you kick us off?
+<a name="l-158"></a><span class="tm">19:37:27</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">joost:</span> you're right, this is more accountable
+<a name="l-159"></a><span class="tm">19:37:36</span><span class="nk"> &lt;t-bast&gt;</span> right I'll start
+<a name="l-160"></a><span class="tm">19:37:41</span><span class="nk"> &lt;roasbeef&gt;</span> for some definition of "significant" lol
+<a name="l-161"></a><span class="tm">19:37:52</span><span class="nk"> &lt;t-bast&gt;</span> for eclair, our priorities are:1) anchor outputs
+<a name="l-162"></a><span class="tm">19:38:06</span><span class="nk"> &lt;joost&gt;</span> haha, yes. significant = enough to get it released :)
+<a name="l-163"></a><span class="tm">19:38:19</span><span class="nk"> &lt;t-bast&gt;</span> anchor outputs requires a lot of changes to ensure it's always safe, regardless of on-chain fees conditions - there's a lot more work there than we anticipated
+<a name="l-164"></a><span class="tm">19:38:29</span><span class="nk"> &lt;t-bast&gt;</span> So we'll spend a lot of time on getting this right
+<a name="l-165"></a><span class="tm">19:39:11</span><span class="nk"> &lt;t-bast&gt;</span> Then I'd love to see a first version of trampoline going
+<a name="l-166"></a><span class="tm">19:39:43</span><span class="nk"> &lt;t-bast&gt;</span> And last thing we can have dev time this year to work on seriously is offers
+<a name="l-167"></a><span class="tm">19:40:09</span><span class="nk"> &lt;t-bast&gt;</span> I think if we're able to get these 3 in with thorough support, we'll be happy
+<a name="l-168"></a><span class="tm">19:40:15</span><span class="nk"> &lt;niftynei&gt;</span> ok so acinq's got: anchors, trampoline, offers
+<a name="l-169"></a><span class="tm">19:40:19</span><span class="nk"> &lt;t-bast&gt;</span> Your turn now :)
+<a name="l-170"></a><span class="tm">19:40:59</span><span class="nk"> &lt;rusty&gt;</span> I think I can take c-lightning...
+<a name="l-171"></a><span class="tm">19:41:04</span><span class="nk"> &lt;niftynei&gt;</span> go for it
+<a name="l-172"></a><span class="tm">19:41:24</span><span class="nk"> &lt;rusty&gt;</span> Dual-funding and possibly a spin-off for splicing, since it's closely related as designed.  niftynei is leading that.
+<a name="l-173"></a><span class="tm">19:42:18</span><span class="nk"> &lt;rusty&gt;</span> I've drafted onion messages and offers, though it's hard to make further progress since we don't really have a front-end wallet; really want someone to start playing with it and give feedback.
+<a name="l-174"></a><span class="tm">19:43:03</span><span class="nk"> &lt;rusty&gt;</span> But more sophisticated tx tracking is my current thing (once current delayed release gets out the door), so I can anchor outputs sanely.
+<a name="l-175"></a><span class="tm">19:43:44</span><span class="nk"> &lt;rusty&gt;</span> I'll probably throw in trampoline since it's cool and pretty easy.  cdecker, niftynei: did I miss anything?
+<a name="l-176"></a><span class="tm">19:44:06</span><span class="nk"> &lt;cdecker&gt;</span> Mostly usability stuff besides that
+<a name="l-177"></a><span class="tm">19:44:17</span><span class="nk"> &lt;niftynei&gt;</span> that's all i had
+<a name="l-178"></a><span class="tm">19:44:37</span><span class="nk"> &lt;cdecker&gt;</span> We'd like to make it a lot easier to build on, also over the RPC, finally exposing that over the network
+<a name="l-179"></a><span class="tm">19:44:58</span><span class="nk"> &lt;niftynei&gt;</span> so c-lightning: dual-funding, splicing, offers, onion messages, anchor
+<a name="l-180"></a><span class="tm">19:45:12</span><span class="nk"> &lt;cdecker&gt;</span> Sounds like a plan :-)
+<a name="l-181"></a><span class="tm">19:45:14</span><span class="nk"> &lt;t-bast&gt;</span> Great, thanks for sharing! Once we have time to start implementing some onion messaging/offers stuff, we'll be able to provide wallet feedback (from users and our experience integrating it)
+<a name="l-182"></a><span class="tm">19:45:19</span><span class="nk"> &lt;niftynei&gt;</span> oh i missed trampoline
+<a name="l-183"></a><span class="tm">19:45:57</span><span class="nk"> &lt;ariard&gt;</span> RL-side, primary focus is anchor output support and related fee-bumping/utxo management efforts
+<a name="l-184"></a><span class="tm">19:46:19</span><span class="nk"> &lt;ariard&gt;</span> we're also open to implement trampoline
+<a name="l-185"></a><span class="tm">19:46:48</span><span class="nk"> &lt;ariard&gt;</span> beyond, I don't think we've that much discussed about our priorities
+<a name="l-186"></a><span class="tm">19:47:35</span><span class="nk"> &lt;roasbeef&gt;</span> on the lnd side we're pretty close to rolling out an initial version of AMP, we have things working end to end in a simplified scenario, and conner is pretty far along w/ a standalone spec doc (call it a LIP? lol) for the change itself
+<a name="l-187"></a><span class="tm">19:47:37</span><span class="nk"> &lt;ariard&gt;</span> personally,  i'll also focus on package relay and better L2 support on core-side, gonna be time consuming
+<a name="l-188"></a><span class="tm">19:48:02</span><span class="nk"> &lt;ariard&gt;</span> other RL contributors might have bandwidth to work on offers/dual-funding, but not I :)
+<a name="l-189"></a><span class="tm">19:48:17</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> package relay would be awesome, it would simplify fee management greatly!
+<a name="l-190"></a><span class="tm">19:48:50</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> i don't give timeline anymore, mempools refactors to support it are likely to be gory...
+<a name="l-191"></a><span class="tm">19:48:55</span><span class="nk"> &lt;roasbeef&gt;</span> I'm also nearly done w/ a PoC for dynamic commitments alongside a standalone spec doc, it jsut does something basic rn (increase the anchor output size), but imo is an important meta upgrade as it preps us to experiment w/ taproot stuff later (hopefully? kek) and make certain flow control limits dynamic/changeable which can partially mitigate channel jamming by letting peers btter manage their available HTLC slots
+<a name="l-192"></a><span class="tm">19:49:32</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> awesome, def something we'll need as the taproot tsunami hits.
+<a name="l-193"></a><span class="tm">19:49:34</span><span class="nk"> &lt;roasbeef&gt;</span> related to that is adding in soft errors based on TLV extensions, as it lets you communicate unsupported state transitions, etc and is just all around pretty useful from our PoV
+<a name="l-194"></a><span class="tm">19:49:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> good point, I forgot about dynamic commitments, that's also something we'll find time to work on (but probably later this year)
+<a name="l-195"></a><span class="tm">19:50:29</span><span class="nk"> &lt;niftynei&gt;</span> to summarize RL: anchors, trampoline, package-relay in core
+<a name="l-196"></a><span class="tm">19:51:07</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> instead of starting a LIP, what do you think about refactoring the spec as you previously offered to do it ? ofc a meatspace meeting could be better to exchange on such more modular spec but...
+<a name="l-197"></a><span class="tm">19:51:11</span><span class="nk"> &lt;roasbeef&gt;</span> beyond that we want to look into experimenting w/ some alternative non-sat-punitive ideas to mitigate channel jamming, and also have some renewed interest to trampoinle possilby as we're interested in opening up the protocol so we can explore other methods for packet routing beyond source routing, etc
+<a name="l-198"></a><span class="tm">19:51:39</span><span class="nk"> &lt;roasbeef&gt;</span> there's some loftier stuff like a payment level ack, tho we haven't really discussed it in much detail
+<a name="l-199"></a><span class="tm">19:52:08</span><span class="nk"> &lt;bitconner&gt;</span> hey y'all, sorry i'm late. had to vacate my apt while a repairman fixed the dishwasher
+<a name="l-200"></a><span class="tm">19:52:22 </span><span class="nka">* bitconner</span> <span class="ac">catches up</span>
+<a name="l-201"></a><span class="tm">19:52:23</span><span class="nk"> &lt;cdecker&gt;</span> Hi bitconner ^^
+<a name="l-202"></a><span class="tm">19:52:37</span><span class="nk"> &lt;t-bast&gt;</span> regarding channel jamming, I think there's room for more research work (before starting any spec work): I liked the early proposal by ariard and gleb, and there are probably other ways of doing it that we could find
+<a name="l-203"></a><span class="tm">19:52:41</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">bitconner:</span> lemmie know if there's anything I missed there above ^
+<a name="l-204"></a><span class="tm">19:52:43</span><span class="nk"> &lt;t-bast&gt;</span> Hey bitconner!
+<a name="l-205"></a><span class="tm">19:53:16</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh varying mitigations also have diff scopes re deployment (some can be just sender and intermediate, others entire network, etc)
+<a name="l-206"></a><span class="tm">19:53:53</span><span class="nk"> &lt;roasbeef&gt;</span> i'm generally bearish on any thing that tries to make the attacker spend a de minimis amt of sats tho, as they're already not doing it for direct gain, and seems any amt woul dneed to be more than on chain fees to actually make a difference
+<a name="l-207"></a><span class="tm">19:54:04</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes, TBH I'm not satisfied with "the best thing I got currently", this is why I haven't pushed much on it, I'm hoping smarter people find better ways of addressing this
+<a name="l-208"></a><span class="tm">19:54:33</span><span class="nk"> &lt;roasbeef&gt;</span> kinda falls back to the OG idea of just force close and spend a proof back...
+<a name="l-209"></a><span class="tm">19:54:46</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">roasbeef:</span> they could be in it for direct gain if they're routing nodes that want to disable the competition
+<a name="l-210"></a><span class="tm">19:54:52</span><span class="nk"> &lt;roasbeef&gt;</span> but even before that, better education to routing nodes w.r.t what all their available params actually even do can go a long way
+<a name="l-211"></a><span class="tm">19:54:53</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> yeah wrt to stake certificates we're likely dependent on taproot pubkeys for the cryptosystem, have to investigate further
+<a name="l-212"></a><span class="tm">19:55:24</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">joost:</span> then they get disabled back? seems to devolve down to the game theory w.r.t miner block withhlding in competing pools
+<a name="l-213"></a><span class="tm">19:56:53</span><span class="nk"> &lt;rusty&gt;</span> I'm pretty convinced we eventually need both prepay and a long-time penalty, but allmy schemes for prepay needs someone crypto smarter to help me decorrelate.
+<a name="l-214"></a><span class="tm">19:56:54</span><span class="nk"> &lt;niftynei&gt;</span> have we had any in-depth convos about the channel-jamming problem space? it might be fun to hop on a call about
+<a name="l-215"></a><span class="tm">19:57:10</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">roasbeef:</span> could be the same, but it may play out differently too for routing
+<a name="l-216"></a><span class="tm">19:57:13</span><span class="nk"> &lt;roasbeef&gt;</span> tons of convos on the ML niftynei, but long threads can be kinda hard to follow
+<a name="l-217"></a><span class="tm">19:57:43</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">joost:</span> mhmm yeh just saying could prob gain some insights from studying a similar-ish problem, ofc the stakes are much higher w.r.t mining revneue vs off-chain fee revenue as well
+<a name="l-218"></a><span class="tm">19:58:12</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> https://github.com/t-bast/lightning-docs/blob/master/spam-prevention.md
+<a name="l-219"></a><span class="tm">19:58:36</span><span class="nk"> &lt;niftynei&gt;</span> feels like this has a nice tie-in the the velocity metric the pool paper established
+<a name="l-220"></a><span class="tm">19:59:17</span><span class="nk"> &lt;niftynei&gt;</span> you only really care about jammed channels so long as there's other payments that aren't able to be completed etc
+<a name="l-221"></a><span class="tm">19:59:42</span><span class="nk"> &lt;niftynei&gt;</span> (don't remember the exact name of the pool velocity thing lol)
+<a name="l-222"></a><span class="tm">19:59:47</span><span class="nk"> &lt;ariard&gt;</span> jammed channels are also a building block for some probing attacks
+<a name="l-223"></a><span class="tm">19:59:56</span><span class="nk"> &lt;t-bast&gt;</span> exactly, as niftynei says it's a good problem to have, that means the network is successful
+<a name="l-224"></a><span class="tm">20:01:15</span><span class="nk"> &lt;t-bast&gt;</span> I think it's important to dedicate some research into it in 2021, but too early to go to spec/implementation
+<a name="l-225"></a><span class="tm">20:01:19</span><span class="nk"> &lt;roasbeef&gt;</span> routing volume is def rising from a few sample points of mine
+<a name="l-226"></a><span class="tm">20:01:28</span><span class="nk"> &lt;roasbeef&gt;</span> even my node routes now lol
+<a name="l-227"></a><span class="tm">20:01:32</span><span class="nk"> &lt;niftynei&gt;</span> lolol
+<a name="l-228"></a><span class="tm">20:01:36</span><span class="nk"> &lt;niftynei&gt;</span> (same same)
+<a name="l-229"></a><span class="tm">20:01:44</span><span class="nk"> &lt;t-bast&gt;</span> yes routing volume is rising, but we're far from being overloaded right now
+<a name="l-230"></a><span class="tm">20:02:08</span><span class="nk"> &lt;t-bast&gt;</span> and it's hard to tell whether the rise in bitcoin price will make people use it more or less for payments
+<a name="l-231"></a><span class="tm">20:02:52</span><span class="nk"> &lt;t-bast&gt;</span> but I don't want to stir the store of value / digital cash debate, we can have that one (again?) later xD
+<a name="l-232"></a><span class="tm">20:03:59</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">(FWIW:</span> I tried to pay for my new coffee machine with Bitcoin, dude said "err, no", so I think we're not there yet)
+<a name="l-233"></a><span class="tm">20:04:11</span><span class="nk"> &lt;niftynei&gt;</span> to go back to the 2021 discussion, is someone avails to give us the electrum list?
+<a name="l-234"></a><span class="tm">20:04:34</span><span class="nk"> &lt;t-bast&gt;</span> I think ThomasV is online for electrum
+<a name="l-235"></a><span class="tm">20:04:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> nice try though :)
+<a name="l-236"></a><span class="tm">20:04:58</span><span class="nk"> &lt;roasbeef&gt;</span> exchanges are more of a thing now on LN also, so may see a rise in ppl wanting to move stuff around more quickly to avoid on-chain fees
+<a name="l-237"></a><span class="tm">20:05:21</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> that's right, exchanges are probably what's going to impact the volume most in 2021
+<a name="l-238"></a><span class="tm">20:05:31</span><span class="nk"> &lt;joost&gt;</span> In case someone missed it: I've posted a simulator google sheet for bidirectional fees (building on t-basts initial idea) to defend against channel jamming to the ML. If anyone is interested in a solution in the category 'sats punishment', consider taking a look. I'm still looking for reasons why this variation wouldn't work.
+<a name="l-239"></a><span class="tm">20:06:10</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">joost:</span> oh, nice!  Link?
+<a name="l-240"></a><span class="tm">20:06:27</span><span class="nk"> &lt;ThomasV&gt;</span> <span class="hi">t-bast:</span> hey
+<a name="l-241"></a><span class="tm">20:06:40</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh we just need one more exchange for the trifecta
+<a name="l-242"></a><span class="tm">20:06:43</span><span class="nk"> &lt;niftynei&gt;</span> sweet joost! can you post the link here?
+<a name="l-243"></a><span class="tm">20:06:45</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">rusty:</span> https://docs.google.com/spreadsheets/d/1UX3nMl-L9URO3Vd49DBVaubs6fdi6wxSb-ziSVlF6eo/edit#gid=0
+<a name="l-244"></a><span class="tm">20:06:48</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">joost:</span> I think it's an okay proposal, but I'd just like to see more research into alternatives, as it's still pretty invasive and needs to be globally deployed to work
+<a name="l-245"></a><span class="tm">20:06:50</span><span class="nk"> &lt;niftynei&gt;</span> danke
+<a name="l-246"></a><span class="tm">20:06:51</span><span class="nk"> &lt;niftynei&gt;</span> !!
+<a name="l-247"></a><span class="tm">20:06:52</span><span class="nk"> &lt;gribble&gt;</span> <span class="hi">Error:</span> "!" is not a valid command.
+<a name="l-248"></a><span class="tm">20:06:58</span><span class="nk"> &lt;joost&gt;</span> but probably requires reading the thread as well
+<a name="l-249"></a><span class="tm">20:07:16</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ThomasV:</span> we're discussing each implementation's priorities for 2021, could you share what your priorities are for Electrum?
+<a name="l-250"></a><span class="tm">20:08:13</span><span class="nk"> &lt;joost&gt;</span> the sheet allows trying out various scenarios of nodes acting badly
+<a name="l-251"></a><span class="tm">20:11:55</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">t-bast:</span> yes it is invasive, but also it is something that I think works for all scenarios. As far as I can see, it is always the adversary who pays for the damage. To me it is an interesting question how much time we've got left to wait for alternatives
+<a name="l-252"></a><span class="tm">20:12:38</span><span class="nk"> &lt;ThomasV&gt;</span> <span class="hi">t-bast:</span> trampoline, anchor outputs, taproot. probably also offers
+<a name="l-253"></a><span class="tm">20:12:48</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">joost:</span> ofc how much of a cost is actually substantial? imo hard to gauge what the actual mitigation will be, particularly if an attacker is well funded and the costs are much lower than setting up chans in the first place, seems difficult to paramertize
+<a name="l-254"></a><span class="tm">20:12:59</span><span class="nk"> &lt;ThomasV&gt;</span> ghost43 may have more to add
+<a name="l-255"></a><span class="tm">20:13:25</span><span class="nk"> &lt;t-bast&gt;</span> Thanks for sharing ThomasV!
+<a name="l-256"></a><span class="tm">20:13:49</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">roasbeef:</span> parameters are chosen based on time value of bitcoin. each node can set their requirement there, so that even when fully jammed, they'll still see a return
+<a name="l-257"></a><span class="tm">20:14:14</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">roasbeef:</span> channels can be used endlessly for attacks, so that cost can be amortized over a long time
+<a name="l-258"></a><span class="tm">20:16:05</span><span class="nk"> &lt;ariard&gt;</span> i think this proposal still have the concern about unbalanced hold fees paid between backwanrd and forward channels for routing nodes
+<a name="l-259"></a><span class="tm">20:16:35</span><span class="nk"> &lt;ariard&gt;</span> especially if settlement don't happen at the same time due to a malicious backward node, though we already discussed this on the ml
+<a name="l-260"></a><span class="tm">20:17:23</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> I think that's addressed by the forward fee being constant and very small, and backward fee bigger and deduced from the signed commitment? But I may be misremembering some details
+<a name="l-261"></a><span class="tm">20:17:36</span><span class="nk"> &lt;ThomasV&gt;</span> <span class="hi">t-bast:</span> also, lloyd fournier made a few interesting proposals last year about boating accidents. rusty proposed to add that to channels v2
+<a name="l-262"></a><span class="tm">20:17:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> it would really need a prototype implementation to figure out these details
+<a name="l-263"></a><span class="tm">20:17:54</span><span class="nk"> &lt;ThomasV&gt;</span> I would love to hear about that
+<a name="l-264"></a><span class="tm">20:18:08</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> have a look on last joost proposal it did account for time delta and thus fees weren't constant
+<a name="l-265"></a><span class="tm">20:18:13 </span><span class="nka">* rusty</span> <span class="ac">still doesn't understand the streaming fee antispam proposal, will have to re-read.</span>
+<a name="l-266"></a><span class="tm">20:18:31</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> yes this was my suggestion too, hard to reason on without code
+<a name="l-267"></a><span class="tm">20:18:37</span><span class="nk"> &lt;roasbeef&gt;</span> also seems to deolve down to just force closing if the final node doesn't pay
+<a name="l-268"></a><span class="tm">20:18:42</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">ariard:</span> you mean the on-chain settlement case? if you're the attacker's peer it gets more complicated. but I think the main threat of channel jamming is that it can be done remotely
+<a name="l-269"></a><span class="tm">20:18:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ThomasV:</span> yes, improving the scripts to get better backup capacilities would be great, but I think we'll likely wait for the Taproot wave of changes to do that - it's great to have ongoing research about it though
+<a name="l-270"></a><span class="tm">20:18:54</span><span class="nk"> &lt;niftynei&gt;</span> ThomasV, boating accidents?
+<a name="l-271"></a><span class="tm">20:19:17</span><span class="nk"> &lt;joost&gt;</span> <span class="hi">ariard:</span> the google sheet was intended as a first prototype
+<a name="l-272"></a><span class="tm">20:20:10</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">joost:</span> yes i agree my security concern assume a malicious peer is directly connected to a routing node to exploit the channel jamming mitigation, can't harvest free hold fees if you're not connected to it
+<a name="l-273"></a><span class="tm">20:20:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> it's about the proposed changes to the funding tx script to get better channel backups
+<a name="l-274"></a><span class="tm">20:20:55</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">joost:</span> thanks for the google sheet, going to think about it with other ldk folks
+<a name="l-275"></a><span class="tm">20:22:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> mostly these threads: https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-December/002907.html and https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-December/002912.html
+<a name="l-276"></a><span class="tm">20:23:14</span><span class="nk"> &lt;niftynei&gt;</span> danke!
+<a name="l-277"></a><span class="tm">20:23:38</span><span class="nk"> &lt;t-bast&gt;</span> I'm going to be heading out soon, thank you all for this meeting!
+<a name="l-278"></a><span class="tm">20:24:11</span><span class="nk"> &lt;t-bast&gt;</span> Hopefully our meatspace meeting in a sunny place will eventually happen ;)
+<a name="l-279"></a><span class="tm">20:24:12</span><span class="nk"> &lt;rusty&gt;</span> Me too, someone want to close meeting?
+<a name="l-280"></a><span class="tm">20:24:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>

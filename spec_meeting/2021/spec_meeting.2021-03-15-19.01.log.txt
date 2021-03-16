@@ -1,0 +1,280 @@
+19:01:57 <t-bast> #startmeeting Spec Meeting
+19:01:57 <lndev-bot> Meeting started Mon Mar 15 19:01:57 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://www.foss-eda.org/.
+19:01:57 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+19:01:57 <lndev-bot> The meeting name has been set to 'spec_meeting'
+19:02:04 <t-bast> beautiful!
+19:02:16 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/issues/853
+19:02:17 <cdecker> The log upload isn't automated just yet, I'll publish them on github afterwards
+19:02:25 <t-bast> Thanks cdecker!
+19:02:34 <t-bast> #topic Update closing fee requirement for anchor outputs
+19:02:42 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/847
+19:03:11 <t-bast> As discussed last time, I updated the requirement to only apply to anchor outputs
+19:04:17 <ariard> SGTM, if the channel is anchor, the receiver just shrugh about the proposed feerate?
+19:04:21 <rusty> Yep, looks good.  I can easily implement this.
+19:04:26 <cdecker> Sounds good, I think that was the only nit we found
+19:04:54 <lndbot> <johanth> ACK
+19:05:08 <t-bast> ariard: exactly, you go do your negotiation algorithm to bring it closer to what *you* think is a good fee, but you let the peer start with a fee that's decorrelated from the commit tx fee
+19:05:10 <jkczyz> hi
+19:05:49 <t-bast> hey jkczyz!
+19:06:47 <ariard> t-bast: i think this is smarter you might have a bit of time elapsed since lastest update, mempools fee might be far away
+19:07:19 <ariard> in both sense, either higher or lower
+19:07:50 <t-bast> yes exactly, this lets you use what's happening on-chain right now as your basis for starting the fee negotiation, regardless of past decisions for the commit tx feerate
+19:08:45 <t-bast> BTW since this is linked to the fact that we artificially keep the feerate low for anchor output commit txs, I have a quick Q for the lnd folks who are more advanced there
+19:09:00 <t-bast> IIRC lnd by default caps the commit tx feerate at 10 sat/byte, correct?
+19:09:20 <t-bast> What does it do when it's below the min-relay-fee (a few weeks ago, the mempool was purging at 11 sat/byte)?
+19:10:53 <ariard> t-bast: you mean the mempool min fee, we don't dynamically update the min-relay-fee?
+19:10:59 <ariard> iirc
+19:11:26 <t-bast> ariard: yes mempool-min-fee (the dynamic threshold that changes based on mempool load)
+19:11:51 <ariard> min-relay-fee is just a penalty applied for rbf replacement
+19:12:43 <t-bast> actually this Q is for everyone implementing anchor outputs with a capped feerate BTW, don't be shy :)
+19:12:49 <roasbeef> oh wow, the bot is back!?
+19:12:57 <lndbot> <johanth> lnd is currently unaware of this dynamic min relay fee
+19:13:07 <t-bast> roasbeef: hey, it's 2021, we had to have a bot, credits to cdecker xD
+19:13:14 <lndbot> <johanth> So the user must increase it manually if it’s a problem
+19:13:46 <cdecker> Not quite automated the bot yet, but working on it, and at least we get a working record now :-)
+19:13:48 <ariard> is this 10sat/vbyte feerate applied on commitment ?
+19:13:50 <t-bast> johanth: ok, that's what I was planning to do as well for eclair: let the user watch macro conditions and increase this pre-emptively if he doesn't feel safe
+19:13:54 <roasbeef> we have an issue to expose a flag to modify it (could possibly be a call) that should land in the next release
+19:14:07 <lndbot> <johanth> it’s already a flag
+19:14:15 <roasbeef> alternatively it could try to watch the full node RPC itself, but light clients don't have access to that fwiw
+19:14:20 <roasbeef> ah cool I missed that
+19:14:35 <t-bast> I was thinking longer term, that it may make sense to watch your mempool-min-fee, and ensure your commit tx feerate is always at least twice that
+19:14:45 <rusty> (In vaguely related stuff, we had an issue that our smoothed "slow" feerate (100 ECONOMICAL) fell below mempool min fee, and it meant users saw sadness if they specified "slow" as the feerate for txs).
+19:14:50 <ariard> t-bast: if you're running a big node, I would advise to use the median of few different full-nodes...
+19:14:57 <roasbeef> so w/ #847 there'd be no "cap"? as otherwise rn you know the fee rate can only be so high on a coop close transaction
+19:15:06 <t-bast> ariard: that's clearly a good idea!
+19:15:15 <roasbeef> has eclair modified their neogtitation logic to handle tht lack of a fee cap now t-bast ? (well w/ that?)
+19:15:37 <t-bast> roasbeef: yes we've updated eclair (but since we haven't turned on anchor outputs, it's still "hidden")
+19:15:46 <ariard> generally you should cap the feerate on bumping transaction on the sum value of HTLC at stake
+19:15:50 <roasbeef> t-bast: so what's the new policy? pick a new cap based on a multiplier?
+19:16:02 <ariard> and _not_ your local balance itself
+19:16:04 <roasbeef> (this is for the coop close fee rate btw)
+19:16:37 <t-bast> roasbeef: right now there's no cap, but we'll introduce one, not sure based on what (maybe locally observed feerate times a small multiplier)
+19:17:13 <roasbeef> gotcha yeh that's something that just came to mind, as now a responder can cause the initiator to bleed out more fees if that isn't minded after #847
+19:17:26 <t-bast> I think roasbeef is discussing #847 but the rest of the room was talking about commit tx feerate, make sure we don't get confused between the two!
+19:17:38 <roasbeef> oh yeah..I was talking about the implicaitnos on coop close
+19:18:10 <roasbeef> since rn the intiator knows they'll pay no more than the current commitment fee rate, and both sides cna use CPFP to increase it further if they wish
+19:18:39 <t-bast> Regarding #847, I think we can let implementers decide how they tweak their negotiation algorithm to impose a user-configurable cap on the other side
+19:18:58 <rusty> We currently (by default) split the difference between our offer and their offer, but we'll cap their offer to the max we consider reasonable I think.
+19:19:15 <t-bast> #847 is really to unblock anchor outputs, because otherwise it cannot be spec compliant in mutual-close scenarios
+19:19:18 <roasbeef> feels like we might end up w/ force close scenarios again during co-op close like we did waaay back....
+19:19:32 <roasbeef> unless they just now take w/e lowest one they received
+19:19:41 <ariard> in case of disagreement, I think that's fine to take the latest feerate agreed by both, if you have a balance on the closing_tx you can still CPFP
+19:19:58 <cdecker> Seems gameable if we use the lowest (I could propose something that doesn't confirm)
+19:20:06 <roasbeef> ariard: but there can be no "agreement": I send 100 sat/byte, what do you do now?
+19:20:29 <roasbeef> there's already a whole can of worms w.r.t the current "negotaition" aside from this...
+19:20:44 <ariard> roasbeef: right, in that case you fallback to unilateral close, should we specificy some $CAP in the spec
+19:20:52 <ariard> where $CAP is implementation-fulfilled
+19:21:00 <roasbeef> it needs to be signllaed tho right?
+19:21:08 <roasbeef> coul dbe sent in tlv in shutdown msg?
+19:21:10 <t-bast> I agree, implementations need to enforce a cap on the first fee proposed by their peer, but I think it should be implementation-specific (probably user-configured with good defaults)
+19:21:27 <niftynei> what happens if the cap's exceeded?
+19:21:31 <roasbeef> initiator could communicat their cap right when it starts
+19:21:34 <ariard> i dont' think you need to signal it, ignoring it or being above trigger the same effect?
+19:21:43 <t-bast> niftynei: you just force-close
+19:21:55 <roasbeef> ariard: yeh but it can at least serve as guidance
+19:22:08 <t-bast> niftynei: basically you need a cap to decide when a force-close is more economical than what your peer suggest for a mutual close
+19:22:20 <niftynei> ... and then use anchors to get the force-close through?
+19:22:41 <t-bast> but TBH we should only hit that cap with malicious peers if we use reasonable limits
+19:22:46 <t-bast> niftynei: exactly
+19:23:08 <roasbeef> niftynei: yeh mnore expensive tho, so you want to co-cop close if you're able to as the initiator, also if you have an upfront shutdown addr
+19:23:12 <t-bast> non-malicious and non-buggy nodes have no reason to use a ludicrous feerate there
+19:23:26 <roasbeef> malicious and skewed fee estimator at indistinguishable here
+19:23:30 <rusty> We already have this issue.  You figure out your own preferred range, and only offer signatures within that.  If you can't, fail the close.  If you end up with a signature from them in that range, use it, otherwise resort to unilateral.
+19:23:34 <roasbeef> fee estimation itself has no objective "truth"
+19:23:52 <ariard> t-bast: but they might still have a hard time to agree on the required feerate, it depends of your fee estimation and data set available
+19:23:54 <roasbeef> rusty: this adds a new thing to accoutn for as there's no ceiling
+19:23:55 <t-bast> rusty: exactly, that's the only reasonable local strategy
+19:24:07 <niftynei> roasbeef: yeah it's a "quality" problem, not a "truth" problem
+19:24:36 <rusty> roasbeef: yeah, but we always had the floor problem, so now you just have to maintain both ends (spoken as someone who hasn't *implemented* this yet tho!)
+19:24:56 <roasbeef> floor was also "kinda" already there right? 1 sat/byte
+19:25:04 <roasbeef> there is no fee top
+19:25:06 <roasbeef> (kek)
+19:25:20 <ariard> actually floor should be updated to match dynamic mempool min fee
+19:25:49 <roasbeef> even that's just policy tho ariard, it isn't a global param
+19:25:59 <roasbeef> as it changes dpending on the size of each node's configured mempool...
+19:26:09 <roasbeef> yours can be higher than all your connected peers as an eaxmple
+19:26:17 <t-bast> but that's why you should sample it from multiple bitcoin nodes, as ariard suggested
+19:26:17 <ariard> roasbeef: yeah your local mempool min fee obv
+19:26:44 <t-bast> and always respect your local one otherwise you won't be able to broadcast to your own node xD
+19:26:44 <ariard> t-bast: no multiple bitcoin nodes is to mitigate other things...
+19:27:18 <niftynei> for the spec, do we need to add anything about this arbitrary, independently defined cap?
+19:27:23 <t-bast> ariard: it does mitigate that as well, if your node is the only node in the network to accept your tx you're kinda in a bad state
+19:27:50 <t-bast> niftynei: maybe I can add a comment to say that implementers should still think about setting an implementation-dependent ceiling
+19:27:51 <roasbeef> niftynei: imo the initiator should signal their cap in shutdown, which lets the responder mind it and lets them avoid a force close scenario, which is the worst cast for the initiator
+19:27:58 <ariard> t-bast: how do you know your node is the only node in the network to accept your tx without being connected to all the other nodes :) ?
+19:28:21 <niftynei> heh we had a thing about signaling cap/min in the dual-funding protocol but i took it out for reasons...
+19:28:24 <t-bast> ariard: not all the others, but you're at least mitigating this risk if you're sampling *a few other nodes* instead of only yours :)
+19:28:24 <ariard> you might sample your peers feefilters but that's a bit hacky
+19:28:45 <niftynei> i think "signal your fee range for this tx we're co-building" is reasonable
+19:29:01 <roasbeef> yeh it's best effort but could help avoid force closes in practice
+19:29:31 <niftynei> just gotta make sure the cap you're signaling is in fact a number you're comfortable paying in practice
+19:29:33 <niftynei> lol
+19:29:46 <t-bast> I'll explore adding a tlv to signal this, and will update the PR
+19:29:51 <rusty> Hmm, I think we could have just gone for closer specifying "min, max, preferred" and other side picking a value in that range, TBH (defaulting to preferred if it has no pref)
+19:29:52 <roasbeef> gotta think twice before you put in that limit order...
+19:29:54 <ariard> i did this for the dlc spec, mentioning bounds to check where bounds are defined by the implementation: https://github.com/discreetlogcontracts/dlcspecs/blob/master/Non-Interactive-Protocol.md
+19:30:08 <niftynei> roasbeef: lolll
+19:30:18 <t-bast> #action t-bast to add a tlv to signal accepted feerate bounds in `shutdown`
+19:30:20 <roasbeef> rusty: not too late? would be an improvement to the current negotiation, which is basically unboounded and both sides have no hints, the game theory there gets kinda wonky
+19:30:29 <roasbeef> but maybe for a larger c hange
+19:30:36 <roasbeef> similarly, you prob shouldn't send sigs each time
+19:30:59 <roasbeef> do impls throttle the total amt of sigs they send? as otherwise it's also a signing oracle
+19:31:12 <ariard> i think a preferred value is useless as counterparties might have diff liquidity preferrences
+19:31:15 <t-bast> roasbeef: eclair throttles, yes
+19:31:21 <roasbeef> like imagine there's an impl that leaks info re private key bits over time....
+19:31:27 <ariard> like one might want the confirm next block the other only don't care if it's a day from now
+19:31:37 <rusty> roasbeef: no, we will send infinite sigs if you reconnect, I think.
+19:31:37 <niftynei> well if there's just a "here's a range, here's what i'd pick", then the reply can simply be a feerate + a sig at that feerate (within the range bounds)
+19:31:55 <roasbeef> ariard: it's at least something to use as a hint, otherwise your "satisficement" has no hints to go off of
+19:31:56 <t-bast> I'll explore adding this TLV, there's no hurry to merge 847 so it's a good opportunity to do this work here I think
+19:32:30 <t-bast> Shall we start discussing each team's priorities for 2021? I think it's going to be a very interesting discussion to have
+19:32:34 <ariard> roasbeef: i mean a preferrence make sense locally but not announced to the counterparty
+19:32:50 <roasbeef> an rn there're really not many bounds...like one side can just never budge and may the other side acquiesce
+19:32:53 <roasbeef> make*
+19:32:57 <roasbeef> t-bast: sounds like a nice meta topic
+19:33:10 <roasbeef> w/ the way things are going rn, maybe we'll all actually get to meet up in meatspace near the end of the year too?
+19:33:29 <cdecker> That'd be such a nice change ^^
+19:33:30 * niftynei knocks on wood
+19:33:39 <t-bast> I don't want to be optimistic about that and be disappointed :)
+19:33:54 <roasbeef> got my money on fall, FTX should add a "when % of population will be covid vaccinated" event derivative ;)
+19:33:55 <t-bast> I'd love to but can't bear the roller-coaster emotional state
+19:34:02 <roasbeef> lol
+19:34:19 <rusty> roasbeef: but it's low stakes.  I'll only send sigs on feerates I like, and I'll only remember ones similarly.  I have a backup plan, so if my peer plays games, meh.
+19:34:20 <t-bast> #topic Discuss implementation priorities for 2021
+19:34:27 <cdecker> The way switzerland is doing we'll be banned from all other countries :-(
+19:34:33 <roasbeef> lolol
+19:34:39 <niftynei> if catching covid counts, i'm in b4 lolll
+19:34:39 <t-bast> cdecker: xD
+19:35:12 <niftynei> *counts as getting vacc'd
+19:35:16 <t-bast> niftynei: catching covid, living without electricity, you had a rough early 2021!
+19:35:26 <roasbeef> niftynei: something something anti-bodies? ;)
+19:35:27 <ariard> we still have the option to meet in some sunny place, isolated from the rest
+19:35:31 <niftynei> just living in the future lolol
+19:35:52 <ariard> don't forget to watch revoked states broadcast during power outage !
+19:36:28 <t-bast> So, who wants to go first to share what (big) feature they'd like to see in LN in 2021?
+19:37:09 <joost> Maybe it is useful to make the question a bit stricter: "see and also commit significant resources to in 2021" ?
+19:37:13 <niftynei> t-bast why don't you kick us off?
+19:37:27 <t-bast> joost: you're right, this is more accountable
+19:37:36 <t-bast> right I'll start
+19:37:41 <roasbeef> for some definition of "significant" lol
+19:37:52 <t-bast> for eclair, our priorities are:1) anchor outputs
+19:38:06 <joost> haha, yes. significant = enough to get it released :)
+19:38:19 <t-bast> anchor outputs requires a lot of changes to ensure it's always safe, regardless of on-chain fees conditions - there's a lot more work there than we anticipated
+19:38:29 <t-bast> So we'll spend a lot of time on getting this right
+19:39:11 <t-bast> Then I'd love to see a first version of trampoline going
+19:39:43 <t-bast> And last thing we can have dev time this year to work on seriously is offers
+19:40:09 <t-bast> I think if we're able to get these 3 in with thorough support, we'll be happy
+19:40:15 <niftynei> ok so acinq's got: anchors, trampoline, offers
+19:40:19 <t-bast> Your turn now :)
+19:40:59 <rusty> I think I can take c-lightning...
+19:41:04 <niftynei> go for it
+19:41:24 <rusty> Dual-funding and possibly a spin-off for splicing, since it's closely related as designed.  niftynei is leading that.
+19:42:18 <rusty> I've drafted onion messages and offers, though it's hard to make further progress since we don't really have a front-end wallet; really want someone to start playing with it and give feedback.
+19:43:03 <rusty> But more sophisticated tx tracking is my current thing (once current delayed release gets out the door), so I can anchor outputs sanely.
+19:43:44 <rusty> I'll probably throw in trampoline since it's cool and pretty easy.  cdecker, niftynei: did I miss anything?
+19:44:06 <cdecker> Mostly usability stuff besides that
+19:44:17 <niftynei> that's all i had
+19:44:37 <cdecker> We'd like to make it a lot easier to build on, also over the RPC, finally exposing that over the network
+19:44:58 <niftynei> so c-lightning: dual-funding, splicing, offers, onion messages, anchor
+19:45:12 <cdecker> Sounds like a plan :-)
+19:45:14 <t-bast> Great, thanks for sharing! Once we have time to start implementing some onion messaging/offers stuff, we'll be able to provide wallet feedback (from users and our experience integrating it)
+19:45:19 <niftynei> oh i missed trampoline
+19:45:57 <ariard> RL-side, primary focus is anchor output support and related fee-bumping/utxo management efforts
+19:46:19 <ariard> we're also open to implement trampoline
+19:46:48 <ariard> beyond, I don't think we've that much discussed about our priorities
+19:47:35 <roasbeef> on the lnd side we're pretty close to rolling out an initial version of AMP, we have things working end to end in a simplified scenario, and conner is pretty far along w/ a standalone spec doc (call it a LIP? lol) for the change itself
+19:47:37 <ariard> personally,  i'll also focus on package relay and better L2 support on core-side, gonna be time consuming
+19:48:02 <ariard> other RL contributors might have bandwidth to work on offers/dual-funding, but not I :)
+19:48:17 <t-bast> ariard: package relay would be awesome, it would simplify fee management greatly!
+19:48:50 <ariard> t-bast: i don't give timeline anymore, mempools refactors to support it are likely to be gory...
+19:48:55 <roasbeef> I'm also nearly done w/ a PoC for dynamic commitments alongside a standalone spec doc, it jsut does something basic rn (increase the anchor output size), but imo is an important meta upgrade as it preps us to experiment w/ taproot stuff later (hopefully? kek) and make certain flow control limits dynamic/changeable which can partially mitigate channel jamming by letting peers btter manage their available HTLC slots
+19:49:32 <rusty> roasbeef: awesome, def something we'll need as the taproot tsunami hits.
+19:49:34 <roasbeef> related to that is adding in soft errors based on TLV extensions, as it lets you communicate unsupported state transitions, etc and is just all around pretty useful from our PoV
+19:49:47 <t-bast> roasbeef: good point, I forgot about dynamic commitments, that's also something we'll find time to work on (but probably later this year)
+19:50:29 <niftynei> to summarize RL: anchors, trampoline, package-relay in core
+19:51:07 <ariard> roasbeef: instead of starting a LIP, what do you think about refactoring the spec as you previously offered to do it ? ofc a meatspace meeting could be better to exchange on such more modular spec but...
+19:51:11 <roasbeef> beyond that we want to look into experimenting w/ some alternative non-sat-punitive ideas to mitigate channel jamming, and also have some renewed interest to trampoinle possilby as we're interested in opening up the protocol so we can explore other methods for packet routing beyond source routing, etc
+19:51:39 <roasbeef> there's some loftier stuff like a payment level ack, tho we haven't really discussed it in much detail
+19:52:08 <bitconner> hey y'all, sorry i'm late. had to vacate my apt while a repairman fixed the dishwasher
+19:52:22 * bitconner catches up
+19:52:23 <cdecker> Hi bitconner ^^
+19:52:37 <t-bast> regarding channel jamming, I think there's room for more research work (before starting any spec work): I liked the early proposal by ariard and gleb, and there are probably other ways of doing it that we could find
+19:52:41 <roasbeef> bitconner: lemmie know if there's anything I missed there above ^
+19:52:43 <t-bast> Hey bitconner!
+19:53:16 <roasbeef> t-bast: yeh varying mitigations also have diff scopes re deployment (some can be just sender and intermediate, others entire network, etc)
+19:53:53 <roasbeef> i'm generally bearish on any thing that tries to make the attacker spend a de minimis amt of sats tho, as they're already not doing it for direct gain, and seems any amt woul dneed to be more than on chain fees to actually make a difference
+19:54:04 <t-bast> roasbeef: yes, TBH I'm not satisfied with "the best thing I got currently", this is why I haven't pushed much on it, I'm hoping smarter people find better ways of addressing this
+19:54:33 <roasbeef> kinda falls back to the OG idea of just force close and spend a proof back...
+19:54:46 <joost> roasbeef: they could be in it for direct gain if they're routing nodes that want to disable the competition
+19:54:52 <roasbeef> but even before that, better education to routing nodes w.r.t what all their available params actually even do can go a long way
+19:54:53 <ariard> t-bast: yeah wrt to stake certificates we're likely dependent on taproot pubkeys for the cryptosystem, have to investigate further
+19:55:24 <roasbeef> joost: then they get disabled back? seems to devolve down to the game theory w.r.t miner block withhlding in competing pools
+19:56:53 <rusty> I'm pretty convinced we eventually need both prepay and a long-time penalty, but allmy schemes for prepay needs someone crypto smarter to help me decorrelate.
+19:56:54 <niftynei> have we had any in-depth convos about the channel-jamming problem space? it might be fun to hop on a call about
+19:57:10 <joost> roasbeef: could be the same, but it may play out differently too for routing
+19:57:13 <roasbeef> tons of convos on the ML niftynei, but long threads can be kinda hard to follow
+19:57:43 <roasbeef> joost: mhmm yeh just saying could prob gain some insights from studying a similar-ish problem, ofc the stakes are much higher w.r.t mining revneue vs off-chain fee revenue as well
+19:58:12 <ariard> niftynei: https://github.com/t-bast/lightning-docs/blob/master/spam-prevention.md
+19:58:36 <niftynei> feels like this has a nice tie-in the the velocity metric the pool paper established
+19:59:17 <niftynei> you only really care about jammed channels so long as there's other payments that aren't able to be completed etc
+19:59:42 <niftynei> (don't remember the exact name of the pool velocity thing lol)
+19:59:47 <ariard> jammed channels are also a building block for some probing attacks
+19:59:56 <t-bast> exactly, as niftynei says it's a good problem to have, that means the network is successful
+20:01:15 <t-bast> I think it's important to dedicate some research into it in 2021, but too early to go to spec/implementation
+20:01:19 <roasbeef> routing volume is def rising from a few sample points of mine
+20:01:28 <roasbeef> even my node routes now lol
+20:01:32 <niftynei> lolol
+20:01:36 <niftynei> (same same)
+20:01:44 <t-bast> yes routing volume is rising, but we're far from being overloaded right now
+20:02:08 <t-bast> and it's hard to tell whether the rise in bitcoin price will make people use it more or less for payments
+20:02:52 <t-bast> but I don't want to stir the store of value / digital cash debate, we can have that one (again?) later xD
+20:03:59 <rusty> (FWIW: I tried to pay for my new coffee machine with Bitcoin, dude said "err, no", so I think we're not there yet)
+20:04:11 <niftynei> to go back to the 2021 discussion, is someone avails to give us the electrum list?
+20:04:34 <t-bast> I think ThomasV is online for electrum
+20:04:51 <t-bast> rusty: nice try though :)
+20:04:58 <roasbeef> exchanges are more of a thing now on LN also, so may see a rise in ppl wanting to move stuff around more quickly to avoid on-chain fees
+20:05:21 <t-bast> roasbeef: that's right, exchanges are probably what's going to impact the volume most in 2021
+20:05:31 <joost> In case someone missed it: I've posted a simulator google sheet for bidirectional fees (building on t-basts initial idea) to defend against channel jamming to the ML. If anyone is interested in a solution in the category 'sats punishment', consider taking a look. I'm still looking for reasons why this variation wouldn't work.
+20:06:10 <rusty> joost: oh, nice!  Link?
+20:06:27 <ThomasV> t-bast: hey
+20:06:40 <roasbeef> t-bast: yeh we just need one more exchange for the trifecta
+20:06:43 <niftynei> sweet joost! can you post the link here?
+20:06:45 <joost> rusty: https://docs.google.com/spreadsheets/d/1UX3nMl-L9URO3Vd49DBVaubs6fdi6wxSb-ziSVlF6eo/edit#gid=0
+20:06:48 <t-bast> joost: I think it's an okay proposal, but I'd just like to see more research into alternatives, as it's still pretty invasive and needs to be globally deployed to work
+20:06:50 <niftynei> danke
+20:06:51 <niftynei> !!
+20:06:52 <gribble> Error: "!" is not a valid command.
+20:06:58 <joost> but probably requires reading the thread as well
+20:07:16 <t-bast> ThomasV: we're discussing each implementation's priorities for 2021, could you share what your priorities are for Electrum?
+20:08:13 <joost> the sheet allows trying out various scenarios of nodes acting badly
+20:11:55 <joost> t-bast: yes it is invasive, but also it is something that I think works for all scenarios. As far as I can see, it is always the adversary who pays for the damage. To me it is an interesting question how much time we've got left to wait for alternatives
+20:12:38 <ThomasV> t-bast: trampoline, anchor outputs, taproot. probably also offers
+20:12:48 <roasbeef> joost: ofc how much of a cost is actually substantial? imo hard to gauge what the actual mitigation will be, particularly if an attacker is well funded and the costs are much lower than setting up chans in the first place, seems difficult to paramertize
+20:12:59 <ThomasV> ghost43 may have more to add
+20:13:25 <t-bast> Thanks for sharing ThomasV!
+20:13:49 <joost> roasbeef: parameters are chosen based on time value of bitcoin. each node can set their requirement there, so that even when fully jammed, they'll still see a return
+20:14:14 <joost> roasbeef: channels can be used endlessly for attacks, so that cost can be amortized over a long time
+20:16:05 <ariard> i think this proposal still have the concern about unbalanced hold fees paid between backwanrd and forward channels for routing nodes
+20:16:35 <ariard> especially if settlement don't happen at the same time due to a malicious backward node, though we already discussed this on the ml
+20:17:23 <t-bast> ariard: I think that's addressed by the forward fee being constant and very small, and backward fee bigger and deduced from the signed commitment? But I may be misremembering some details
+20:17:36 <ThomasV> t-bast: also, lloyd fournier made a few interesting proposals last year about boating accidents. rusty proposed to add that to channels v2
+20:17:51 <t-bast> ariard: it would really need a prototype implementation to figure out these details
+20:17:54 <ThomasV> I would love to hear about that
+20:18:08 <ariard> t-bast: have a look on last joost proposal it did account for time delta and thus fees weren't constant
+20:18:13 * rusty still doesn't understand the streaming fee antispam proposal, will have to re-read.
+20:18:31 <ariard> t-bast: yes this was my suggestion too, hard to reason on without code
+20:18:37 <roasbeef> also seems to deolve down to just force closing if the final node doesn't pay
+20:18:42 <joost> ariard: you mean the on-chain settlement case? if you're the attacker's peer it gets more complicated. but I think the main threat of channel jamming is that it can be done remotely
+20:18:42 <t-bast> ThomasV: yes, improving the scripts to get better backup capacilities would be great, but I think we'll likely wait for the Taproot wave of changes to do that - it's great to have ongoing research about it though
+20:18:54 <niftynei> ThomasV, boating accidents?
+20:19:17 <joost> ariard: the google sheet was intended as a first prototype
+20:20:10 <ariard> joost: yes i agree my security concern assume a malicious peer is directly connected to a routing node to exploit the channel jamming mitigation, can't harvest free hold fees if you're not connected to it
+20:20:52 <t-bast> niftynei: it's about the proposed changes to the funding tx script to get better channel backups
+20:20:55 <ariard> joost: thanks for the google sheet, going to think about it with other ldk folks
+20:22:52 <t-bast> niftynei: mostly these threads: https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-December/002907.html and https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-December/002912.html
+20:23:14 <niftynei> danke!
+20:23:38 <t-bast> I'm going to be heading out soon, thank you all for this meeting!
+20:24:11 <t-bast> Hopefully our meatspace meeting in a sunny place will eventually happen ;)
+20:24:12 <rusty> Me too, someone want to close meeting?
+20:24:20 <t-bast> #endmeeting
