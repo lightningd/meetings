@@ -1,0 +1,317 @@
+19:03:27 <ariard> #startmeeting Lightning March
+19:03:27 <lndev-bot> Meeting started Mon Mar 29 19:03:27 2021 UTC and is due to finish in 60 minutes.  The chair is ariard. Information about MeetBot at http://wiki.debian.org/MeetBot.
+19:03:27 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+19:03:27 <lndev-bot> The meeting name has been set to 'lightning_march'
+19:03:39 <t-bast> yep it's the 2021 edition of the bot that requires a meeting name, got me last time as well
+19:03:54 <rusty> Hello everyone!  I am finally enjoying my "bitcoin-hit-50k" espresso machine... I will be awake in a moment.
+19:03:57 <ariard> # topic  #847 closing fee requirement
+19:03:58 <t-bast> hey vincenzopalazzo
+19:04:09 <t-bast> rusty: nice!
+19:04:20 <cdecker> rusty: a coffee machine for a full bitcoin? That must be a steam engine :-)
+19:04:46 <ariard> who has done an implementation of #847, beyond eclair ? any feedback
+19:05:04 <t-bast> re #847, the only thing I changed is adding a TLV to specify the fee range we're ok with paying
+19:05:28 <ariard> with lower-upper bound ?
+19:05:35 <t-bast> yes, it's a min-fee and a max-fee
+19:06:20 <t-bast> it doesn't solve the case where you completely disagree with your peer's fee range though: but in that case negotiation would kind of fail anyway...
+19:06:45 <ariard> would it make sense to express per wu ? in case we reuse this for splicing and closing may be far bigger
+19:06:49 <t-bast> and it seems like the only option is to force-close (but there may be a game of chicken to get the other guy to force-close to avoid csv delays)
+19:07:02 <niftynei> can the feerange change between `closing_signed` messages?
+19:07:25 <niftynei> if not, it might make sense to add it to the `shutdown` request instead? or is that too far from the closing logic
+19:07:37 <t-bast> I chose to stick to fee values instead of feerate to be consistent with the fee in the `closing_signed` message, but I can make that a feerate instead if we feel that's the direction we want to take in the spec
+19:08:22 <t-bast> niftynei: it's a good point, I'm not sure it should change, but `shutdown` may be too early: if it takes a lot of time to settle pending HTLCs, on-chain fees may have changed drastically
+19:09:10 <t-bast> but I don't know if we should require this range to be fixed: if your peer goes offline and comes back online an hour later, you'll want to resume negotiation but fees will have changes
+19:09:12 <niftynei> so on clightning we've been musing about applying the interactive tx protocol to closing; a feerate would be more flexible in that case, as the size of the tx is variable. right now closing tx's are fixed format, no?
+19:09:13 <t-bast> *changed
+19:09:23 <niftynei> ah i see, good point
+19:09:31 <ariard> closing tx are fixed format with either one or two outputs iirc
+19:09:50 <t-bast> yes, that's because the closing tx is fixed that I left it a flat fee since you can instantly convert to feerate, but you're right that feerate may be more flexible long term
+19:10:27 <niftynei> in the ideal case, you only ever exchange three closing_signed messages? the one setting the feerate range, your peer which picks out a feerate in that range and then your matching response?
+19:10:31 <rusty> AFAICT range is just for post-mortem purposes really?  If you don't agree, you can show the ranges...
+19:10:53 <ariard> right, there is no fall-back to get back the negotiation with looser range
+19:11:06 <t-bast> niftynei: yes exactly, but you're also free to continue negotiating inside the fee range to get closer to your "ideal" fee
+19:11:20 <niftynei> why not set the range to exactly the ideal fee then?
+19:11:20 <t-bast> rusty: what do you mean by post-mortem here?
+19:11:54 <t-bast> niftynei: you mean sending a single value? That's already what we do now, isn't it?
+19:12:29 <rusty> t-bast: you could continue using the existing protocol and ignore it, but at least print it out if negotiation fails so user can see what went wrong.  But I guess more optimal to do as niftynei says: pick something in this range immediately.
+19:12:39 <vincenzopalazzo> Sorry for the stupid question, for me, it is the first time for me here. There is some secret door to enter in the meeting to hear only? :-)
+19:13:02 <t-bast> rusty: gotcha, yes with older nodes who ignore this range entirely it would help users understand why things went sour
+19:13:25 <t-bast> vincenzopalazzo: the meeting is IRC only, no voice/video call, you're already in ;)
+19:13:29 <cdecker> vincenzopalazzo: you're already in it, we moved the discussion to IRC to include everyone
+19:13:51 <vincenzopalazzo> ops :-D sorry
+19:14:17 <ariard> vincenzopalazzo: welcome among us :)
+19:14:39 <vincenzopalazzo> Thanks ariard :)
+19:14:59 <t-bast> the ideal behavior (in my opinion) would be: I send you a feerange and my preferred fee, if you completely disagree with the fee-range just force-close or ignore, if you agree with the fee range choose something inside it and we close the negotiation
+19:15:22 <t-bast> the risk is whether implementations/users will be aggressive and chose a narrow fee-range, resulting in a lot of disagreement / force-close
+19:15:22 <rusty> t-bast: OK, this seems perfectly implementable.  For dual-funding we used a "min, preferred, max" and the other side simply chose.  This is pretty close to that.
+19:16:00 <t-bast> rusty: I only added min and max since preferred is already in the closing_signed, but if we move to feerates I'll add preferred inside the TLV to make it more obvious
+19:16:05 <niftynei> well that was in a draft but it's since been removed lol >.<
+19:16:22 <t-bast> #action t-bast to use feerates instead of flat fees and add preferred in the fee_range tlv
+19:16:36 <ariard> okay we're good next topic?
+19:16:40 <rusty> t-bast: you're right, it's exactly analogous.  Leave it as is, I say.  It maps really well.
+19:16:41 <t-bast> ACK
+19:16:52 * rusty acks as is
+19:17:05 <ariard> # topic Funding timeout recovery proposal #854
+19:18:04 <cdecker> Yeah, so the idea is pretty simple, and I think well worth the extra couple of bytes to remember in order to have a gracious close
+19:18:04 <ariard> cdecker: you want to explain for the ones for have not dig into this :) ?
+19:19:12 <cdecker> The idea basically is that since we all derive the per-channel key in a secure way (HKDF) we can freely use it to sign anything that looks like a transaction once we're sure we're not going to make progress with that channel, i.e., we gave up waiting for it to confirm
+19:19:46 <cdecker> One alternative would have been to just share the private key, but that feels wrong, but signing is fine
+19:20:21 <cdecker> We sign a close transaction with a sighash_none so the funder can chose a feerate it feels comfortable with and could RBF bump as well
+19:20:23 <ariard> sharing the private key sounds a restriction on your signer implementation
+19:20:34 <t-bast> but if you're signing blindly, isn't it the same thing as giving away the private key?
+19:20:57 <t-bast> because signing with sighash_none is really equivalent to signing blindly, isn't it?
+19:21:01 <ariard> giving away a private key may reveal information about derivation scheme
+19:21:04 <cdecker> We're not quite signing blindly, we're signing valid transactions spending the channel funding outpoint should it ever be confirmed
+19:21:19 <ariard> after the timeout
+19:21:44 <t-bast> true, it's more restrictive, I guess you've explored potential signature re-use?
+19:22:03 <t-bast> there's probably none since we marked the channel as never being used
+19:22:28 <cdecker> Per spec the bitcoin privkey should be derived in a hardened way from the channel parameters, so we automatically use different keys for different channels
+19:22:49 <cdecker> So any issue is restricted to within that channel
+19:22:55 <t-bast> ariard: how so? if you're using bip32 with non-hardened?
+19:23:07 <cdecker> Inside the channel we already gave up and don't have a stake in anymore
+19:23:24 <t-bast> right, so if the spec mandates using hardened derivation, is there a risk sharing the private key?
+19:23:50 <cdecker> Unless we have a bug and decide to accept a confirmation as an open it can be dangerous, but then the implementation is pretyt broken anyway :-)
+19:23:53 <ariard> t-bast: is the spec making mandatory to use bip32 ? our signer interface in RL doesn't make this assumption
+19:24:01 <t-bast> because that would solve users mistakingly sending *more* money to the 2-of-2 by mistake when trying to CPFP/RBF the funding tx...
+19:24:26 <cdecker> Uh, interesting use-case, thanks t-bast for pointint that out
+19:25:03 <cdecker> As the second part says, we'd also like an automated recovery for the case the funding tx was malleated, which is a special case of what you mention
+19:25:16 <rusty> Yeah, the private key solves all the problems the user can create (so they can create new oens!).
+19:25:17 <t-bast> cdecker: that actually happened to one of our users, so we had to help them sign another tx to get their funds back...t
+19:25:38 <rusty> t-bast: yech... we don't like our users as much as you like yours :)
+19:25:41 <cdecker> Yep, that's how we discovered it as well ;-)
+19:25:58 <t-bast> I'm not finding anywhere in the spec where we mandate or advise using hardened derivation though...
+19:26:07 <t-bast> rusty: a pleasure to serve ;)
+19:26:43 <cdecker> t-bast: I was absolutely convinced it'd be there, and didn't bother to check. Is anyone using non-hardened derivation anyway?
+19:26:50 <rusty> t-bast: yeah, don't implement this if your keys aren't hardened!
+19:27:27 <ariard> cdecker:  we have an abstract interface in RL, outside our scope to mandate hardened or non-hardened
+19:27:41 <niftynei> signing an 'arbitrary' tx with non-hardened keys is fine, no? it'd just be problematic if you exposed the privkey
+19:28:19 <cdecker> Hm, so this complicates things a bit. Do you have signals on whether hardened or non-hardened derivation was used?
+19:29:08 <ariard> cdecker: no though we could tweak our api
+19:29:13 <t-bast> But is there a reason why you'd use non-hardened derivation? I'm not sure it makes sense anywhere to get the benefits of those compared to hardened derivation for channel keys, is there?
+19:29:40 <cdecker> ariard: do the rust thing and add a new type? xD
+19:29:58 * cdecker is learning rust ;-)
+19:30:00 <t-bast> Or is there some clever thing for watchtowers or something where it's helpful to use non-hardened somehow?
+19:30:00 <ariard> cdecker: but do we really want to share private key ?
+19:30:22 <ariard> t-bast: well that's the thing, try to be flexible for things we're not smart enough to guess
+19:30:24 <cdecker> Ah no, that'd be the alternative, in this draft we just sign with sighash_none
+19:30:50 <ariard> i would need to ask devrandom opinion he has a sample signer
+19:30:54 <t-bast> it feels to me that this is an area where we'd lock things down by default because it critical though
+19:31:06 <cdecker> Not a cryptographer, but if someone convinces me that non-hardened + signing only valid txs is ok, then I'll happily accept that :-)
+19:31:11 <ariard> what supplemental advantage do we get from using private key compare to sighash none?
+19:31:20 <rusty> ariard: it's a better solution.  It lets them do whatever they want, has no onchain privacy issues....
+19:31:24 <t-bast> but I can understand the reasoning to let users find use-cases, in that case we should forget about the option to dump the private key
+19:31:35 <ariard> rusty: onchain privacy issue is a good point
+19:32:08 <cdecker> Yep, wasn't it ariard that pointed out that sighash_none is a tracing capability?
+19:32:17 <ariard> though the 2048 delay is a good enough fingerprint
+19:32:25 <ariard> like utxo age
+19:33:01 <rusty> ariard: but this solution works when we head to taproot, too, which is a minor consideration but kinda nice.
+19:33:02 <cdecker> I mean we could counteract that and have the funder propose a close and the fundee signs it (without sighash_none), that could be iterated
+19:33:23 <ariard> i would consider this like an edge case, like unilateral closing we also loose privacy
+19:33:26 <cdecker> But the sighash_none sig has the nice advantage of not requiring interaction if things don't work out (RBF bump, ...)
+19:33:32 <BlueMatt> rusty: right, if we cant make it work with the private key, its not gonna work on taproot, so we should find a way to make it work, no?
+19:33:43 <BlueMatt> ie, we're gonna wanna use the private key come taproot, anyway
+19:33:54 * BlueMatt will figure his calendar out and show up on time one day...just not today
+19:34:29 <ariard> sighash_none is great to avoid the non-interactivity agree
+19:34:29 <cdecker> Interesting, I don't quite get the connection with taproot yet, BlueMatt can you help me?
+19:35:01 <cdecker> Oh, I see, must've missed the msg you were referring to, sorry
+19:35:02 <BlueMatt> cdecker: as in, once we have taproot funding outputs, we can't do sighash-none if you want to allow spends to be key-based and not reveal-script-based
+19:35:03 <rusty> cdecker: if you have to use musig2 to co-create a signature, that would be a different post-close signing flow I think.
+19:35:05 <t-bast> we could use that sighash_none on chain to detect people who have a buggy CPFP engine xD
+19:35:07 <ariard> cdecker: because aggregated pubkey requiring signing interactivity
+19:35:24 <roasbeef> t-bast: re #847, havne't done it yet inlnd but I plan to get a PR up on the lnd side this week
+19:35:31 <BlueMatt> in the non-taproot world I dont think its worth worrying too much about the privacy, but in taproot probably does
+19:35:44 * cdecker ducks from all the explanations xD
+19:36:22 <t-bast> roasbeef: nice, don't hesitate to ping me when you have a branch available, I can run some interop tests then
+19:38:06 <niftynei> so it sounds like "requesting sig from peer" rather than "requesting privkey from peer" is going to forward compatible... and/or that we'll need to update/change the interaction once taproot is standard?
+19:38:22 <niftynei> *is going to be forward compatible
+19:38:54 <rusty> niftynei: no, getting privkey is ultimately fwd compatible.  IMHO it'd be the clear winner but for our instinct to NEVER EVER DO THAT.
+19:38:57 <t-bast> IIUC we're saying that sighash_none will not work with taproot, isn't it?
+19:39:07 <niftynei> ack, thanks!
+19:39:21 <BlueMatt> t-bast: it would, it would just create a larger transaction and reveal the spending condition, which we'd ideally not do
+19:39:29 <cdecker> Yeah, that's too bad
+19:39:33 <t-bast> at least that sighash_none will not give us the non-interactivity if we want to use the keypath
+19:39:39 <ariard> though you're back loosing privacy
+19:39:49 <t-bast> BlueMatt: right, exactly
+19:40:30 <cdecker> How about the iterated "ask peer for sig" approach, and we tell the fundee what sighash we'd like?
+19:40:32 <BlueMatt> ariard: wrt rust-lightning's key interface, we'll probably have to, eg, take the private key the user gives us and hash it to create a new one or something trivial.
+19:40:36 <rusty> I say let's leak the private key YOLO!
+19:40:54 <ariard> BlueMatt: right hashing should break any information leak
+19:41:03 <cdecker> If the node is responsive they can do without sighash_none, while if we don't think our peer will be around we can use sh_none
+19:41:20 <niftynei> the problem with leaking the private key iiuc was that RL doesn't guarantee their keys are per-channel hardened, right?
+19:41:39 <cdecker> KEYOLO: a key that only lives once xD
+19:41:54 <BlueMatt> niftynei: we do, but hardened specifically is up to users how they want to derive keys. we can, however, force users to give us a hash preimage of the key instead, allowing us to "force" them to be "hardeneed" by hashing them
+19:42:27 <t-bast> cdecker: love it, I want you on the marketing team for feature names xD
+19:42:28 <BlueMatt> niftynei: oh, I misread your text, but, no, yea, we do *not* require them to be hardened per-channel (though obviously default implementations do)
+19:42:43 <niftynei> ack
+19:42:58 <ariard> BlueMatt: not hardened but unique per-channel
+19:43:10 <BlueMatt> right, we (obviously) require unique-per-channel, but not hardneded
+19:43:13 <BlueMatt> anyway, next topic?
+19:43:18 <BlueMatt> sounds like everyone's in agreement?
+19:43:33 <ariard> # Long Term Updates
+19:43:39 <t-bast> in agreement with dumping the priv key?
+19:43:42 <roasbeef> ah interesting, this would also be a way to just get rid of the half baked "fee neogitation" in the spec rn re rusty's comment on the spec
+19:43:42 <niftynei> sounds like there might be a TODO here to add a "must be hardened" note to the channel keys in the spec?
+19:44:16 <cdecker> So my conclusions from #854 are: a) general agreement that this is a useful feature, b) we need to discuss whether to leak key or serve sigs, is this about correct?
+19:44:23 <rusty> niftynei: yeah, don't support this option unless key is hardened.
+19:44:29 <rusty> roasbeef: yeah, it seems to devolve down to it?
+19:44:37 <BlueMatt> niftynei: no, no need, just a note that the keys should not reveal information about other keys - that can be accomplished in many ways with or without bip 32
+19:44:52 <ariard> cdecker: i was dubious about the funding transaction alias
+19:44:53 <BlueMatt> cdecker: oh, sorry, i thought we were largely all in agreement to reveal the secret key
+19:45:07 <niftynei> i had reached the same conclusion as BlueMatt fwiw
+19:45:24 <cdecker> Ok, sounds good to me, I can draft up the changes accordingly 👍
+19:45:38 <ariard> cdecker: but not a concern anymore if you're giving the key away ahah
+19:45:58 <cdecker> ariard: the funding tx alias is there for funding tx malleation, which happened to perfectly fit in this proposal
+19:46:09 <niftynei> option SIGHASH_SEND_KEY
+19:46:09 <rusty> - MUST print out "KEYOLO" in the logs when revealing the private key.
+19:46:12 <cdecker> Right, that'd be the sledgehammer approach
+19:46:30 <t-bast> YAY dump all the private keys!
+19:46:32 <ariard> ultimate malleability delegation xD
+19:46:50 <cdecker> See, no need for segwit if we can fix malleability this way xD
+19:46:57 <cdecker> Anyway
+19:46:59 <ariard> do you want to talk about a long-term updates ?
+19:47:07 <niftynei> yes!
+19:47:09 <ariard> which one ?
+19:47:10 <cdecker> #action cdecker to draft up the proposal with KEYOLO
+19:47:23 <niftynei> dual funding! #851
+19:47:29 <roasbeef> +1 for sighash_none vs sending keys over
+19:47:31 <ariard> let's go for dual-funding :)
+19:48:06 <ariard> roasbeef: hmmm are you for sighash_none or sending keys over?
+19:48:18 <cdecker> #topic Long Term Update: Dual Funding
+19:48:27 <cdecker> #link https://github.com/lightningnetwork/lightning-rfc/pull/851
+19:48:46 <t-bast> how do you recommend we read the PR niftynei: is there a simple path for reviewers before diving into concrete requirements?
+19:48:59 <niftynei> ok just a quick update! we've got an implementation i'm fairly happy with in c-lightning and are planning to ship it (flagged behind a runtime experimental flag) in our next release (coming.. this week?)
+19:49:42 <niftynei> the PR for the spec change is listed (minus the feerate ranges that rusty mentioned, they were taken out later lol)
+19:50:08 <niftynei> t-bast: do you mean like the "one sheet summary"?
+19:50:39 <niftynei> i did a short infomercial on the spec changes late last thursday, i'll post it here as soon as it's up on youtube. that might be useful for approaching the spec
+19:50:45 <t-bast> niftynei: like the more digestable higher-level format (ideally with diagrams and flows) :)
+19:51:06 <niftynei> there are diagrams and flows in the spec itself
+19:51:22 <t-bast> right, I just reached them!
+19:51:24 <rusty> (Side note: Damn, second espresso is really good...)
+19:51:39 <ariard> the fee bumping model is single-party rbf ?
+19:51:41 <niftynei> rusty you're bringing that coffee machine to the next in-person yeah??
+19:51:50 <niftynei> ariard, what's a single-party rbf?
+19:51:51 <roasbeef> ariard: sighash_none, re the taproot thing we'd need a different co-op closing scheme all together in either case right?
+19:52:05 <roasbeef> as that's more interactive
+19:52:16 <lnd-bot> [13lightning-rfc] 15btcontract closed pull request #857: Add keysend invoice (06master...06master) 02https://github.com/lightningnetwork/lightning-rfc/pull/857
+19:52:29 <BlueMatt> niftynei: if we can fit/convince/swing the chaincode office there's already a quite nice machine there :)
+19:52:42 <rusty> niftynei: it's 30kg (40kg boxed), so might be cheaper to buy a second one and ship it from Italy...
+19:52:45 <niftynei> the rbf is initiated by the opener, same as the open_channel2 is; it's basically a request to re-do the opening but with a higher feerate
+19:52:48 <ariard> roasbeef: but we all conclude that private key was far more flexible and taproot-proof ? we might have closing scheme for taproot for sure
+19:53:16 <ariard> niftynei: that's what i meant rbf is initiated on the burden of one-party
+19:53:42 <niftynei> both parties pay fees on the funding tx, so re-doing the tx is kind of a must (or the other party can refuse to contribute funds on the RBF if they don't like the feerate)
+19:53:54 <cdecker> Not exactly, we restart from the beginning and the feerate is shared by both parties
+19:54:09 <ariard> we had this interesting discussion with dlc, which is dual-funded from beginning, if the fundee should compensate funder with a premium fee for mempool congestion aleas
+19:54:42 <ariard> i don't propose to introduce such thing rn we might think about it in the future
+19:54:59 <roasbeef> so with funding rbf, impl wise both sides need to be ready to ensure they can act if any of the prior versions confirms right?
+19:55:09 <BlueMatt> side-note- what time{,zone} is this meeting, anwyway? my calendar entry *was* off...
+19:55:19 <roasbeef> BlueMatt: I think it's adelaide time
+19:55:21 <rusty> ariard: we have extra flexibility, since there's always the option of withdrawing your funds from channel....
+19:55:25 <niftynei> roasbeef, yes that's correct. it's a lot like splicing in that way
+19:55:37 <rusty> Indeed, which means NEXT MEETING will be 1 hour different in UTC BTW.
+19:55:39 <BlueMatt> roasbeef: huh. what time adelaide? google and local cilents disagree :/
+19:55:58 <ariard> rusty: right you might be more interested to keep going the confirmation attempt as you're economically interested by this channel attempt
+19:56:13 <roasbeef> gotcha cool, we we're looking to impl something similar on the context of pool to be able to implement batch cut-through (so compressing N unconfirmed batches into a single transaction)
+19:56:13 <rusty> BlueMatt: 5:30am Adelaide.
+19:56:37 <ariard> though fee bumping doesn't have to as aggresive that for justice transaction
+19:57:06 <t-bast> niftynei: zooming out a bit and going through the PR quickly, did you solve how that could be used as an oracle to discover someone's utxos?
+19:57:15 <rusty> roasbeef: yeah, because it's (bascially) a complete renegotiation (with req that fees increase by at least 25%) you can mix and match existing ones.
+19:57:53 <niftynei> no i punted based on the email discussion from lloyd fournier/rusty wrt to PoDLEs versus signed 'bond' txs
+19:58:47 <rusty> t-bast: yes, Lloyd convinced me that it wasn't worth the trouble for the short term, given the number of other ways to identify channel UTXOs.  Mainly because it's easy to add later...
+19:58:47 <niftynei> the general take away was that your onchain privacy isnt' very good anyway; we can implement PoDLEs later to mitigate
+19:59:14 <niftynei> it's very straightforward to add later on
+19:59:19 <t-bast> ok, thanks, good to know
+20:00:51 <cdecker> Sounds like we got some homework to go through the DF spec :-)
+20:01:01 <niftynei> https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-January/002938.html
+20:01:20 <niftynei> lloyd's email ftr
+20:01:23 <niftynei> #link https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-January/002938.html
+20:01:39 <ariard> yeah i'll try to finish my review soon, some small recommendations around standardness in mind
+20:01:50 <t-bast> thanks for the link
+20:01:57 <niftynei> np! it's a great thread
+20:02:59 <niftynei> if there's nothing else, happy to cede the floor to the next topic :)
+20:03:14 <roasbeef> niftynei: so conclusion is that leaking balances or w/e via failed funding init attempts isn't that big of a deal in practice so no mitigations in current version?
+20:03:26 <cdecker> One thing we should point out is that the funding tx malleation can no longer happen with the dual-funding proposal 👍
+20:03:33 <ariard> rusty: wanna talk about offers :) ?
+20:03:41 <rusty> ariard: always!
+20:03:51 <cdecker> #topic Long Term Updates: Offers
+20:03:54 <ariard> you have the mic!
+20:03:57 <roasbeef> cdecker: isn't that the case rn? since we require segwit inputs, err well it's in the best interest of the funder to do that
+20:04:25 <ariard> we might need to require disclosure of witnessScript to avoid standardness malleability
+20:04:30 <cdecker> well in theory, but both eclair and c-lightning had users malleate their funding txs through RBF
+20:04:48 <roasbeef> ahhh yeh you can't rbf it, gotta cpfp it
+20:05:01 <roasbeef> we had ppl do that via electrum as well unfortunately when using psbt for funding
+20:05:38 <t-bast> that's exactly what happened to some of our users as well...that "bump fee" button in electrum was too tempting for them and we had no way of preventing them from doing it
+20:05:47 <roasbeef> ariard: if it confirms, it confirms tho right? assuming you're not doing zero conf
+20:05:57 <roasbeef> yeh we helped manually rescue a few instances of that in the past
+20:06:04 <niftynei> roasbeef, the conclusion is that you're already leaking your balances so having one other vector for it is something we can mitigate later
+20:06:28 <ariard> roasbeef: yeah it's more someone not liking your big routing node and preventing transactions propagation for a while
+20:06:34 <ariard> until you double-spend your own utxos
+20:06:51 <rusty> So there are three parts to offers: 1. onion messages, which are pretty simple to implement, 2. parsing and converting offers to invoices, and 3. actually implementing creation of offers and producing invoices.
+20:06:59 <ariard> that kind of risk should be considered if your dual-funded inputs aren't of equal value
+20:07:44 <rusty> Turns out, if you just want to pay an offer you can pretty much do on top of any existing implementation: you just need to connect directly to the offering node and ask for the invoice.  That's pretty dumb (from a privacy POV unless Tor), but it "works".
+20:08:03 <rusty> Ideally we get onion messages rolled out so this isn't required, but it'll be a fallback for a while.
+20:08:05 <roasbeef> so ln-url style basically?
+20:08:25 <rusty> roasbeef: yeah, except a lightning connection instead of https.
+20:09:01 <roasbeef> I guess that could be rendezvoused in theory lol
+20:09:08 <roasbeef> also called a "proxy" :p
+20:09:11 <rusty> roasbeef: yeah....
+20:09:23 <niftynei> ariard: more than one open in the same tx would mitigate it also
+20:09:45 <rusty> There are two spec changes I'm considering though.  1. remove the reply from the onion message format.  At the moment you can put a reply path in there, but you can also just put it in the actual message payload.  THis would simplify the spec even further, but means if they can't parse the message your SOL.
+20:09:59 <ariard> niftynei: can't parse ? can you explain further :)
+20:10:38 <rusty> ariard: you can't get a reply for a malformed/unsupported onion_message payload.
+20:10:39 <ariard> niftynei: let's talk about it on the pr
+20:11:17 <BlueMatt> rusty: how did replies work before if you can't parse the message? presumably only if you can partially-parse it? or failed back via intermediate state?
+20:11:27 <ariard> rusty: sorry we're blurring subjects was a reply to niftynei
+20:11:50 <rusty> BlueMatt: layering.  The onion message itself has a TLV, one of which is the reply path.
+20:12:19 <rusty> BlueMatt: but turns out many payloads want to include a reply path themselves for other reasons.
+20:12:25 <BlueMatt> right, ok, so you'd have to have parsed the message message, just the message itself is bunk.
+20:12:33 <rusty> BlueMatt: yeah,or unsupported.
+20:13:17 <BlueMatt> right, ok. NAKs generally ~whatever for me, but, continue.
+20:13:53 <rusty> The other change is that I use the (merkle) hash of the invoice as the payment_secret.  This is dumb: we are falling back on the idea that the invoice is kept secret, which is a hack.
+20:14:47 <rusty> For offers, we *have* a payer_key: ideally we'd have a new field in the onion which was the signature using that key of the onion's mu-key (or something else which is tied to this specific HTLC onion).
+20:15:55 <t-bast> that's an interesting idea
+20:16:22 <rusty> The final thing is bolt12-bolt11 invoice compat to convert (at least the simple cases!) between the two.  THis means defining a mapping and including the sigs for the other style (bolt11 sigs are v. v. tied to the format, bolt12 are much saner).
+20:16:58 <BlueMatt> do we have to support mapping?
+20:17:10 <BlueMatt> is that just to provide wrappers for old nodes to send to new ones?
+20:17:14 <rusty> BlueMatt: no, it's just a bridge.
+20:17:27 <rusty> BlueMatt: yeah, it would let you gateway for simple offers.
+20:18:00 <BlueMatt> sounds like a lot of complexity we'd eventually remove, but, sure, making it optional, up to you
+20:18:03 <rusty> Any questions?  Especially of the stlye "um, what are you talking about?"
+20:18:23 <roasbeef> what's the payer key thing exactly? and what's it achieve?
+20:18:57 <roasbeef> i also don't get why a new invoice format is needed if the existing on can be extended, tho I'm all for getting rid of the weird 5 word byte stuff and uncessary usage of bech32 in the existing one
+20:19:30 <rusty> roasbeef: it's a transient key given by the payer as part of the req for the actual invoice.  Allows recurrence privacy, refunds, proof-of-payer....
+20:19:49 <roasbeef> which is then *included* in the final invoice?
+20:19:53 <rusty> roasbeef: yeah, I originally started extending bolt11 but hit those same....
+20:20:21 <rusty> roasbeef: yeah: by design, everything you need is in the final invoice so you don't actually need to keep the offer if you didn't want to.
+20:20:54 <roasbeef> is a bridge in the other direction possible? so just giving them a bolt 11 invoice yet still being able to complete the from the pov of the "offer", thinking about wallet that have slow uptake of new features here
+20:21:12 <roasbeef> guessing yeh if there're no new tlv records added in the onion payload?
+20:22:11 <rusty> roasbeef: yeah, but it's so much easier for them to parse bolt12 than bolt11.  Could do it though.
+20:23:19 <t-bast> how much work do you estimate it takes to get a prototype running from scratch, if an implementation wanted to start from nothing and prototype it by going through the spec PR?
+20:23:50 <rusty> (Heh, I guess he didn't want to hear the answer!)
+20:24:15 <rusty> t-bast: ... and that's how simple it is!  Any questions?
+20:24:20 <roasbeef> lol
+20:24:24 <roasbeef> yeh seems feasible
+20:24:26 <t-bast> sorry I got dc-ed and missed that!
+20:24:26 <ariard> Or maybe he just get started
+20:24:33 <roasbeef> actually I just finsihed it
+20:24:40 <t-bast> looks like even my IRC client doesn't want us to work on offers xD
+20:24:58 <rusty> t-bast: was joking.  Parsing offers is trivial, it's a de-bech32 then it's lightning wire format.
+20:25:49 <rusty> t-bast: handling bolt11 vs bolt12 invoices was simple too, they're very distinct.  The actual onion and HTLC is the same.
+20:25:58 <t-bast> LOL just saw the logs from http://gnusha.org/lightning-dev/
+20:27:33 <t-bast> I'm mostly thinking that understanding and implementation the tree construction may be the part where you scratch your head a bit, right?
+20:27:57 <roasbeef> what's the purpose of the tree thing? basically picking off where we left off re the "description hash" in bolt 11?
+20:28:25 <rusty> t-bast: actually issuing offers is a command to do so; that's a pretty big API.  The code to receive the onion message requesting an offer, and generating the invoice associated is straightforward, but there are also "send0me-money" offers, which have atomicity requirements: you only want to send them the payment once.
+20:29:32 <rusty> roasbeef: it's mainly for signing (though we use it as an "id" as well); it's a bit more complex than a linear hash, but it allows much more neatly for omitting signature field(s).
+20:29:45 <rusty> (i.e. merkle calc omits any TLVs 250-1000 incl).
+20:30:18 <rusty> Has nice side effect that you can (handwave, future) provide proofs without revealing entire thing.
+20:32:45 <rusty> TBH, most of the work was not implementing, but exploring the space and adding requirements.  Things like recurrence and offer -> invoice malleability (i.e. offer has a description, invoice returned had a different description, but also amounts, etc)
+20:32:51 <rusty> Any other questions?
+20:33:27 <ariard> *tagging this as a "good first issue" in RL
+20:33:28 <t-bast> Nope, looks interesting, I'm hoping we'll get time to work on this soon :)
+20:34:15 <rusty> Yeah, I'm excited to get other implementer feedback.  Both on text of spec, and all the random details where I just flipped a coin....
+20:34:31 <rusty> ariard: you have the chair again :)
+20:34:51 <ariard> rusty: thanks for the presentation :)
+20:35:20 <ariard> folks wants to keep the meeting with another topic?
+20:35:44 <cdecker> I think I'll have to drop off pretty soon
+20:35:45 <roasbeef> g2g on my end
+20:35:53 <ariard> okay let's end there
+20:35:58 <t-bast> I'll drop off as well
+20:36:01 <ariard> #endmeeting
