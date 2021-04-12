@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:05:03</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">April 12th lightning-dev meeting</span>
+<a name="l-2"></a><span class="tm">20:05:03</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Apr 12 20:05:03 2021 UTC and is due to finish in 60 minutes.  The chair is niftynei. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:05:03</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:05:03</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'april_12th_lightning_dev_meeting'
+<a name="l-5"></a><span class="tm">20:05:14</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> yep, I saw it. I whipped up a quick benchmark showing we were doing great on the fsync-count, but doing a comparable actual wall clock comparison requires more than quick hacked-up benchmarker
+<a name="l-6"></a><span class="tm">20:05:43</span><span class="nk"> &lt;niftynei&gt;</span> let's start with this benchmarking topic, and then move into pull requests?
+<a name="l-7"></a><span class="tm">20:05:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> we're at a solid 10 fsync/send/two nodes, which is almost the lowest we can be, theoretically I think you could shave two off, but its probably not worth it
+<a name="l-8"></a><span class="tm">20:05:50</span><span class="nk"> &lt;t-bast&gt;</span> sgtm
+<a name="l-9"></a><span class="tm">20:06:01</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">benchmarking study by joostjgr</span>
+<a name="l-10"></a><span class="tm">20:06:09</span><span class="nk"> &lt;cdecker&gt;</span> My first question is: do we care about individual node performance?
+<a name="l-11"></a><span class="tm">20:06:13</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://twitter.com/joostjgr/status/1376925022292443141?s=20</span>
+<a name="l-12"></a><span class="tm">20:06:14</span><span class="nk"> &lt;t-bast&gt;</span> Yep, what was interesting/surprising in this benchmark is some surprises when you really go E2E
+<a name="l-13"></a><span class="tm">20:06:28</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> tested from val sample? deeging into the article
+<a name="l-14"></a><span class="tm">20:06:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> it depends, we still need reasonably good node perf in all cases
+<a name="l-15"></a><span class="tm">20:06:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> no, I was just trying to calculate the fsync count, given that seems to be ~everyone's bottleneck, and we're doing great. I didnt try to do a comparable throughput test which would include batching.
+<a name="l-16"></a><span class="tm">20:07:01</span><span class="nk"> &lt;cdecker&gt;</span> I mean it's a nice metric to have, but we scale by increasing channels, and having pressure to avoid overloaded (central) is somewhat nice if you ask me
+<a name="l-17"></a><span class="tm">20:07:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> from what I understood, the main reason for this benchmark was to evaluate whereas big wallet "hubs" could offer streaming services to many clients
+<a name="l-18"></a><span class="tm">20:07:54</span><span class="nk"> &lt;t-bast&gt;</span> that's why the tests contained the invoice generation and recipient receive parts (and not simply routing)
+<a name="l-19"></a><span class="tm">20:07:56</span><span class="nk"> &lt;cdecker&gt;</span> If we care, I think we can do quite some tweaks to optimize performance from the benchmark
+<a name="l-20"></a><span class="tm">20:08:17</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> honestly, the numbers were pretty low, fsyncs matter, but he was testing throughput with batching, which means you *should* get pretty close to just crypto as the bottleneck, which my benchmark clocks in at around 2-3ms per payment
+<a name="l-21"></a><span class="tm">20:08:39</span><span class="nk"> &lt;t-bast&gt;</span> Definitely, for example we noticed that our main bottleneck was invoice generation because we were very inefficiently doing pubkey recovery
+<a name="l-22"></a><span class="tm">20:08:40</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> it may be that the bottleneck for most nodes is on the sending/receiving end, which, whatever, but if its also similar when routing, that should probably be improved
+<a name="l-23"></a><span class="tm">20:08:43</span><span class="nk"> &lt;niftynei&gt;</span> that context around the idealized usecase of fast payments is good to know (streaming payments)
+<a name="l-24"></a><span class="tm">20:09:09</span><span class="nk"> &lt;cdecker&gt;</span> One thing that I was looking into with my own (local) benchmarks was the pipeline depth when adding HTLCs (i.e., number of ops before committing)
+<a name="l-25"></a><span class="tm">20:09:45</span><span class="nk"> &lt;cdecker&gt;</span> Then we could do things like defer storing HTLCs until the commit, and work around higher latency
+<a name="l-26"></a><span class="tm">20:09:47</span><span class="nk"> &lt;niftynei&gt;</span> (from a use-case perspective, streaming every single payment and not having a localized 'balance' seems like the naive way to do it, but ultimately pricier than doing "1 minute/5minute" credit style txs)
+<a name="l-27"></a><span class="tm">20:10:12</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> IIUC c-lightning by default sends commit_sig only in batches? Do you have a regular ticker for that? How is it configured? Eclair simply schedules a `sign` after each HTLC operation
+<a name="l-28"></a><span class="tm">20:10:28</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> it should basically never be more than one full commitment-signed dance, no? irrespective of how many HTLCs are in the outbound buffer
+<a name="l-29"></a><span class="tm">20:10:46</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> does that mean eclair does not batching at all?
+<a name="l-30"></a><span class="tm">20:10:49</span><span class="nk"> &lt;cdecker&gt;</span> We start a timer of 10msec after performing the first op, and then trigger a sign once the timer expires
+<a name="l-31"></a><span class="tm">20:11:08</span><span class="nk"> &lt;ariard&gt;</span> where those micro-payments dust one ? you might not have to generat sigs for them
+<a name="l-32"></a><span class="tm">20:11:09</span><span class="nk"> &lt;cdecker&gt;</span> 10ms is way too short really, but testing locally (no latency) it was ok
+<a name="l-33"></a><span class="tm">20:11:28</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> we do "pessimistic" batching: whenever a commit_sig could make sense, we queue it up - if other HTLCs concurrently were added, we end up signing once for many htlcs, but if none were added, we sign instantly
+<a name="l-34"></a><span class="tm">20:11:29</span><span class="nk"> &lt;devrandom&gt;</span> BTW hubs that connect to a lot of leaf nodes (e.g. consumers), batching across channels would be needed (i.e. fsync multiple commits at once), which could get interesting
+<a name="l-35"></a><span class="tm">20:11:33</span><span class="nk"> &lt;ariard&gt;</span> bump your dust_limit_satoshi to decrease latency?
+<a name="l-36"></a><span class="tm">20:11:38</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> hmm, ok
+<a name="l-37"></a><span class="tm">20:12:12</span><span class="nk"> &lt;t-bast&gt;</span> But we've long thought that we needed to experiment with forced batching at regular intervals
+<a name="l-38"></a><span class="tm">20:12:15</span><span class="nk"> &lt;roasbeef&gt;</span> also important to remember that the current protoocl hamstrings x-put in many cases
+<a name="l-39"></a><span class="tm">20:12:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">devrandom:</span> right, IIRC the benchmarks joost ran were like 10 channels, so that should have been possible, though it may not be turned on in some cases cause its 10 channels between the same nodes, not across different nodes
+<a name="l-40"></a><span class="tm">20:12:27</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">devrandom:</span> if big hubs rely on replicated channel monitors/watchtowers they might have severe latency hits
+<a name="l-41"></a><span class="tm">20:12:28</span><span class="nk"> &lt;t-bast&gt;</span> It's worth having some kind of realistic benchmark to test whether it's useful in practice or not
+<a name="l-42"></a><span class="tm">20:12:32</span><span class="nk"> &lt;roasbeef&gt;</span> since there's a static amt that any sig can cover re new additions, and you always need to wait for the full dance before proposing new updates
+<a name="l-43"></a><span class="tm">20:12:57</span><span class="nk"> &lt;roasbeef&gt;</span> his benchamrk was just direct nodes, but that shines a lot more when you go the multi-hop high latency link setting, as you can't really pipeline properly
+<a name="l-44"></a><span class="tm">20:13:00</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, but with batching *throughput* should be realllyyy high
+<a name="l-45"></a><span class="tm">20:13:16</span><span class="nk"> &lt;roasbeef&gt;</span> it depends really, also i'm pretty sure basically none of us have tried concentrated optimization
+<a name="l-46"></a><span class="tm">20:13:18</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, more work is definitely needed to do benchmarks that focus on routing nodes
+<a name="l-47"></a><span class="tm">20:13:23</span><span class="nk"> &lt;BlueMatt&gt;</span> not just sending/receiving
+<a name="l-48"></a><span class="tm">20:13:27</span><span class="nk"> &lt;roasbeef&gt;</span> as there're other things to work on in teh critical path
+<a name="l-49"></a><span class="tm">20:13:46</span><span class="nk"> &lt;BlueMatt&gt;</span> since I'm not sure how much its a critical feature to do X000 sends/sec to the same next-hop node.
+<a name="l-50"></a><span class="tm">20:13:51 </span><span class="nka">* cdecker</span> <span class="ac">would like to point out that eltoo allows not storing updates that only subtract, so if multiple HTLCs go in the same direction (streaming, ...) only one side needs to persist an update</span>
+<a name="l-51"></a><span class="tm">20:13:54</span><span class="nk"> &lt;BlueMatt&gt;</span> rougint X000 sends/sec should be doable
+<a name="l-52"></a><span class="tm">20:14:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> Thanks Eltoo-Man!
+<a name="l-53"></a><span class="tm">20:14:08</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> yeh even aside from that, there's a lot of other book keeping a node needs to do like payment, invoice, circuit info, etc
+<a name="l-54"></a><span class="tm">20:14:20</span><span class="nk"> &lt;roasbeef&gt;</span> and there're a lot of questions there re what the actual medium access protocol would be
+<a name="l-55"></a><span class="tm">20:14:21</span><span class="nk"> &lt;cdecker&gt;</span> Yeah, sorry, had to bring it up :-p
+<a name="l-56"></a><span class="tm">20:14:41</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> I fully agree, I had a hard time understanding why the benchmark wasn't focusing on relaying only
+<a name="l-57"></a><span class="tm">20:14:48</span><span class="nk"> &lt;roasbeef&gt;</span> going back to my other point, rn you always need to wait after sending a single sig, we can go back to how it was before where when you start you send N commitment points
+<a name="l-58"></a><span class="tm">20:15:13</span><span class="nk"> &lt;roasbeef&gt;</span> then that lets you send N new states before needing to wait, since things are asymmetric it's fully de-sync'd so you never really need to wait for the other side, basically moving to a TCP sliding window type thing
+<a name="l-59"></a><span class="tm">20:15:21</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, but thats just latency, not throughput. and the latency is actually nice from a privacy perspective
+<a name="l-60"></a><span class="tm">20:15:28</span><span class="nk"> &lt;cdecker&gt;</span> Uff, that'd mean we need to disambiguate and discard many commitments, doesn't it roasbeef?
+<a name="l-61"></a><span class="tm">20:15:31</span><span class="nk"> &lt;BlueMatt&gt;</span> its *good* that we have to wait some time and batch, from a privacy perspective
+<a name="l-62"></a><span class="tm">20:15:46</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> right, well version 1, hopefully more work done there.
+<a name="l-63"></a><span class="tm">20:15:53</span><span class="nk"> &lt;roasbeef&gt;</span> no that helps w/ x-put as well, if you look at the nodes most of the time, theyr'e waiting for the revocation so they can continue to commit more, and batching won't be 100% so there's a lot of underutilized time
+<a name="l-64"></a><span class="tm">20:16:16</span><span class="nk"> &lt;cdecker&gt;</span> I think the simplicity that one-commit-in-fligh afords us is very nice, we already have a very complex protocol
+<a name="l-65"></a><span class="tm">20:16:23</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, but that sounds like something that can be solved with software
+<a name="l-66"></a><span class="tm">20:16:29</span><span class="nk"> &lt;BlueMatt&gt;</span> not just changing the protocol to add more complexity
+<a name="l-67"></a><span class="tm">20:16:33</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> the gap wasn't too large, lnd did that before we switched over
+<a name="l-68"></a><span class="tm">20:16:48</span><span class="nk"> &lt;cdecker&gt;</span> <span class="hi">roasbeef:</span> that can be solved by queuing new HTLCs and committing them in the next commit
+<a name="l-69"></a><span class="tm">20:16:51</span><span class="nk"> &lt;roasbeef&gt;</span> you just have a comitment point queue basically and things are mostly the same
+<a name="l-70"></a><span class="tm">20:17:04</span><span class="nk"> &lt;roasbeef&gt;</span> that's not the same really tho, since you can't start the forwarding process yet
+<a name="l-71"></a><span class="tm">20:17:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> I....assume everyone does that?
+<a name="l-72"></a><span class="tm">20:17:28</span><span class="nk"> &lt;roasbeef&gt;</span> it was pretty night and day when we switched over fwiw, and I did tests w/ actual  mult-hop nodes then as well
+<a name="l-73"></a><span class="tm">20:17:31</span><span class="nk"> &lt;BlueMatt&gt;</span> I mean ultimately you're limited in practice by the max htlc count anyway
+<a name="l-74"></a><span class="tm">20:17:34</span><span class="nk"> &lt;roasbeef&gt;</span> in terms of the xput reduction
+<a name="l-75"></a><span class="tm">20:17:52</span><span class="nk"> &lt;roasbeef&gt;</span> yeh taht's the other thing I mentioned, it's a value that is pretty arbitrary, and you can make it nearly unbounded as long as you mind chain costs in the worst case
+<a name="l-76"></a><span class="tm">20:18:14</span><span class="nk"> &lt;t-bast&gt;</span> In practice you're mostly limited by the volume of payment on mainnet xD, there isn't enough demand to make it really worth it to aggressively batch
+<a name="l-77"></a><span class="tm">20:18:16</span><span class="nk"> &lt;cdecker&gt;</span> <span class="hi">BlueMatt:</span> yes, but the important thing is to then have the window to add them all before committing again
+<a name="l-78"></a><span class="tm">20:18:16</span><span class="nk"> &lt;roasbeef&gt;</span> but idk, this isn't something that really worries me, since none of us have really tried to focus on impl level optimizations
+<a name="l-79"></a><span class="tm">20:18:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> right, at the end of the day, though, we *should* be waiting 10 or 100ms before forwarding anyway, so I really dont get this discussion
+<a name="l-80"></a><span class="tm">20:18:52</span><span class="nk"> &lt;cdecker&gt;</span> Yes, we probably have quite some slack to optimize before requiring proto level changes
+<a name="l-81"></a><span class="tm">20:18:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh that's the other thing, we're likely focused on issues re UX and reliability, if nodes start falling over as they can't keep up w/ demand, that's a great problem lol
+<a name="l-82"></a><span class="tm">20:18:56</span><span class="nk"> &lt;BlueMatt&gt;</span> its pretty important for privacy that batching happens there
+<a name="l-83"></a><span class="tm">20:19:14</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> totally agree, it's interesting to have these benchmarks early, but they show mostly that nobody really worked on perf yet because it's simply not needed - early optimization bla bla
+<a name="l-84"></a><span class="tm">20:19:19</span><span class="nk"> &lt;BlueMatt&gt;</span> so we should focus on improving throughput given batching and latency, not try to rip it out
+<a name="l-85"></a><span class="tm">20:19:22</span><span class="nk"> &lt;roasbeef&gt;</span> in the multi-hop setting, likely the case that just the jitter due to node processing gives you that de-synced batching over time
+<a name="l-86"></a><span class="tm">20:19:27</span><span class="nk"> &lt;cdecker&gt;</span> <span class="hi">BlueMatt:</span> just pointing out that having to wait for a commit is unlikely to reduce throughput in the end
+<a name="l-87"></a><span class="tm">20:19:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> right, thats my point...
+<a name="l-88"></a><span class="tm">20:19:47</span><span class="nk"> &lt;cdecker&gt;</span> Ok ^^
+<a name="l-89"></a><span class="tm">20:19:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh no one really worked on pref, and it wasn't too bad imo, as it's just a starting point, and as I showed on twitter it really depends on what you're running the becnhmark on
+<a name="l-90"></a><span class="tm">20:20:09</span><span class="nk"> &lt;roasbeef&gt;</span> like my m1 laptop got like 3x what was posted on the blog post
+<a name="l-91"></a><span class="tm">20:20:34</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> not to mention, if anyone actually got an indistrial m.2 instead of shit consumer ones, fsync would be 10x faster, and thats, like, *all* the time....
+<a name="l-92"></a><span class="tm">20:20:47</span><span class="nk"> &lt;BlueMatt&gt;</span> maybe 50x
+<a name="l-93"></a><span class="tm">20:20:48</span><span class="nk"> &lt;t-bast&gt;</span> it's impressive that the M1 chip gets such good results compared to joost's
+<a name="l-94"></a><span class="tm">20:20:54</span><span class="nk"> &lt;roasbeef&gt;</span> yeh def, the latest SSD stuff is like basically memory at this point
+<a name="l-95"></a><span class="tm">20:20:56</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> its all the ssd, not the chip
+<a name="l-96"></a><span class="tm">20:21:10</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> joost was on google cloud, which is probably ssd-over-san
+<a name="l-97"></a><span class="tm">20:21:15</span><span class="nk"> &lt;BlueMatt&gt;</span> so latency is gonna be a chunk higher
+<a name="l-98"></a><span class="tm">20:21:24</span><span class="nk"> &lt;t-bast&gt;</span> right, it's mostly fsync that's limiting us right now
+<a name="l-99"></a><span class="tm">20:21:38</span><span class="nk"> &lt;cdecker&gt;</span> We have some benchmarks (with no latency) that show 400-500 tx / second so 10x Joost's numbers
+<a name="l-100"></a><span class="tm">20:22:06</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> right, my naive benchmarks showed 400/sec with zero batching, so could even push it higher.
+<a name="l-101"></a><span class="tm">20:22:15</span><span class="nk"> &lt;BlueMatt&gt;</span> (if you cut the I/O to zero)
+<a name="l-102"></a><span class="tm">20:22:18</span><span class="nk"> &lt;cdecker&gt;</span> Locally we should feel the impact of fsyncs the most, with remote endpoints we'll probably feel latency the most
+<a name="l-103"></a><span class="tm">20:22:19</span><span class="nk"> &lt;roasbeef&gt;</span> but yeh idk, cool that there's an easy to run benchmark, but I wouldn't say optimizing like mad is in the top 5 list of prios re the network/impl in my mind
+<a name="l-104"></a><span class="tm">20:22:57</span><span class="nk"> &lt;cdecker&gt;</span> I mean my node routes 50 tx /     ...     week, so that's not the bottleneck xD
+<a name="l-105"></a><span class="tm">20:23:05</span><span class="nk"> &lt;BlueMatt&gt;</span> lol, right
+<a name="l-106"></a><span class="tm">20:23:15</span><span class="nk"> &lt;niftynei&gt;</span> it sounds like hardware is the easiest win at this point for a speed up
+<a name="l-107"></a><span class="tm">20:23:28</span><span class="nk"> &lt;BlueMatt&gt;</span> anyway, yea, good to have benchmarks, people can figure out what they want to do with it on their own, doesnt imply protocol changes, probably
+<a name="l-108"></a><span class="tm">20:23:32</span><span class="nk"> &lt;niftynei&gt;</span> should we move on to PRs?
+<a name="l-109"></a><span class="tm">20:23:34</span><span class="nk"> &lt;t-bast&gt;</span> we're starting to experiment more thoroughly with remote postgres, to see how much latency it's adding
+<a name="l-110"></a><span class="tm">20:23:40</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> yea, industrial ssds are just dram with a battery and backing ssd, so they're ~instant
+<a name="l-111"></a><span class="tm">20:23:51</span><span class="nk"> &lt;roasbeef&gt;</span> I do around 500 a week ;)
+<a name="l-112"></a><span class="tm">20:23:53</span><span class="nk"> &lt;cdecker&gt;</span> I think we have more impactful things to look into first, then optimize params for latency and only then we can look into protocol changes
+<a name="l-113"></a><span class="tm">20:24:32</span><span class="nk"> &lt;BlueMatt&gt;</span> right, we'll also be limited by 400 max htlcs plus per-hop delays of 50 or 100ms just to batch enough htlcs to have non-zero privacy, at least for larger routing nodes in the future
+<a name="l-114"></a><span class="tm">20:24:34</span><span class="nk"> &lt;BlueMatt&gt;</span> sooooo
+<a name="l-115"></a><span class="tm">20:25:25</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">per_commitment_secret must be a valid secret key</span>
+<a name="l-116"></a><span class="tm">20:25:30</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/859</span>
+<a name="l-117"></a><span class="tm">20:25:53</span><span class="nk"> &lt;BlueMatt&gt;</span> looks like it has acks
+<a name="l-118"></a><span class="tm">20:25:55</span><span class="nk"> &lt;BlueMatt&gt;</span> can we just merge?
+<a name="l-119"></a><span class="tm">20:26:00</span><span class="nk"> &lt;cdecker&gt;</span> ack
+<a name="l-120"></a><span class="tm">20:26:09</span><span class="nk"> &lt;bitconner&gt;</span> ack
+<a name="l-121"></a><span class="tm">20:26:14</span><span class="nk"> &lt;t-bast&gt;</span> ack
+<a name="l-122"></a><span class="tm">20:26:15</span><span class="nk"> &lt;BlueMatt&gt;</span> merged
+<a name="l-123"></a><span class="tm">20:26:19</span><span class="nk"> &lt;niftynei&gt;</span> ok great, that's resolved.
+<a name="l-124"></a><span class="tm">20:26:27</span><span class="nk"> &lt;vincenzopalazzo&gt;</span> ack :)
+<a name="l-125"></a><span class="tm">20:26:33</span><span class="nk"> &lt;t-bast&gt;</span> the PR part of this meeting was very fast xD
+<a name="l-126"></a><span class="tm">20:26:59</span><span class="nk"> &lt;niftynei&gt;</span> yes, that does conclude the PR portion of this meeting
+<a name="l-127"></a><span class="tm">20:27:07</span><span class="nk"> &lt;niftynei&gt;</span> next up is issues
+<a name="l-128"></a><span class="tm">20:27:12</span><span class="nk"> &lt;t-bast&gt;</span> unless someone has a PR they want to be looked at?
+<a name="l-129"></a><span class="tm">20:28:17</span><span class="nk"> &lt;niftynei&gt;</span> ok if someone thinks of something post it and we'll come back
+<a name="l-130"></a><span class="tm">20:28:27</span><span class="nk"> &lt;cdecker&gt;</span> I'll prep the keyolo PR for next time, so we can continue discussion
+<a name="l-131"></a><span class="tm">20:28:36</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">Discuss lightning network architecture diagram</span>
+<a name="l-132"></a><span class="tm">20:28:59</span><span class="nk"> &lt;niftynei&gt;</span> there's no link for this, other than the ML post
+<a name="l-133"></a><span class="tm">20:29:03</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-April/002990.html</span>
+<a name="l-134"></a><span class="tm">20:29:09</span><span class="nk"> &lt;cdecker&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://upload.wikimedia.org/wikipedia/commons/f/f9/Lightning_Network_Protocol_Suite.png</span>
+<a name="l-135"></a><span class="tm">20:29:22</span><span class="nk"> &lt;niftynei&gt;</span> i'm not sure what the issue is with this, does anyone have some insight?
+<a name="l-136"></a><span class="tm">20:29:39</span><span class="nk"> &lt;roasbeef&gt;</span> hmm, I realize we lost that IRC bot in here as well
+<a name="l-137"></a><span class="tm">20:29:42</span><span class="nk"> &lt;t-bast&gt;</span> Rene was asking for some feedback on this diagram
+<a name="l-138"></a><span class="tm">20:29:47</span><span class="nk"> &lt;cdecker&gt;</span> I think mostly collect feedback for the diagram
+<a name="l-139"></a><span class="tm">20:29:50</span><span class="nk"> &lt;ariard&gt;</span> i think it's more call for reviewers
+<a name="l-140"></a><span class="tm">20:30:09</span><span class="nk"> &lt;niftynei&gt;</span> ah i see. thanks ya'll
+<a name="l-141"></a><span class="tm">20:30:44</span><span class="nk"> &lt;t-bast&gt;</span> I find the "Unreliable routing layer" confusing, not sure why it's named "unreliable"
+<a name="l-142"></a><span class="tm">20:30:53</span><span class="nk"> &lt;ariard&gt;</span> hmmm not sure about the reliable payment layer, your payment attempt might not succeed before expiration of the invoices
+<a name="l-143"></a><span class="tm">20:31:02</span><span class="nk"> &lt;t-bast&gt;</span> Not sure either why the top one is "reliable" payment layer
+<a name="l-144"></a><span class="tm">20:31:04</span><span class="nk"> &lt;cdecker&gt;</span> A bit shouty with SPHINX which is a name, not an acronym iirc
+<a name="l-145"></a><span class="tm">20:31:49</span><span class="nk"> &lt;cdecker&gt;</span> I think his intention was to separate the layers similar to IP (unreliable, packet based) vs TCP (reliable datatransfer, stream)
+<a name="l-146"></a><span class="tm">20:31:50</span><span class="nk"> &lt;lnd-bot&gt;</span> [13lightning-rfc] 15TheBlueMatt pushed 2 commits to 06master: 02https://github.com/lightningnetwork/lightning-rfc/compare/83980de78600...a9db80e49d17
+<a name="l-147"></a><span class="tm">20:31:50</span><span class="nk"> &lt;lnd-bot&gt;</span> 13lightning-rfc/06master 1455ee3f4 15Lloyd Fournier: per_commitment_secret must be a valid secret key
+<a name="l-148"></a><span class="tm">20:31:50</span><span class="nk"> &lt;lnd-bot&gt;</span> 13lightning-rfc/06master 14a9db80e 15Matt Corallo: Merge pull request #859 from LLFourn/patch-1
+<a name="l-149"></a><span class="tm">20:32:05</span><span class="nk"> &lt;cdecker&gt;</span> Thanks lnd-bot xD
+<a name="l-150"></a><span class="tm">20:32:07</span><span class="nk"> &lt;ariard&gt;</span> doesn't mention bolt 5 the non-interactive part of the protocol only played against the chain
+<a name="l-151"></a><span class="tm">20:32:15</span><span class="nk"> &lt;roasbeef&gt;</span> the main idea was that one has retries, while the other is set and forget essentially
+<a name="l-152"></a><span class="tm">20:32:30</span><span class="nk"> &lt;t-bast&gt;</span> but that doesn't make it more "reliable", does it?
+<a name="l-153"></a><span class="tm">20:32:33</span><span class="nk"> &lt;roasbeef&gt;</span> the on chain stuff is prob meant to be in that layer below, since it's more of a hop by hop thing from the PoV of the nodes
+<a name="l-154"></a><span class="tm">20:32:43</span><span class="nk"> &lt;t-bast&gt;</span> I think that naming is confusing, because the distinction here isn't the same as IP vs TCP
+<a name="l-155"></a><span class="tm">20:32:48</span><span class="nk"> &lt;roasbeef&gt;</span> yeh wording can prob be imrpvoed, bu I look it as forwarding vs routing layer
+<a name="l-156"></a><span class="tm">20:32:48</span><span class="nk"> &lt;ariard&gt;</span> but you learn from your failures or in theory you could reuse already-computed paths
+<a name="l-157"></a><span class="tm">20:33:09</span><span class="nk"> &lt;roasbeef&gt;</span> yeh the idea is you add a payment loop to the normal SendHTLC API to actually complete a payment
+<a name="l-158"></a><span class="tm">20:33:22</span><span class="nk"> &lt;cdecker&gt;</span> roasbeef, so more end-to-end vs. routing nodes
+<a name="l-159"></a><span class="tm">20:33:29</span><span class="nk"> &lt;roasbeef&gt;</span> yeh
+<a name="l-160"></a><span class="tm">20:33:32</span><span class="nk"> &lt;ariard&gt;</span> yeah onchain is more peer 2 peer layer
+<a name="l-161"></a><span class="tm">20:33:34</span><span class="nk"> &lt;cdecker&gt;</span> gotcha
+<a name="l-162"></a><span class="tm">20:33:36</span><span class="nk"> &lt;t-bast&gt;</span> sounds like "unreliable routing layer" is just "payment routing layer"
+<a name="l-163"></a><span class="tm">20:33:51</span><span class="nk"> &lt;t-bast&gt;</span> and "reliable payment layer" is more an "application layer" of sorts
+<a name="l-164"></a><span class="tm">20:33:58</span><span class="nk"> &lt;cdecker&gt;</span> I wonder if on-chain shouldn't be a column on its own, given it's cross-cutting nature
+<a name="l-165"></a><span class="tm">20:34:10</span><span class="nk"> &lt;roasbeef&gt;</span> hmm i'd say there's one more above, then the application layer is there, so stuff like using TLV's etc for new use cases
+<a name="l-166"></a><span class="tm">20:34:59</span><span class="nk"> &lt;t-bast&gt;</span> true, application layer could be even above, but the top layer is something where implementation may diverge a lot, most of it isn't protocol-defined (path-finding, choice of error handling, etc)
+<a name="l-167"></a><span class="tm">20:35:20</span><span class="nk"> &lt;cdecker&gt;</span> Yeah, it's unlikely there's a perfect (planar) representation, but the surrounding text in the lnbook can certainly provide a perspective that makes sense
+<a name="l-168"></a><span class="tm">20:35:47</span><span class="nk"> &lt;roasbeef&gt;</span> yeh I had another one that was a lot uglier: https://user-images.githubusercontent.com/998190/112879240-bfe99480-907d-11eb-96f3-0dfad1fe8a3d.png
+<a name="l-169"></a><span class="tm">20:36:05</span><span class="nk"> &lt;cdecker&gt;</span> There are a couple of things we could add facets (see TLV) where they end up in different parts, so we should likely concentrate on the core things to make ln work in this
+<a name="l-170"></a><span class="tm">20:36:07</span><span class="nk"> &lt;t-bast&gt;</span> I would drop the "reliable" / "unreliable" part though, even with surrounding text to explain it's a bad parallel to standard layer stacks that doesn't translate very well IMHO
+<a name="l-171"></a><span class="tm">20:36:54</span><span class="nk"> &lt;cdecker&gt;</span> Right, "Payment layer" and "routing layer" seem pretty apropriate imho
+<a name="l-172"></a><span class="tm">20:37:50</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> even more confusing a ln node might emit ln messages or base layer messages both of them on top of tcp
+<a name="l-173"></a><span class="tm">20:38:02</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> see my ugly version re TLV
+<a name="l-174"></a><span class="tm">20:38:09</span><span class="nk"> &lt;t-bast&gt;</span> Layering this kind of thing is really hard...makes me think again and again about the fact that OSI is criticized a lot because while it's a great way to explain networking in a classroom to make it look like it makes a lot of sense, in practice it just doesn't work that way
+<a name="l-175"></a><span class="tm">20:38:14</span><span class="nk"> &lt;roasbeef&gt;</span> but you're right in that it's hard to like express all the dependancies/links w/ it all
+<a name="l-176"></a><span class="tm">20:38:27</span><span class="nk"> &lt;roasbeef&gt;</span> we tried to show the relations w/ the boxes that span multiple rows/layers
+<a name="l-177"></a><span class="tm">20:38:39</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> shouldn't wallet layer be near to link layer or rename as "node-control/peer selection/management"
+<a name="l-178"></a><span class="tm">20:38:59</span><span class="nk"> &lt;roasbeef&gt;</span> in my other version, I just duplicated stuff where it overlapped
+<a name="l-179"></a><span class="tm">20:39:19</span><span class="nk"> &lt;t-bast&gt;</span> Why do you even try to have a completely layered diagram? It feels like some of the bottom parts make sense to be layered, but most of the rest is better explained as separate "components" that use the core components for various things
+<a name="l-180"></a><span class="tm">20:39:51</span><span class="nk"> &lt;t-bast&gt;</span> I'm not sure layers really make sense all the way
+<a name="l-181"></a><span class="tm">20:40:08</span><span class="nk"> &lt;roasbeef&gt;</span> yeh it's hard to communicate the deps n stuff, nothing is perfect
+<a name="l-182"></a><span class="tm">20:40:13</span><span class="nk"> &lt;cdecker&gt;</span> I like it, to be sort of an index where things fit into the protocol
+<a name="l-183"></a><span class="tm">20:40:16</span><span class="nk"> &lt;roasbeef&gt;</span> but the idea is that this is meant to be like a "mind map" or sorts
+<a name="l-184"></a><span class="tm">20:40:29</span><span class="nk"> &lt;roasbeef&gt;</span> then over time the reader starts to udnerstand how things are linked, they zoom out to it, etc, etc
+<a name="l-185"></a><span class="tm">20:40:46</span><span class="nk"> &lt;niftynei&gt;</span> heh. my feedback would be something along the lines of "i dont find osi diagrams very helpful at all" but that's not a very productive contribution. the "map of the territory" idea is pretty good though
+<a name="l-186"></a><span class="tm">20:41:05</span><span class="nk"> &lt;niftynei&gt;</span> i used to make prezzis about the android architecture to help orient myself -- you can zoom in and out on them
+<a name="l-187"></a><span class="tm">20:41:05</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> an OG critic of the osi model : https://www.rfc-editor.org/rfc/rfc874.html
+<a name="l-188"></a><span class="tm">20:41:11</span><span class="nk"> &lt;roasbeef&gt;</span> yeh we're going for more of a map of the territory, since things are non linear anyway
+<a name="l-189"></a><span class="tm">20:41:23</span><span class="nk"> &lt;roasbeef&gt;</span> I wouldn't say this tries to "copy" the OSI diagram as well, in sofar as it's just a stack diagram lol
+<a name="l-190"></a><span class="tm">20:41:32</span><span class="nk"> &lt;roasbeef&gt;</span> like the one I posted has 10 layers or something
+<a name="l-191"></a><span class="tm">20:41:37</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> :+1:
+<a name="l-192"></a><span class="tm">20:41:49</span><span class="nk"> &lt;roasbeef&gt;</span> (the black and white crude one)
+<a name="l-193"></a><span class="tm">20:41:50</span><span class="nk"> &lt;ariard&gt;</span> imo best is draw of your mind map if you want to learn seriously :)
+<a name="l-194"></a><span class="tm">20:41:53</span><span class="nk"> &lt;ariard&gt;</span> *own
+<a name="l-195"></a><span class="tm">20:42:00</span><span class="nk"> &lt;t-bast&gt;</span> I think the mind map would make a lot of sense, just drop the layers from it :)
+<a name="l-196"></a><span class="tm">20:42:13</span><span class="nk"> &lt;cdecker&gt;</span> Well, we do have some layers: transport, update, multi-hop. I think that distinction makes sense
+<a name="l-197"></a><span class="tm">20:42:41</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> I had to scroll too much to see that whole diagram so I gave up xD
+<a name="l-198"></a><span class="tm">20:42:46</span><span class="nk"> &lt;niftynei&gt;</span> a lot of the protocol is "phased" oriented rather than stack oriented, imo
+<a name="l-199"></a><span class="tm">20:43:10</span><span class="nk"> &lt;cdecker&gt;</span> We can swap transport without affecting the layers above it. We can swap update with minimal impact to multi-hop. And we will change multi-hop with PTLCs without impacting the update layer
+<a name="l-200"></a><span class="tm">20:43:14</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> there are no layers... *waves hands*
+<a name="l-201"></a><span class="tm">20:43:30</span><span class="nk"> &lt;niftynei&gt;</span> "L2, the layerless layer"
+<a name="l-202"></a><span class="tm">20:43:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> +1
+<a name="l-203"></a><span class="tm">20:44:04</span><span class="nk"> &lt;t-bast&gt;</span> yes, some parts make sense to be layered, but the rest would probably work better as a scattered mind map (but I agree it's hard to draw the line and come up with something that looks good and makes sense)
+<a name="l-204"></a><span class="tm">20:44:06</span><span class="nk"> &lt;cdecker&gt;</span> Yeah, that moniker was a mistake (been calling it off-chain for exactly that reason)
+<a name="l-205"></a><span class="tm">20:44:07</span><span class="nk"> &lt;roasbeef&gt;</span> liek path finding just cares it gets back an error, we don't *have* to use the current onion encrypted thing to send it back
+<a name="l-206"></a><span class="tm">20:44:17</span><span class="nk"> &lt;roasbeef&gt;</span> also remember this is for total noobs, and y'all are the experts lol
+<a name="l-207"></a><span class="tm">20:44:26</span><span class="nk"> &lt;niftynei&gt;</span> prezzi, prezzi, prezzi
+<a name="l-208"></a><span class="tm">20:44:32</span><span class="nk"> &lt;niftynei&gt;</span> (you cant print a prezzi tho)
+<a name="l-209"></a><span class="tm">20:44:33 </span><span class="nka">* roasbeef</span> <span class="ac">feels motion sick</span>
+<a name="l-210"></a><span class="tm">20:44:49</span><span class="nk"> &lt;cdecker&gt;</span> What's this about italian prices?
+<a name="l-211"></a><span class="tm">20:44:52</span><span class="nk"> &lt;niftynei&gt;</span> oh it's prezi
+<a name="l-212"></a><span class="tm">20:44:53</span><span class="nk"> &lt;niftynei&gt;</span> https://prezi.com/
+<a name="l-213"></a><span class="tm">20:44:53</span><span class="nk"> &lt;niftynei&gt;</span> lol
+<a name="l-214"></a><span class="tm">20:44:58</span><span class="nk"> &lt;t-bast&gt;</span> It has to fit on a t-shirt
+<a name="l-215"></a><span class="tm">20:45:06</span><span class="nk"> &lt;t-bast&gt;</span> That's the number 1 requirement
+<a name="l-216"></a><span class="tm">20:45:32</span><span class="nk"> &lt;niftynei&gt;</span> tough crowd
+<a name="l-217"></a><span class="tm">20:45:39</span><span class="nk"> &lt;niftynei&gt;</span> lol
+<a name="l-218"></a><span class="tm">20:45:46</span><span class="nk"> &lt;t-bast&gt;</span> heh
+<a name="l-219"></a><span class="tm">20:45:50</span><span class="nk"> &lt;cdecker&gt;</span> Ok, so we have our first schism in LN, the layerists vs the non-layerists
+<a name="l-220"></a><span class="tm">20:46:31</span><span class="nk"> &lt;niftynei&gt;</span> we've got 14 minutes left. let's move on to a long term update
+<a name="l-221"></a><span class="tm">20:46:34</span><span class="nk"> &lt;roasbeef&gt;</span> but i'll copy/pate some of the feedback here to andreas+rene as well, just the first draft of it, leaning to more ofa mind map type thing, thx
+<a name="l-222"></a><span class="tm">20:46:59</span><span class="nk"> &lt;niftynei&gt;</span> i'm gonna pick a fun one, upfront payments / DoS protection
+<a name="l-223"></a><span class="tm">20:47:09</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">upfront payments / DoS protection</span>
+<a name="l-224"></a><span class="tm">20:47:20</span><span class="nk"> &lt;niftynei&gt;</span> though this is risky as there's no obvious person to put on the podium
+<a name="l-225"></a><span class="tm">20:47:29</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/843</span>
+<a name="l-226"></a><span class="tm">20:47:46</span><span class="nk"> &lt;niftynei&gt;</span> joostjgr isn't in the chat
+<a name="l-227"></a><span class="tm">20:47:55</span><span class="nk"> &lt;niftynei&gt;</span> does anyone else want to fill in on this one?
+<a name="l-228"></a><span class="tm">20:48:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#prposed </span><span class="cmdline">topic: show of hands on the earliest people would feel personally comfortable travelling to the us (or similar country) for a lightning spec meeting (assuming restrictions are relaxed by then). feel free to dm me responses.</span>
+<a name="l-229"></a><span class="tm">20:48:41</span><span class="nk"> &lt;cdecker&gt;</span> Hm, too bad rusty isn't here, he was working on something re upfront fees / anti-grieving
+<a name="l-230"></a><span class="tm">20:48:48</span><span class="nk"> &lt;ariard&gt;</span> fyi, sergei and gleb have published this paper on how channel jamming might be used for probing : https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-March/002988.html
+<a name="l-231"></a><span class="tm">20:49:10</span><span class="nk"> &lt;roasbeef&gt;</span> I have this pet idea i need to flesh out a bit more, goes in a diff direction moreso of ensuring if stuff happens you can degrade and keep forwarding normal traffic
+<a name="l-232"></a><span class="tm">20:49:12</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> I would be down in September of afterwards
+<a name="l-233"></a><span class="tm">20:49:21</span><span class="nk"> &lt;t-bast&gt;</span> *or afterwards
+<a name="l-234"></a><span class="tm">20:49:35</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> i'd be down, the shot is pretty easy to come by in SF
+<a name="l-235"></a><span class="tm">20:49:50</span><span class="nk"> &lt;cdecker&gt;</span> <span class="hi">BlueMatt:</span> if the Swiss let me leave (and return), why not?
+<a name="l-236"></a><span class="tm">20:50:22</span><span class="nk"> &lt;cdecker&gt;</span> Thanks ariard, need to catch up on papers I haven't read yet :-)
+<a name="l-237"></a><span class="tm">20:50:33</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">cdecker:</span> you can travel through eu for "professional reasons"
+<a name="l-238"></a><span class="tm">20:50:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> I just want to be respsectful of anyone who may have trouble getting a vax or doesnt want one and wants to wait until case load is down more.
+<a name="l-239"></a><span class="tm">20:51:29</span><span class="nk"> &lt;niftynei&gt;</span> rusty might be a complicating factor here, given the current two week quarantine mandate in austrailia
+<a name="l-240"></a><span class="tm">20:51:40</span><span class="nk"> &lt;ariard&gt;</span> yeah we can be patient, some folks might be around for miami?
+<a name="l-241"></a><span class="tm">20:51:52</span><span class="nk"> &lt;t-bast&gt;</span> unless we all go to Australia and plan a month there to work through the quarantine?
+<a name="l-242"></a><span class="tm">20:51:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> we have one vote for sept, hopefully by then things will have relaxed some, but thats why I specified "assuming its relaxed by then"
+<a name="l-243"></a><span class="tm">20:52:17</span><span class="nk"> &lt;cdecker&gt;</span> Doesn't matter to me in which airport I quarantine xD
+<a name="l-244"></a><span class="tm">20:52:22</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> we can just put rusty in a bubble ball and have him roll around while the rest of us spread our foreign germs
+<a name="l-245"></a><span class="tm">20:52:41</span><span class="nk"> &lt;ariard&gt;</span> sept sgtm as a rough timeline
+<a name="l-246"></a><span class="tm">20:52:49</span><span class="nk"> &lt;niftynei&gt;</span> sept sgtm!
+<a name="l-247"></a><span class="tm">20:52:50</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> I don't think I'll ever be able to get rid of this image in my mind xD
+<a name="l-248"></a><span class="tm">20:53:17</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> we might do it in paris :) ?
+<a name="l-249"></a><span class="tm">20:53:38</span><span class="nk"> &lt;cdecker&gt;</span> Anyhow, I think we should defer on upfront fees until Joost and Rusty are back, wdyt niftynei?
+<a name="l-250"></a><span class="tm">20:53:44</span><span class="nk"> &lt;niftynei&gt;</span> sgmt
+<a name="l-251"></a><span class="tm">20:53:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> would love to, let's see what's easiest for most people ;)
+<a name="l-252"></a><span class="tm">20:54:14</span><span class="nk"> &lt;t-bast&gt;</span> ACK on deferring upfront fees
+<a name="l-253"></a><span class="tm">20:54:35</span><span class="nk"> &lt;niftynei&gt;</span> BlueMatt, did you get enough responses to your question?
+<a name="l-254"></a><span class="tm">20:54:55</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> yep! unless someone else speaks up (or pms me) with a date post-sept, I'll look at sept!
+<a name="l-255"></a><span class="tm">20:55:07</span><span class="nk"> &lt;BlueMatt&gt;</span> though actually my schedule for sept may already be booked lol
+<a name="l-256"></a><span class="tm">20:55:24</span><span class="nk"> &lt;cdecker&gt;</span> Hehe, was just about to say, don't make it the first week
+<a name="l-257"></a><span class="tm">20:55:35</span><span class="nk"> &lt;niftynei&gt;</span> sweet. ok so the other things on the Long Term Updates are dual-funding, offers, blinded paths, and trampoline routing
+<a name="l-258"></a><span class="tm">20:55:43</span><span class="nk"> &lt;cdecker&gt;</span> We can set up a doodle for the dates I think?
+<a name="l-259"></a><span class="tm">20:55:52</span><span class="nk"> &lt;niftynei&gt;</span> i gave a dual-funding update two weeks ago, there's nothing to update/report as far as that's concerned
+<a name="l-260"></a><span class="tm">20:56:01</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> yea, can do. will do later today or soon.
+<a name="l-261"></a><span class="tm">20:56:17</span><span class="nk"> &lt;niftynei&gt;</span> does anyone else have business they want to discuss in the last 4 minutes?
+<a name="l-262"></a><span class="tm">20:56:34</span><span class="nk"> &lt;cdecker&gt;</span> Well except that your code is now published as part of the latest release and being used niftynei ;-)
+<a name="l-263"></a><span class="tm">20:56:48</span><span class="nk"> &lt;t-bast&gt;</span> congrats niftynei!
+<a name="l-264"></a><span class="tm">20:56:50</span><span class="nk"> &lt;niftynei&gt;</span> right. nothing notable ;)
+<a name="l-265"></a><span class="tm">20:57:11</span><span class="nk"> &lt;niftynei&gt;</span> well, it'll get a lot more use once i get the accepter side plugin shipped xD
+<a name="l-266"></a><span class="tm">20:57:42</span><span class="nk"> &lt;t-bast&gt;</span> If someone wants to implement https://github.com/lightningnetwork/lightning-rfc/pull/847 I should have something in eclair soon
+<a name="l-267"></a><span class="tm">20:58:00</span><span class="nk"> &lt;niftynei&gt;</span> speaking of notable things, c-lightning added the lnprototests to our CI last week
+<a name="l-268"></a><span class="tm">20:58:48</span><span class="nk"> &lt;ariard&gt;</span> gg :)
+<a name="l-269"></a><span class="tm">20:59:28</span><span class="nk"> &lt;t-bast&gt;</span> that's nice! Are there tutorials on how to implement a driver for lnprototest or not yet? It would be really useful to have that to get us to write a driver for eclair
+<a name="l-270"></a><span class="tm">20:59:31</span><span class="nk"> &lt;niftynei&gt;</span> t-bast, ah this is good! i will take a look at adding it to c-lightning this week
+<a name="l-271"></a><span class="tm">21:00:18</span><span class="nk"> &lt;niftynei&gt;</span> i dont think there are tutorials, and i'm fairly certain that a lot of tests will need tweaking to be more generically applicable (a few things are hard coded to c-lightning defaults)
+<a name="l-272"></a><span class="tm">21:00:42</span><span class="nk"> &lt;niftynei&gt;</span> i could throw together a how-to for the runner implementation pretty easily though, i'll put it on my todo list
+<a name="l-273"></a><span class="tm">21:00:53</span><span class="nk"> &lt;t-bast&gt;</span> yeah https://github.com/rustyrussell/lnprototest/blob/master/HACKING.md is a bit lacking, it would be great to have documentation to explain what hooks an implementation needs to provide to plug into lnprototest
+<a name="l-274"></a><span class="tm">21:01:31</span><span class="nk"> &lt;niftynei&gt;</span> ok cool, i'll see about adding some good docs for it
+<a name="l-275"></a><span class="tm">21:01:50</span><span class="nk"> &lt;t-bast&gt;</span> thanks
+<a name="l-276"></a><span class="tm">21:02:00</span><span class="nk"> &lt;roasbeef&gt;</span> oh re AMP stuff, we have things working pretty well end-to-end, realiezd we can use some new stuff to improve MPP and just sending payments in general, and now mainly need to catch up the draft spec and finish up the examples there
+<a name="l-277"></a><span class="tm">21:03:19</span><span class="nk"> &lt;t-bast&gt;</span> cool stuff! that will be something interesting to look at soon as well
+<a name="l-278"></a><span class="tm">21:03:41</span><span class="nk"> &lt;cdecker&gt;</span> Looking forward to it ^^
+<a name="l-279"></a><span class="tm">21:03:57</span><span class="nk"> &lt;roasbeef&gt;</span> and I should have some more concrete stuff to share re dynamic commitments by the next meeting
+<a name="l-280"></a><span class="tm">21:05:04</span><span class="nk"> &lt;niftynei&gt;</span> dope! looking forward to it
+<a name="l-281"></a><span class="tm">21:05:53</span><span class="nk"> &lt;ariard&gt;</span> sounds exciting! see you next time :)
+<a name="l-282"></a><span class="tm">21:05:58</span><span class="nk"> &lt;cdecker&gt;</span> I'll drop off soon btw, but really enjoyed todays meeting ^^
+<a name="l-283"></a><span class="tm">21:06:18</span><span class="nk"> &lt;niftynei&gt;</span> i'm also dropping off. see you all next time!
+<a name="l-284"></a><span class="tm">21:06:29</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>

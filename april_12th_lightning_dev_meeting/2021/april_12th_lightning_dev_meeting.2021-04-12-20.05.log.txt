@@ -1,0 +1,284 @@
+20:05:03 <niftynei> #startmeeting April 12th lightning-dev meeting
+20:05:03 <lndev-bot> Meeting started Mon Apr 12 20:05:03 2021 UTC and is due to finish in 60 minutes.  The chair is niftynei. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:05:03 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:05:03 <lndev-bot> The meeting name has been set to 'april_12th_lightning_dev_meeting'
+20:05:14 <BlueMatt> ariard: yep, I saw it. I whipped up a quick benchmark showing we were doing great on the fsync-count, but doing a comparable actual wall clock comparison requires more than quick hacked-up benchmarker
+20:05:43 <niftynei> let's start with this benchmarking topic, and then move into pull requests?
+20:05:48 <BlueMatt> ariard: we're at a solid 10 fsync/send/two nodes, which is almost the lowest we can be, theoretically I think you could shave two off, but its probably not worth it
+20:05:50 <t-bast> sgtm
+20:06:01 <niftynei> #topic benchmarking study by joostjgr
+20:06:09 <cdecker> My first question is: do we care about individual node performance?
+20:06:13 <niftynei> #link https://twitter.com/joostjgr/status/1376925022292443141?s=20
+20:06:14 <t-bast> Yep, what was interesting/surprising in this benchmark is some surprises when you really go E2E
+20:06:28 <ariard> BlueMatt: tested from val sample? deeging into the article
+20:06:56 <t-bast> cdecker: it depends, we still need reasonably good node perf in all cases
+20:06:57 <BlueMatt> ariard: no, I was just trying to calculate the fsync count, given that seems to be ~everyone's bottleneck, and we're doing great. I didnt try to do a comparable throughput test which would include batching.
+20:07:01 <cdecker> I mean it's a nice metric to have, but we scale by increasing channels, and having pressure to avoid overloaded (central) is somewhat nice if you ask me
+20:07:33 <t-bast> cdecker: from what I understood, the main reason for this benchmark was to evaluate whereas big wallet "hubs" could offer streaming services to many clients
+20:07:54 <t-bast> that's why the tests contained the invoice generation and recipient receive parts (and not simply routing)
+20:07:56 <cdecker> If we care, I think we can do quite some tweaks to optimize performance from the benchmark
+20:08:17 <BlueMatt> cdecker: honestly, the numbers were pretty low, fsyncs matter, but he was testing throughput with batching, which means you *should* get pretty close to just crypto as the bottleneck, which my benchmark clocks in at around 2-3ms per payment
+20:08:39 <t-bast> Definitely, for example we noticed that our main bottleneck was invoice generation because we were very inefficiently doing pubkey recovery
+20:08:40 <BlueMatt> cdecker: it may be that the bottleneck for most nodes is on the sending/receiving end, which, whatever, but if its also similar when routing, that should probably be improved
+20:08:43 <niftynei> that context around the idealized usecase of fast payments is good to know (streaming payments)
+20:09:09 <cdecker> One thing that I was looking into with my own (local) benchmarks was the pipeline depth when adding HTLCs (i.e., number of ops before committing)
+20:09:45 <cdecker> Then we could do things like defer storing HTLCs until the commit, and work around higher latency
+20:09:47 <niftynei> (from a use-case perspective, streaming every single payment and not having a localized 'balance' seems like the naive way to do it, but ultimately pricier than doing "1 minute/5minute" credit style txs)
+20:10:12 <t-bast> cdecker: IIUC c-lightning by default sends commit_sig only in batches? Do you have a regular ticker for that? How is it configured? Eclair simply schedules a `sign` after each HTLC operation
+20:10:28 <BlueMatt> cdecker: it should basically never be more than one full commitment-signed dance, no? irrespective of how many HTLCs are in the outbound buffer
+20:10:46 <BlueMatt> t-bast: does that mean eclair does not batching at all?
+20:10:49 <cdecker> We start a timer of 10msec after performing the first op, and then trigger a sign once the timer expires
+20:11:08 <ariard> where those micro-payments dust one ? you might not have to generat sigs for them
+20:11:09 <cdecker> 10ms is way too short really, but testing locally (no latency) it was ok
+20:11:28 <t-bast> BlueMatt: we do "pessimistic" batching: whenever a commit_sig could make sense, we queue it up - if other HTLCs concurrently were added, we end up signing once for many htlcs, but if none were added, we sign instantly
+20:11:29 <devrandom> BTW hubs that connect to a lot of leaf nodes (e.g. consumers), batching across channels would be needed (i.e. fsync multiple commits at once), which could get interesting
+20:11:33 <ariard> bump your dust_limit_satoshi to decrease latency?
+20:11:38 <BlueMatt> t-bast: hmm, ok
+20:12:12 <t-bast> But we've long thought that we needed to experiment with forced batching at regular intervals
+20:12:15 <roasbeef> also important to remember that the current protoocl hamstrings x-put in many cases
+20:12:20 <BlueMatt> devrandom: right, IIRC the benchmarks joost ran were like 10 channels, so that should have been possible, though it may not be turned on in some cases cause its 10 channels between the same nodes, not across different nodes
+20:12:27 <ariard> devrandom: if big hubs rely on replicated channel monitors/watchtowers they might have severe latency hits
+20:12:28 <t-bast> It's worth having some kind of realistic benchmark to test whether it's useful in practice or not
+20:12:32 <roasbeef> since there's a static amt that any sig can cover re new additions, and you always need to wait for the full dance before proposing new updates
+20:12:57 <roasbeef> his benchamrk was just direct nodes, but that shines a lot more when you go the multi-hop high latency link setting, as you can't really pipeline properly
+20:13:00 <BlueMatt> roasbeef: right, but with batching *throughput* should be realllyyy high
+20:13:16 <roasbeef> it depends really, also i'm pretty sure basically none of us have tried concentrated optimization
+20:13:18 <BlueMatt> yea, more work is definitely needed to do benchmarks that focus on routing nodes
+20:13:23 <BlueMatt> not just sending/receiving
+20:13:27 <roasbeef> as there're other things to work on in teh critical path
+20:13:46 <BlueMatt> since I'm not sure how much its a critical feature to do X000 sends/sec to the same next-hop node.
+20:13:51 * cdecker would like to point out that eltoo allows not storing updates that only subtract, so if multiple HTLCs go in the same direction (streaming, ...) only one side needs to persist an update
+20:13:54 <BlueMatt> rougint X000 sends/sec should be doable
+20:14:04 <BlueMatt> cdecker: Thanks Eltoo-Man!
+20:14:08 <roasbeef> cdecker: yeh even aside from that, there's a lot of other book keeping a node needs to do like payment, invoice, circuit info, etc
+20:14:20 <roasbeef> and there're a lot of questions there re what the actual medium access protocol would be
+20:14:21 <cdecker> Yeah, sorry, had to bring it up :-p
+20:14:41 <t-bast> BlueMatt: I fully agree, I had a hard time understanding why the benchmark wasn't focusing on relaying only
+20:14:48 <roasbeef> going back to my other point, rn you always need to wait after sending a single sig, we can go back to how it was before where when you start you send N commitment points
+20:15:13 <roasbeef> then that lets you send N new states before needing to wait, since things are asymmetric it's fully de-sync'd so you never really need to wait for the other side, basically moving to a TCP sliding window type thing
+20:15:21 <BlueMatt> roasbeef: right, but thats just latency, not throughput. and the latency is actually nice from a privacy perspective
+20:15:28 <cdecker> Uff, that'd mean we need to disambiguate and discard many commitments, doesn't it roasbeef?
+20:15:31 <BlueMatt> its *good* that we have to wait some time and batch, from a privacy perspective
+20:15:46 <BlueMatt> t-bast: right, well version 1, hopefully more work done there.
+20:15:53 <roasbeef> no that helps w/ x-put as well, if you look at the nodes most of the time, theyr'e waiting for the revocation so they can continue to commit more, and batching won't be 100% so there's a lot of underutilized time
+20:16:16 <cdecker> I think the simplicity that one-commit-in-fligh afords us is very nice, we already have a very complex protocol
+20:16:23 <BlueMatt> roasbeef: right, but that sounds like something that can be solved with software
+20:16:29 <BlueMatt> not just changing the protocol to add more complexity
+20:16:33 <roasbeef> cdecker: the gap wasn't too large, lnd did that before we switched over
+20:16:48 <cdecker> roasbeef: that can be solved by queuing new HTLCs and committing them in the next commit
+20:16:51 <roasbeef> you just have a comitment point queue basically and things are mostly the same
+20:17:04 <roasbeef> that's not the same really tho, since you can't start the forwarding process yet
+20:17:08 <BlueMatt> cdecker: I....assume everyone does that?
+20:17:28 <roasbeef> it was pretty night and day when we switched over fwiw, and I did tests w/ actual  mult-hop nodes then as well
+20:17:31 <BlueMatt> I mean ultimately you're limited in practice by the max htlc count anyway
+20:17:34 <roasbeef> in terms of the xput reduction
+20:17:52 <roasbeef> yeh taht's the other thing I mentioned, it's a value that is pretty arbitrary, and you can make it nearly unbounded as long as you mind chain costs in the worst case
+20:18:14 <t-bast> In practice you're mostly limited by the volume of payment on mainnet xD, there isn't enough demand to make it really worth it to aggressively batch
+20:18:16 <cdecker> BlueMatt: yes, but the important thing is to then have the window to add them all before committing again
+20:18:16 <roasbeef> but idk, this isn't something that really worries me, since none of us have really tried to focus on impl level optimizations
+20:18:48 <BlueMatt> cdecker: right, at the end of the day, though, we *should* be waiting 10 or 100ms before forwarding anyway, so I really dont get this discussion
+20:18:52 <cdecker> Yes, we probably have quite some slack to optimize before requiring proto level changes
+20:18:54 <roasbeef> t-bast: yeh that's the other thing, we're likely focused on issues re UX and reliability, if nodes start falling over as they can't keep up w/ demand, that's a great problem lol
+20:18:56 <BlueMatt> its pretty important for privacy that batching happens there
+20:19:14 <t-bast> roasbeef: totally agree, it's interesting to have these benchmarks early, but they show mostly that nobody really worked on perf yet because it's simply not needed - early optimization bla bla
+20:19:19 <BlueMatt> so we should focus on improving throughput given batching and latency, not try to rip it out
+20:19:22 <roasbeef> in the multi-hop setting, likely the case that just the jitter due to node processing gives you that de-synced batching over time
+20:19:27 <cdecker> BlueMatt: just pointing out that having to wait for a commit is unlikely to reduce throughput in the end
+20:19:41 <BlueMatt> cdecker: right, thats my point...
+20:19:47 <cdecker> Ok ^^
+20:19:54 <roasbeef> t-bast: yeh no one really worked on pref, and it wasn't too bad imo, as it's just a starting point, and as I showed on twitter it really depends on what you're running the becnhmark on
+20:20:09 <roasbeef> like my m1 laptop got like 3x what was posted on the blog post
+20:20:34 <BlueMatt> roasbeef: not to mention, if anyone actually got an indistrial m.2 instead of shit consumer ones, fsync would be 10x faster, and thats, like, *all* the time....
+20:20:47 <BlueMatt> maybe 50x
+20:20:48 <t-bast> it's impressive that the M1 chip gets such good results compared to joost's
+20:20:54 <roasbeef> yeh def, the latest SSD stuff is like basically memory at this point
+20:20:56 <BlueMatt> t-bast: its all the ssd, not the chip
+20:21:10 <BlueMatt> t-bast: joost was on google cloud, which is probably ssd-over-san
+20:21:15 <BlueMatt> so latency is gonna be a chunk higher
+20:21:24 <t-bast> right, it's mostly fsync that's limiting us right now
+20:21:38 <cdecker> We have some benchmarks (with no latency) that show 400-500 tx / second so 10x Joost's numbers
+20:22:06 <BlueMatt> cdecker: right, my naive benchmarks showed 400/sec with zero batching, so could even push it higher.
+20:22:15 <BlueMatt> (if you cut the I/O to zero)
+20:22:18 <cdecker> Locally we should feel the impact of fsyncs the most, with remote endpoints we'll probably feel latency the most
+20:22:19 <roasbeef> but yeh idk, cool that there's an easy to run benchmark, but I wouldn't say optimizing like mad is in the top 5 list of prios re the network/impl in my mind
+20:22:57 <cdecker> I mean my node routes 50 tx /     ...     week, so that's not the bottleneck xD
+20:23:05 <BlueMatt> lol, right
+20:23:15 <niftynei> it sounds like hardware is the easiest win at this point for a speed up
+20:23:28 <BlueMatt> anyway, yea, good to have benchmarks, people can figure out what they want to do with it on their own, doesnt imply protocol changes, probably
+20:23:32 <niftynei> should we move on to PRs?
+20:23:34 <t-bast> we're starting to experiment more thoroughly with remote postgres, to see how much latency it's adding
+20:23:40 <BlueMatt> niftynei: yea, industrial ssds are just dram with a battery and backing ssd, so they're ~instant
+20:23:51 <roasbeef> I do around 500 a week ;)
+20:23:53 <cdecker> I think we have more impactful things to look into first, then optimize params for latency and only then we can look into protocol changes
+20:24:32 <BlueMatt> right, we'll also be limited by 400 max htlcs plus per-hop delays of 50 or 100ms just to batch enough htlcs to have non-zero privacy, at least for larger routing nodes in the future
+20:24:34 <BlueMatt> sooooo
+20:25:25 <niftynei> #topic per_commitment_secret must be a valid secret key
+20:25:30 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/859
+20:25:53 <BlueMatt> looks like it has acks
+20:25:55 <BlueMatt> can we just merge?
+20:26:00 <cdecker> ack
+20:26:09 <bitconner> ack
+20:26:14 <t-bast> ack
+20:26:15 <BlueMatt> merged
+20:26:19 <niftynei> ok great, that's resolved.
+20:26:27 <vincenzopalazzo> ack :)
+20:26:33 <t-bast> the PR part of this meeting was very fast xD
+20:26:59 <niftynei> yes, that does conclude the PR portion of this meeting
+20:27:07 <niftynei> next up is issues
+20:27:12 <t-bast> unless someone has a PR they want to be looked at?
+20:28:17 <niftynei> ok if someone thinks of something post it and we'll come back
+20:28:27 <cdecker> I'll prep the keyolo PR for next time, so we can continue discussion
+20:28:36 <niftynei> #topic Discuss lightning network architecture diagram
+20:28:59 <niftynei> there's no link for this, other than the ML post
+20:29:03 <niftynei> #link https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-April/002990.html
+20:29:09 <cdecker> #link https://upload.wikimedia.org/wikipedia/commons/f/f9/Lightning_Network_Protocol_Suite.png
+20:29:22 <niftynei> i'm not sure what the issue is with this, does anyone have some insight?
+20:29:39 <roasbeef> hmm, I realize we lost that IRC bot in here as well
+20:29:42 <t-bast> Rene was asking for some feedback on this diagram
+20:29:47 <cdecker> I think mostly collect feedback for the diagram
+20:29:50 <ariard> i think it's more call for reviewers
+20:30:09 <niftynei> ah i see. thanks ya'll
+20:30:44 <t-bast> I find the "Unreliable routing layer" confusing, not sure why it's named "unreliable"
+20:30:53 <ariard> hmmm not sure about the reliable payment layer, your payment attempt might not succeed before expiration of the invoices
+20:31:02 <t-bast> Not sure either why the top one is "reliable" payment layer
+20:31:04 <cdecker> A bit shouty with SPHINX which is a name, not an acronym iirc
+20:31:49 <cdecker> I think his intention was to separate the layers similar to IP (unreliable, packet based) vs TCP (reliable datatransfer, stream)
+20:31:50 <lnd-bot> [13lightning-rfc] 15TheBlueMatt pushed 2 commits to 06master: 02https://github.com/lightningnetwork/lightning-rfc/compare/83980de78600...a9db80e49d17
+20:31:50 <lnd-bot> 13lightning-rfc/06master 1455ee3f4 15Lloyd Fournier: per_commitment_secret must be a valid secret key
+20:31:50 <lnd-bot> 13lightning-rfc/06master 14a9db80e 15Matt Corallo: Merge pull request #859 from LLFourn/patch-1
+20:32:05 <cdecker> Thanks lnd-bot xD
+20:32:07 <ariard> doesn't mention bolt 5 the non-interactive part of the protocol only played against the chain
+20:32:15 <roasbeef> the main idea was that one has retries, while the other is set and forget essentially
+20:32:30 <t-bast> but that doesn't make it more "reliable", does it?
+20:32:33 <roasbeef> the on chain stuff is prob meant to be in that layer below, since it's more of a hop by hop thing from the PoV of the nodes
+20:32:43 <t-bast> I think that naming is confusing, because the distinction here isn't the same as IP vs TCP
+20:32:48 <roasbeef> yeh wording can prob be imrpvoed, bu I look it as forwarding vs routing layer
+20:32:48 <ariard> but you learn from your failures or in theory you could reuse already-computed paths
+20:33:09 <roasbeef> yeh the idea is you add a payment loop to the normal SendHTLC API to actually complete a payment
+20:33:22 <cdecker> roasbeef, so more end-to-end vs. routing nodes
+20:33:29 <roasbeef> yeh
+20:33:32 <ariard> yeah onchain is more peer 2 peer layer
+20:33:34 <cdecker> gotcha
+20:33:36 <t-bast> sounds like "unreliable routing layer" is just "payment routing layer"
+20:33:51 <t-bast> and "reliable payment layer" is more an "application layer" of sorts
+20:33:58 <cdecker> I wonder if on-chain shouldn't be a column on its own, given it's cross-cutting nature
+20:34:10 <roasbeef> hmm i'd say there's one more above, then the application layer is there, so stuff like using TLV's etc for new use cases
+20:34:59 <t-bast> true, application layer could be even above, but the top layer is something where implementation may diverge a lot, most of it isn't protocol-defined (path-finding, choice of error handling, etc)
+20:35:20 <cdecker> Yeah, it's unlikely there's a perfect (planar) representation, but the surrounding text in the lnbook can certainly provide a perspective that makes sense
+20:35:47 <roasbeef> yeh I had another one that was a lot uglier: https://user-images.githubusercontent.com/998190/112879240-bfe99480-907d-11eb-96f3-0dfad1fe8a3d.png
+20:36:05 <cdecker> There are a couple of things we could add facets (see TLV) where they end up in different parts, so we should likely concentrate on the core things to make ln work in this
+20:36:07 <t-bast> I would drop the "reliable" / "unreliable" part though, even with surrounding text to explain it's a bad parallel to standard layer stacks that doesn't translate very well IMHO
+20:36:54 <cdecker> Right, "Payment layer" and "routing layer" seem pretty apropriate imho
+20:37:50 <ariard> t-bast: even more confusing a ln node might emit ln messages or base layer messages both of them on top of tcp
+20:38:02 <roasbeef> cdecker: see my ugly version re TLV
+20:38:09 <t-bast> Layering this kind of thing is really hard...makes me think again and again about the fact that OSI is criticized a lot because while it's a great way to explain networking in a classroom to make it look like it makes a lot of sense, in practice it just doesn't work that way
+20:38:14 <roasbeef> but you're right in that it's hard to like express all the dependancies/links w/ it all
+20:38:27 <roasbeef> we tried to show the relations w/ the boxes that span multiple rows/layers
+20:38:39 <ariard> roasbeef: shouldn't wallet layer be near to link layer or rename as "node-control/peer selection/management"
+20:38:59 <roasbeef> in my other version, I just duplicated stuff where it overlapped
+20:39:19 <t-bast> Why do you even try to have a completely layered diagram? It feels like some of the bottom parts make sense to be layered, but most of the rest is better explained as separate "components" that use the core components for various things
+20:39:51 <t-bast> I'm not sure layers really make sense all the way
+20:40:08 <roasbeef> yeh it's hard to communicate the deps n stuff, nothing is perfect
+20:40:13 <cdecker> I like it, to be sort of an index where things fit into the protocol
+20:40:16 <roasbeef> but the idea is that this is meant to be like a "mind map" or sorts
+20:40:29 <roasbeef> then over time the reader starts to udnerstand how things are linked, they zoom out to it, etc, etc
+20:40:46 <niftynei> heh. my feedback would be something along the lines of "i dont find osi diagrams very helpful at all" but that's not a very productive contribution. the "map of the territory" idea is pretty good though
+20:41:05 <niftynei> i used to make prezzis about the android architecture to help orient myself -- you can zoom in and out on them
+20:41:05 <ariard> t-bast: an OG critic of the osi model : https://www.rfc-editor.org/rfc/rfc874.html
+20:41:11 <roasbeef> yeh we're going for more of a map of the territory, since things are non linear anyway
+20:41:23 <roasbeef> I wouldn't say this tries to "copy" the OSI diagram as well, in sofar as it's just a stack diagram lol
+20:41:32 <roasbeef> like the one I posted has 10 layers or something
+20:41:37 <t-bast> ariard: :+1:
+20:41:49 <roasbeef> (the black and white crude one)
+20:41:50 <ariard> imo best is draw of your mind map if you want to learn seriously :)
+20:41:53 <ariard> *own
+20:42:00 <t-bast> I think the mind map would make a lot of sense, just drop the layers from it :)
+20:42:13 <cdecker> Well, we do have some layers: transport, update, multi-hop. I think that distinction makes sense
+20:42:41 <t-bast> roasbeef: I had to scroll too much to see that whole diagram so I gave up xD
+20:42:46 <niftynei> a lot of the protocol is "phased" oriented rather than stack oriented, imo
+20:43:10 <cdecker> We can swap transport without affecting the layers above it. We can swap update with minimal impact to multi-hop. And we will change multi-hop with PTLCs without impacting the update layer
+20:43:14 <roasbeef> t-bast: there are no layers... *waves hands*
+20:43:30 <niftynei> "L2, the layerless layer"
+20:43:32 <roasbeef> cdecker: +1
+20:44:04 <t-bast> yes, some parts make sense to be layered, but the rest would probably work better as a scattered mind map (but I agree it's hard to draw the line and come up with something that looks good and makes sense)
+20:44:06 <cdecker> Yeah, that moniker was a mistake (been calling it off-chain for exactly that reason)
+20:44:07 <roasbeef> liek path finding just cares it gets back an error, we don't *have* to use the current onion encrypted thing to send it back
+20:44:17 <roasbeef> also remember this is for total noobs, and y'all are the experts lol
+20:44:26 <niftynei> prezzi, prezzi, prezzi
+20:44:32 <niftynei> (you cant print a prezzi tho)
+20:44:33 * roasbeef feels motion sick
+20:44:49 <cdecker> What's this about italian prices?
+20:44:52 <niftynei> oh it's prezi
+20:44:53 <niftynei> https://prezi.com/
+20:44:53 <niftynei> lol
+20:44:58 <t-bast> It has to fit on a t-shirt
+20:45:06 <t-bast> That's the number 1 requirement
+20:45:32 <niftynei> tough crowd
+20:45:39 <niftynei> lol
+20:45:46 <t-bast> heh
+20:45:50 <cdecker> Ok, so we have our first schism in LN, the layerists vs the non-layerists
+20:46:31 <niftynei> we've got 14 minutes left. let's move on to a long term update
+20:46:34 <roasbeef> but i'll copy/pate some of the feedback here to andreas+rene as well, just the first draft of it, leaning to more ofa mind map type thing, thx
+20:46:59 <niftynei> i'm gonna pick a fun one, upfront payments / DoS protection
+20:47:09 <niftynei> #topic upfront payments / DoS protection
+20:47:20 <niftynei> though this is risky as there's no obvious person to put on the podium
+20:47:29 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/843
+20:47:46 <niftynei> joostjgr isn't in the chat
+20:47:55 <niftynei> does anyone else want to fill in on this one?
+20:48:24 <BlueMatt> #prposed topic: show of hands on the earliest people would feel personally comfortable travelling to the us (or similar country) for a lightning spec meeting (assuming restrictions are relaxed by then). feel free to dm me responses.
+20:48:41 <cdecker> Hm, too bad rusty isn't here, he was working on something re upfront fees / anti-grieving
+20:48:48 <ariard> fyi, sergei and gleb have published this paper on how channel jamming might be used for probing : https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-March/002988.html
+20:49:10 <roasbeef> I have this pet idea i need to flesh out a bit more, goes in a diff direction moreso of ensuring if stuff happens you can degrade and keep forwarding normal traffic
+20:49:12 <t-bast> BlueMatt: I would be down in September of afterwards
+20:49:21 <t-bast> *or afterwards
+20:49:35 <roasbeef> BlueMatt: i'd be down, the shot is pretty easy to come by in SF
+20:49:50 <cdecker> BlueMatt: if the Swiss let me leave (and return), why not?
+20:50:22 <cdecker> Thanks ariard, need to catch up on papers I haven't read yet :-)
+20:50:33 <ariard> cdecker: you can travel through eu for "professional reasons"
+20:50:47 <BlueMatt> cdecker: I just want to be respsectful of anyone who may have trouble getting a vax or doesnt want one and wants to wait until case load is down more.
+20:51:29 <niftynei> rusty might be a complicating factor here, given the current two week quarantine mandate in austrailia
+20:51:40 <ariard> yeah we can be patient, some folks might be around for miami?
+20:51:52 <t-bast> unless we all go to Australia and plan a month there to work through the quarantine?
+20:51:57 <BlueMatt> niftynei: we have one vote for sept, hopefully by then things will have relaxed some, but thats why I specified "assuming its relaxed by then"
+20:52:17 <cdecker> Doesn't matter to me in which airport I quarantine xD
+20:52:22 <BlueMatt> t-bast: we can just put rusty in a bubble ball and have him roll around while the rest of us spread our foreign germs
+20:52:41 <ariard> sept sgtm as a rough timeline
+20:52:49 <niftynei> sept sgtm!
+20:52:50 <t-bast> BlueMatt: I don't think I'll ever be able to get rid of this image in my mind xD
+20:53:17 <ariard> t-bast: we might do it in paris :) ?
+20:53:38 <cdecker> Anyhow, I think we should defer on upfront fees until Joost and Rusty are back, wdyt niftynei?
+20:53:44 <niftynei> sgmt
+20:53:56 <t-bast> ariard: would love to, let's see what's easiest for most people ;)
+20:54:14 <t-bast> ACK on deferring upfront fees
+20:54:35 <niftynei> BlueMatt, did you get enough responses to your question?
+20:54:55 <BlueMatt> niftynei: yep! unless someone else speaks up (or pms me) with a date post-sept, I'll look at sept!
+20:55:07 <BlueMatt> though actually my schedule for sept may already be booked lol
+20:55:24 <cdecker> Hehe, was just about to say, don't make it the first week
+20:55:35 <niftynei> sweet. ok so the other things on the Long Term Updates are dual-funding, offers, blinded paths, and trampoline routing
+20:55:43 <cdecker> We can set up a doodle for the dates I think?
+20:55:52 <niftynei> i gave a dual-funding update two weeks ago, there's nothing to update/report as far as that's concerned
+20:56:01 <BlueMatt> cdecker: yea, can do. will do later today or soon.
+20:56:17 <niftynei> does anyone else have business they want to discuss in the last 4 minutes?
+20:56:34 <cdecker> Well except that your code is now published as part of the latest release and being used niftynei ;-)
+20:56:48 <t-bast> congrats niftynei!
+20:56:50 <niftynei> right. nothing notable ;)
+20:57:11 <niftynei> well, it'll get a lot more use once i get the accepter side plugin shipped xD
+20:57:42 <t-bast> If someone wants to implement https://github.com/lightningnetwork/lightning-rfc/pull/847 I should have something in eclair soon
+20:58:00 <niftynei> speaking of notable things, c-lightning added the lnprototests to our CI last week
+20:58:48 <ariard> gg :)
+20:59:28 <t-bast> that's nice! Are there tutorials on how to implement a driver for lnprototest or not yet? It would be really useful to have that to get us to write a driver for eclair
+20:59:31 <niftynei> t-bast, ah this is good! i will take a look at adding it to c-lightning this week
+21:00:18 <niftynei> i dont think there are tutorials, and i'm fairly certain that a lot of tests will need tweaking to be more generically applicable (a few things are hard coded to c-lightning defaults)
+21:00:42 <niftynei> i could throw together a how-to for the runner implementation pretty easily though, i'll put it on my todo list
+21:00:53 <t-bast> yeah https://github.com/rustyrussell/lnprototest/blob/master/HACKING.md is a bit lacking, it would be great to have documentation to explain what hooks an implementation needs to provide to plug into lnprototest
+21:01:31 <niftynei> ok cool, i'll see about adding some good docs for it
+21:01:50 <t-bast> thanks
+21:02:00 <roasbeef> oh re AMP stuff, we have things working pretty well end-to-end, realiezd we can use some new stuff to improve MPP and just sending payments in general, and now mainly need to catch up the draft spec and finish up the examples there
+21:03:19 <t-bast> cool stuff! that will be something interesting to look at soon as well
+21:03:41 <cdecker> Looking forward to it ^^
+21:03:57 <roasbeef> and I should have some more concrete stuff to share re dynamic commitments by the next meeting
+21:05:04 <niftynei> dope! looking forward to it
+21:05:53 <ariard> sounds exciting! see you next time :)
+21:05:58 <cdecker> I'll drop off soon btw, but really enjoyed todays meeting ^^
+21:06:18 <niftynei> i'm also dropping off. see you all next time!
+21:06:29 <niftynei> #endmeeting
