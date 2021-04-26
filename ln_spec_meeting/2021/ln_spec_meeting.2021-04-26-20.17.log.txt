@@ -1,0 +1,243 @@
+20:17:13 <t-bast> #startmeeting LN Spec Meeting
+20:17:13 <lndev-bot> Meeting started Mon Apr 26 20:17:13 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:17:13 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:17:13 <lndev-bot> The meeting name has been set to 'ln_spec_meeting'
+20:17:31 <cdecker> Ah there you go, it's not working on the VPS but from home it is...
+20:17:37 <t-bast> #topic Funding Timeout Recovery
+20:17:37 <rusty> t-bast: I'll have to do a mechnical check on 852, but looks good. (repaste from before meeting start, for posterity)
+20:18:01 <cdecker> Ok, as promised I wrote up the keyolo variant, but it feels "wrong"
+20:18:02 <t-bast> thanks rusty! Let's move to the other items, once we have interop on that one we'll just merge
+20:18:14 <cdecker> PR #866 is the competing one btw
+20:18:16 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/issues/864
+20:18:23 <t-bast> #https://github.com/lightningnetwork/lightning-rfc/issues/866
+20:18:45 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/866
+20:18:48 <cdecker> Let's keep tradeoff discussions to #854 to keep them localized and wording suggestions can go to the respective PR
+20:18:52 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/854
+20:19:42 <rusty> I like 866, but it's weird.  We can't extend the error message, so we need a new msg anyway.  I don't think the discussion of malleability applies, since "here's the key, do what you want" seems sufficient to cover that?
+20:20:25 <cdecker> Would have been nice to add a TLV to the error instead
+20:20:56 <roasbeef> cdecker: yeh not a fan of just sending private keys over the wire to peers as I commented on the OG PR....
+20:21:29 <ariard> cdecker: another advantage of OG proposal is fundee can still add a balance in the closing tx
+20:21:40 <cdecker> Yep, same here, it should be rare, so I don't weigh the on-chain footprint too much either
+20:21:43 <ariard> like if you negotiated a push_msat out-of-band or already paid for it
+20:22:22 <cdecker> ariard: wouldn't that require a sighash_single and require the matching output to be the fundee's?
+20:22:54 <ariard> cdecker: for sure it would require single, lastest of proposal is sighash_none?
+20:22:56 <cdecker> That'd allow the fundee to force an output to him as compensation
+20:23:13 <cdecker> Yep, sighash_none to impose as little restrictions as possible
+20:23:22 <BlueMatt> cdecker: I'm not sure what you mean "creates a new foot-gun" - if you dont have a way of storing the latest state reliably, you are already in face-gun territory, this isnt new there.
+20:23:30 <cdecker> Not a fan of complicating what is pretty much a gentlemans agreement
+20:23:40 <BlueMatt> there was also discussion of this in the context of taproot
+20:23:44 <ariard> and how do that make sense for dual-funded channel? wouldn't OG proposal makes more sense
+20:23:52 <BlueMatt> where sighash_single isnt just a trivial change, its materially more expensive
+20:24:01 <cdecker> Hm? Which footgun comment are you referring to? Made a couple of them in this context :-)
+20:24:17 <BlueMatt> cdecker: I was referring to the quote you left on the non-yolo variant describing the difference
+20:24:42 <cdecker> dual-funded channels are not impacted by this since the funding needs to be collaboratively agreed on anyway, and RBF can't be done without collaboration
+20:24:46 <roasbeef> taproot is still a ways away, and it'll be a pretty massive overhaul, so imo shouldn't affect what we do in the short term
+20:25:15 <roasbeef> don't think I can bring myself to add in code that dumps a private key over the wire....
+20:25:19 <cdecker> That was roasbeef's comment talking about a footgun :-)
+20:25:25 <BlueMatt> sure, but if we're close to the fence on a proposal, it seems like a worthwhile thing to shift us one way or another :)
+20:25:44 <ariard> cdecker: sure but we assume the funding has confirmed here and try to avoid feerate penalty on commitment
+20:25:51 <roasbeef> how would ppl even expose this on the node level? does the responder have to opt in to agree to send their key?
+20:26:04 <roasbeef> just seems really error prone imo
+20:26:16 <roasbeef> inb4 some reddit scam or something
+20:26:38 <cdecker> Nah, it's a throwaway key that should not leak info (in theory when derived in a hardened way), but I also prefer #854 (non-keyolo)
+20:26:46 <BlueMatt> huh? hopefully the node never exposes some config option to let users manually do this?
+20:27:02 <ariard> and if you have a hardware signer? quite uncomfortable to have a policy exporting private key
+20:27:04 <roasbeef> cdecker: throw away key? I read it as the funding private key rn
+20:27:16 <roasbeef> and also what if you can't even get a private key from a node easily?
+20:27:20 <cdecker> Yeah, it's just "1) forget channel but keep stub, 2) on reconnect tell the peer so they can recover"
+20:27:23 <BlueMatt> in both cases you have to make sure you make sure the channel closure is committed to disk before you expose anything, I dont think thats very different
+20:27:40 <BlueMatt> alright, well so far it sounds like everyone disagrees with me. I'm happy to be overruled :)
+20:27:49 <cdecker> roasbeef: yes, but its a funding_privkey specifically generated for that channel, if you're not using the channel there's no need to keep it private
+20:28:06 <roasbeef> yeh but we don't really have any spec level requirements on how that key is generated cdecker
+20:28:31 <cdecker> BlueMatt: yep, that was my comment to roasbeef's footgun: forgotten, persisted, marked as inactive, and only then reveal the privkey
+20:28:37 <roasbeef> so if you assume the worst case, bad things could happen, and also we'd essentially be requiring hot funding keys forever on the spec levle
+20:28:53 <ariard> BlueMatt: well with taproot you can add a tapscript to sign to be used especially with sighash_single, but you might loose the feerate saving due to longuer merkle branch...
+20:29:03 <BlueMatt> cdecker: right, i think my point is more broadly the foot-gun quesiton here is no different between the two proposals, and it is further no different than really every other "you didnt persist properly" foot gun in lightning today
+20:29:13 <cdecker> Just to be clear, the keyolo is the result of 4 weeks ago's discussion, I'm not a fan myself, but wanted to give the option
+20:29:39 <BlueMatt> ariard: right, my point was you cannot do the joined signature. thanks for clarifying :)
+20:29:49 <cdecker> Also because it seemed overwhelmingly everyone wanted to go keyolo instead xD
+20:29:56 <t-bast> I think the argument of not having easy access to the funding private key because it's delegated to another component is a reasonable argument to prefer #854 over #866
+20:30:32 <cdecker> Also it doesn't introduce the belated requirement of hardened derivation for the funding_privkey
+20:30:34 <t-bast> I wanted to go keyolo for simplicity's sake, but I understand that it's actually harder for some implementations than non-keyolo
+20:30:45 <rusty> I somewhat share roasbeef's concern: now our HSM gives out keys, which makes me uncomfortable.  OTOH, it's definitely simpler.
+20:31:16 <BlueMatt> t-bast: I mean signing sighash-none is really not a lot different from just exposing the priv key
+20:31:28 <BlueMatt> hsm should have similar requirements for both, honestly
+20:31:31 <cdecker> Good point rusty, it'd be state to keep in our hsmd to remember that we gave out the key, and that we mustn't sign commitment txs for that key anymore
+20:31:52 <cdecker> ... which is also true for #854, damn
+20:32:55 <t-bast> BlueMatt: true, sighash_none is something HSMs wouldn't lightly sign...
+20:32:56 <ariard> well you can delete the key once sent, but quid of network disconnection at the same time?
+20:33:14 <BlueMatt> ariard: yea, preferably not, though I guess its best-effort anyway, soooooooo
+20:33:18 <roasbeef> t-bast: depends on the hsm really there's levels, first level is just it can do secp signing before even doing sighash stuff, etc
+20:33:45 <BlueMatt> ariard: yea, i think thats not really a bad idea, really. I mean it sucks cause its not reliable, but the funder shouldnt be relying on this to begin with
+20:33:46 <t-bast> roasbeef: an HSM that doesn't do any kind of validation is a false sense of security imho
+20:33:58 <roasbeef> t-bast: well you start w/ just segregation there go from there
+20:34:20 <roasbeef> it isn't a binary thing
+20:34:21 <ariard> BlueMatt: you might cache the message until ack from counterparty but have deleted the state
+20:34:37 <BlueMatt> ariard: there is no ack? or do you mean tcp-ack?
+20:34:39 <cdecker> Yep, it's a simple proposal, must not work all the time (gentleperson's agreement remember) and we definitely don't want to get incentives such as fundee payoffs into the mix
+20:34:58 <ariard> BlueMatt: i mean lightning message level ack, tcp would be such a layer violation
+20:35:06 <ariard> and you might not run lightning on tcp
+20:35:17 <cdecker> The stubs can be removed after a while btw, if the peer doesn't reconnect in 2 weeks there's no need to keep them around imho
+20:35:20 <t-bast> I agree with cdecker, this should still be an exceptional case and we shouldn't over-engineer it
+20:35:48 <BlueMatt> ariard: ok, so you mean we should add an ack. i guess, but, like, then what if the funder doesnt send one, then its the same as having no ack :)
+20:36:19 <rusty> I think we can do simpler than 854.  1. extend reestablish to include the outpoint and amount for the commit tx. 2. have a reply which signs that for any stub, aborted channel.  This means it doesn't even need to remember anything except the key, peer id and channel id, and covers the "I accidentally RBFed the commit tx" case.
+20:36:29 <ariard> BlueMatt: let's say timeout on your cache? but yeah sounds over-engineering
+20:37:10 <BlueMatt> rusty: presumably you mean with sighash_none? or we'd have to include the output as well.
+20:37:41 <rusty> BlueMatt: yeah, if you want sighash_single you would have to provide output.  Or normal sig and provide entire tx, but that's getting a bit hairy maybe.
+20:38:24 <cdecker> Let's start with sighash_none, we can always add complexity later (... never)
+20:38:39 <roasbeef> kek
+20:38:52 <rusty> cdecker: but can't someone else steal the sighash none?  Hmm, I guess it needs both sigs, so no...
+20:38:55 <BlueMatt> dont you mean remove complexity by sending the privkey? *ducks*
+20:39:01 <BlueMatt> but, sure, I'm down for whatever
+20:39:24 <ariard> if you have to agree on output amount you migh need yet another negotiation mechanism
+20:39:43 <BlueMatt> you shouldnt need to agree - if you've closed the channel, you've closed it
+20:39:54 <t-bast> I don't follow why it would be simpler than #854
+20:39:56 <BlueMatt> sign anything the counterparty wants, if its wrong, full nodes will reject it
+20:40:11 <ariard> in the hypothesis we have also sighash_single and the fundee would propose a cooperation payoff
+20:40:51 <BlueMatt> yea, this is more "nodes will do this by default cause its nice, and most people dont modify their nodes because its hard" not "game theoretically secure and ideal"
+20:41:07 <rusty> BlueMatt: and of course "it's worked so far" :)
+20:41:37 <BlueMatt> right, works nearly perfectly in practice, works none of the time in theory :)
+20:41:55 <cdecker> ariard: payoff for the fundee seems out of scope, that's far more negotiation than I'm willing to add for such a corner case
+20:42:32 <ariard> cdecker: i far agree there, i was just thinking in a future where lightning is so efficient than people to price their missed opportunities for lack of funding confs
+20:42:52 <roasbeef> does anything deployed rn even use sighash_none? we're about to get soooo many cool points
+20:43:11 <t-bast> xD
+20:43:13 <BlueMatt> roasbeef: lol, great point!
+20:43:25 <ariard> roasbeef: well you need to combine it with sighash_noinput to be a cool kid
+20:44:05 <unixb0y> Hey guys any news about Offers in lnd? :)
+20:44:05 <rusty> "I don't usually sign random transactions, but when I do it's with SIGHASH_NONE".
+20:44:11 <cdecker> That signature would sign pretty much the timelock and that's it xD
+20:44:24 <t-bast> Shall we conclude that we're leaning more towards #854?
+20:44:52 <roasbeef> rusty: LOL
+20:45:20 <cdecker> Sounds like we pretty much agree that #854 is a bit more restrictive than #866 and we can always expand based on later experience if needed
+20:45:25 <rusty> t-bast: ack.  More on issue?
+20:45:30 <cdecker> sgtm
+20:46:09 <t-bast> #action Finalize details of 854 on PR
+20:46:20 <t-bast> #topic Deterministic points and splicing
+20:46:30 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/862
+20:46:34 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/863
+20:46:41 <t-bast> I feel those two go together
+20:46:49 <rusty> OK, so before we get too far into this: I'm on the fence.
+20:47:08 <cdecker> How's the view?
+20:47:12 <roasbeef> interesting...so no more randomization?
+20:47:18 * roasbeef looks at the commit
+20:47:29 <BlueMatt> so one question i have is what about cases where you may want some keys derived from different things - eg payment_point maybe you want from an offline seed but the other keys maybe from an online one?
+20:47:30 <roasbeef> oh this is the sequence number for pubkeys thing?
+20:48:04 <rusty> The reason is that deterministic points mean that one channel is not really isolated from another any more, since the keys are now reversibly derived from the node id.  So if you accidentally give away one key, you lose the farm.  This was not true before.
+20:48:06 <roasbeef> how would ppl handle the new state requirement in practice? so like clear node, retain seed, re-use seed for new node situation
+20:48:19 <roasbeef> iirc in the past didn't CL remove something like this from the funding key derivation rusty ?
+20:48:22 <cdecker> Ah lol, if we get #862 then #866 is out of the question anyway, since we can't generate hardened keys using a generation
+20:49:16 <rusty> But OTOH, being able to sniff out your own channels from raw blockchain data is pretty damn neat on paper.
+20:50:06 <roasbeef> something something OP_RETURN....I think electrum does this in practice now/
+20:50:07 <BlueMatt> * and knowing *who* you had a channel with, correct?
+20:50:08 <rusty> roasbeef: not that I recall: we used to hand the "per channel" keys across to the (per-peer) daemon, but then reverted to keeping them in the HSM.  Both are reasonable strategies.
+20:50:10 <roasbeef> ?
+20:50:36 <rusty> BlueMatt: you brute force from known nodes, plus anyone who connects to you.
+20:50:42 <BlueMatt> right, ok
+20:50:43 <roasbeef> rusty: iirc was something a sequence number per node pubkey to derive pubkeys or something, could be remembering something else...
+20:51:07 <rusty> roasbeef: yeah, we use the db id (which only rachets forward).
+20:51:31 <rusty> So the scheme gets weaker since you need a counter of some kind, and now you get gap issues anyway.
+20:51:53 <t-bast> Can't you at least scope the link between key per-node? To ensure that if you give away one key, only all channels to that node are at risk, and not channels to other nodes?
+20:51:55 <BlueMatt> any response to my initial question?
+20:52:10 <roasbeef> rusty: doesn't this still require you to keep track of who the other node is?
+20:52:14 <BlueMatt> I do think that at least being able to generate payment-point in a different way is very useful.
+20:52:16 <BlueMatt> probably others
+20:52:40 <t-bast> BlueMatt: IIUC this PR would make this scenario impossible...?
+20:52:48 <rusty> roasbeef: you brute force from the public gossip + anyone who (re-)connects to you.
+20:52:50 <roasbeef> what if they get pruned as being a zombie from teh channel graph or something, not sure if y'all keep around the extra nodes there
+20:53:27 <BlueMatt> t-bast: right, IIUC the same - hence why I bring it up :). may be there we could separate "maybe we want that separate" from "nah, probably not"?
+20:53:42 <rusty> BlueMatt: you keep payment_basepoint for that reason.
+20:53:54 <rusty> roasbeef: yeah, best-effort, handwave something.
+20:54:34 <BlueMatt> hmmm, ok. there's probably some other keys that would be good to split out, I'd think.
+20:54:41 <rusty> So I think personally that the "secret backup blob stashed with peer and re-served on every reconnect" probably covers this and more.  And it's easier to implement.
+20:54:54 <t-bast> right: `the payment basepoint is supplied directly` at the very end of the PR
+20:55:30 <ariard> you might traverse the transaction logs with filters of well-scored routing nodes first
+20:56:32 <t-bast> re my earlier question, I got to the `point derivation` part of the PR, so it seems that my question was moot, there's no connection between keys for channels with a different node
+20:56:34 <BlueMatt> yea, I'm definitely -0.01 here - I doubt we'll ever implement the chain-scanning stuff, if only because its a whole new api for it, and I could see it restricting what we can do going forward with different keys in different places/security models
+20:56:37 <roasbeef> t-bast: doesn't eclair do the encrypted blob storag ething now for phoenix clients?
+20:56:50 <BlueMatt> t-bast: oh, wait, what?
+20:56:58 <BlueMatt> so its only the funding key thats derived consistently?
+20:57:08 <roasbeef> rusty: rather than mandate it couldn't it be a funding modifier? so you include the key as normal, but then specify that's how it ws generated
+20:57:11 <BlueMatt> I totally misunderstood that, and I thought I skimmed the mailing list post :/
+20:57:12 <t-bast> roasbeef: yes we're doing that
+20:57:14 <roasbeef> I think it's funding, htlc, payment base point
+20:57:19 <roasbeef> 4. The `funding_pubkey` is defined as the `node_id` + G*T(`funding`).
+20:57:22 <roasbeef> 5. The `delayed_payment_basepoint` is defined as `node_id` + G*T(`delayed_payment`).
+20:57:26 <roasbeef> 6. The `htlc_basepoint` is defined as the `node_id` + G*T(`htlc`).
+20:57:47 <rusty> roasbeef: yeah, but it's really only useful if everyone does it, so I short-circuited.  But I was young and optimistic when I wrote that proposal...
+20:57:48 <BlueMatt> right, ok, so I'm not crazy. I think at least delayed_payment_basepoint may want to be on a different device
+20:58:25 <roasbeef> rusty: you as node could only open chans to nodes that use the deterministic generation possibly
+20:58:33 <ariard> well you might announce a derivation policy like another point for delayed_payment_basepoint
+20:58:40 <ariard> but it will more work for your counterparty
+20:59:33 <rusty> So, I'm voting to close the PR, apologize to llfourne and open a "backup blob" PR...
+21:00:12 <t-bast> the backup blob is quite simple to do ;)
+21:00:44 <cdecker> Hm, too bad, I really liked the proposal, it's a nice clean thing to do
+21:02:07 <rusty> cdecker: but the effect on implementations' key isolation is as disquieting as sending privkeys over the wire IMHO
+21:02:49 <cdecker> Ok, if the encrypted blob is also easy we can do that instead
+21:03:20 <ghost43_> isn't "backup blob" orthogonal to deterministic points? I mean regardless of storing a backup with the counterparty it would be highly useful to be able to scan the blockchain to find your channels and the counterparty in the first place
+21:03:59 <t-bast> you can just wait for nodes to reconnect to you
+21:04:01 <roasbeef> ghost43_: electrum allows that iirc rn by using an OP_RETURN
+21:04:26 <ghost43_> yes I am very familiar with what electrum does, I contrbute to it :P
+21:04:34 <ghost43_> it would save the OP_RETURN, that's all
+21:04:38 <rusty> ghost43_: it would be, but it's also not entirely practical, doesn't cover all cases, and is harder to implement.
+21:04:39 <roasbeef> oh cool yeh wasn't sure if electrum peeps were here lol
+21:05:00 <roasbeef> rusty: rn lnd's SCB stuff has worked pretty well in practice, a node never forget ths information it needs to force close after getting a chan reest message
+21:05:03 <BlueMatt> ghost43_: sure, but doing it by negotiating a derivation which each possible node you might talk to is a lot of addresses to send to an electrum server
+21:05:53 <ghost43_> BlueMatt: yes, that is true
+21:08:58 <rusty> So quickly: backup blob needs a feature bit, a new "hold my beer" msg which updates the blob, and a new tlv field for init (or a new msg?) to return it.
+21:09:43 <t-bast> if you want to really store your very latest channel state, you need to add this blob to more messages
+21:09:51 <BlueMatt> rusty: hold-by-beer ack
+21:09:58 <cdecker> Nice, having to fit into the TLV also puts a nice upper bound on size
+21:10:03 <roasbeef> rusty: something something tacked onto chan reest? (the blob)
+21:10:19 <roasbeef> the blob is meant just for force closing right? and not resumption?
+21:10:21 <ghost43_> roasbeef: depends if you want a per-chan blob
+21:10:30 <roasbeef> how would you handle a peer giving you a dated blob?
+21:10:43 <roasbeef> if it's per channel state...seems not possible
+21:11:01 <rusty> roasbeef: you gather them from all peers and take latest, I think.
+21:11:04 <t-bast> if you want it for resumption you need to add it to `commit_sig` and `revoke_and_ack`
+21:11:57 <roasbeef> gotta be static imo, no pitfalls, just ability to get the other side to force close if needed, so you'd store them w/ peer you don't have a channel w/
+21:12:09 <roasbeef> t-bast: ecliar does per state rn? so then users just trust it won't get swapped out/
+21:12:12 <roasbeef> ?
+21:12:16 <ariard> by resumption you mean per-revoked output punishment state?
+21:13:23 <t-bast> that's true, otherwise it does consume a lot of bandwidth/storage on many nodes, maybe a lighter backup makes more sense for a fully distributed solution (and just target unblocking force-close scenarios)
+21:13:50 <ghost43_> sending an old blob has similar game theory to the chan reestablish message dataloss protect I think
+21:13:51 <t-bast> but the mechanism should be opaque enough so that it can be re-used for full-state storage for nodes that want it imo
+21:14:01 <rusty> Well, you can pack whatever you want in there.  At least the info about what other channels you have, and any seed info associated.
+21:14:31 <t-bast> Perfect, as long as the spec just specifies it as a blob of bytes in a TLV that may be added to various messages, it will be flexible enough
+21:14:33 <roasbeef> ghost43_: imo no, this can let you give a peer an older version to braodcast, w/ chan reest you have deterrence of having a tower out there
+21:14:41 <t-bast> And it lets each implementation put whatever they'd like in there
+21:15:18 <t-bast> but you'd use your towers as well for that storage wouldn't you?
+21:16:13 <roasbeef> g2g will peep logs
+21:16:13 <ghost43_> roasbeef: kind of same situation with chan reest. if you lost the latest state but don't know it, the counterparty can trick you to force-close with it
+21:16:28 <rusty> I think embedding in init or as a separate post-init msg means you don't need a live channel to use it, so you can pay non-peers in future to do the same thing for you.
+21:16:51 <rusty> Anyway, let's move on, I have a hard stop in 15 too...
+21:16:54 <t-bast> Good idea
+21:17:06 <t-bast> Yep let's save splicing for next time and quickly discuss https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-April/003002.html
+21:17:12 <ariard> +1 to keep it in a post-init msg, bolt13 tower proposal has its own compensation mechanism
+21:17:13 <t-bast> It shuold just take a couple minutes
+21:17:35 <t-bast> #action drop deterministic points in favor of an encrypted backup construction
+21:17:36 <ariard> okay quickly i'm setting a bunch of irc workshop about better l2 onchain support
+21:17:43 <t-bast> #topic ariard cross-layer work
+21:17:51 <t-bast> #link https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-April/003002.html
+21:18:09 <t-bast> Let's just all attend if we can, it's going to be great :)
+21:18:27 <ariard> agenda is : package-relay or logically equivalent, full-rbf, coordinated security disclosure across layers, and onchain security tooling (e.g libstandardness)
+21:18:40 <BlueMatt> roasbeef: can you poke bitconner to respond on https://github.com/lightningnetwork/lightning-rfc/pull/608#issuecomment-815496095 ? I'm vaguely leaning towards proposing we revert it over bothering to implement it.
+21:18:54 <ariard> if you have any other issues you wanna talk let me know but would like to keep it straigth, like 2-3 irc meetings
+21:18:56 <BlueMatt> yes, thanks for organizing ariard!
+21:19:18 <rusty> ariard: good initiative...
+21:19:22 <BlueMatt> what about pinning mitigations, eg the carve-out thinggy that anchors uses?
+21:19:30 <ariard> and schedule is mid-june, after bitcoin 2021
+21:19:58 <ariard> BlueMatt: i hope we can get ride of most pinning with package-relay/full-rbf but do u think something more specific here?
+21:20:41 <ariard> in fact you might deprecate carve-out and use only one anchor ouput if we have something like rbf-package relay
+21:21:02 <BlueMatt> ariard: well, at the risk of getting into it pre-meeting here, I dont think full-rbf buys you anything when you still have to meet min-additional-relay fees, but also the carve-out was cause of package size limits, not package relay
+21:21:14 <BlueMatt> but, anyway, we should discuss it at your meeting!
+21:21:52 <t-bast> It's going to be interesting and a good opportunity to dive into a few rabbit holes
+21:22:02 <ariard> BlueMatt: to meet min-additional-relay fees you attach a cpfp and propagate as package? yeah for sure let's talk about it latter :)
+21:22:56 <BlueMatt> ariard: also package limits, but, yes, ok :)
+21:23:18 <cdecker> Definitely an interesting space I don't know much about, looking forward to the discussions ^^
+21:23:42 <cdecker> Anyway, got to go pretty soon
+21:24:02 <ariard> BlueMatt: i see package limits we might be willingly to bump them for op_ctv-style congestion tree, that kind of more advanced protocols
+21:24:18 <t-bast> Same for me, I'll have to drop off soon
+21:24:27 <t-bast> Thanks for your time everyone!
+21:24:33 <t-bast> #stopmeeting
+21:24:39 <ariard> t-bast: thanks for chairing!
+21:24:41 <t-bast> #endmeeting
