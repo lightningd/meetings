@@ -1,0 +1,157 @@
+20:12:12 <rusty> #startmeeting https://github.com/lightningnetwork/lightning-rfc/issues/874
+20:12:12 <lndev-bot> Meeting started Mon May 24 20:12:12 2021 UTC and is due to finish in 60 minutes.  The chair is rusty. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:12:12 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:12:12 <lndev-bot> The meeting name has been set to 'https___github_com_lightningnetwork_lightning_rfc_issues_874'
+20:12:51 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/872
+20:13:30 <rusty> Ouch, roasbeef I hadn't seen this before.
+20:14:06 <roasbeef> rusty: yeh something we ran into a while ago, but didn't know what was up, then the launch of our new node analysis thingy ended up triggering it w/ the ACINQ node, and we dug in exchanging error info till we found it
+20:14:29 * rusty wonders what c-lightning does, but fortunately with those test vectors I know I'm going to find out today.
+20:14:30 <roasbeef> mpp kinda causes it to occur more often since the payhash is always re-used
+20:14:40 <roasbeef> and if you split in half, then the amts may be the same more often
+20:14:55 <roasbeef> rusty: I checked and iirc CL does msat
+20:15:11 <roasbeef> assuming this is where the sorting happens: https://github.com/ElementsProject/lightning/blob/ade10e7fc4dacbb9d635b05152c7dc38c0896ce7/common/permute_tx.c#L138
+20:15:15 <rusty> roasbeef: yeah, that would be the "obvious" approach. And wrong ofc.
+20:15:16 <roasbeef> err does sat*
+20:15:27 <BlueMatt> I believe we do sat
+20:16:03 <rusty> I mean.  Of course we do it correctly! Yeah!  Go us!  (Meh, only because we post-sort the tx after construction, so bullet dodged)
+20:16:48 <roasbeef> yeh small fix which is nice, hard to know how many force closes over the past few years have happened because of this
+20:16:53 <roasbeef> acinq has a fix up on their end
+20:17:06 <rusty> BlueMatt: I thought there was a proposal to spell out and not just refer to BIP 69.  Maybe it got lost in the backlog?
+20:17:07 <roasbeef> which has been merged
+20:17:28 <BlueMatt> rusty: I dunno, I've complained about that a few times, but I think I've always just been loud and annoying and never done the work to fix it
+20:17:48 <midnight> fwiw, I have a reliable report of the new owner who has now direct control over the infrastructure, breaking into an email account and a slack server. Additionally, pointers in /topic which state the channel as moved to libera, Lee is directly using as justification for channel takeover. New staff who have demonstrated fairly extreme hostility (even for our sensibilities) are now invading/joining
+20:18:02 <midnight> channels, and Freenode infrastructure and services are being replaced. Why are they being replaced? Who knows.
+20:18:41 <rusty> OK, I do not know how to ack #872 hard enough.  Would like to test the vectors though: assuming they pass, everyone happy with applying?
+20:19:18 <BlueMatt> if we're fixing it for the 3rd time now I'd kinda prefer we finally actually drop the BIP 69 reference and be self-contained, but, yea, looks good.
+20:19:26 <roasbeef> rusty: added some test vectors from pierre to include the msat rounding
+20:19:52 <midnight> Apologies, I didn't see the meeting start.
+20:19:55 <rusty> roasbeef: yeah, I just wanna incorporate them in the c-lightning vector tests.  Should only take me 10 minutes.
+20:20:05 <BlueMatt> thanks for context either way, midnight
+20:20:09 <midnight> \o
+20:20:34 <rusty> #action BlueMatt to create PR to excise BIP-69 references in favor of explicit ordering requirements.
+20:21:01 <rusty> OK, so seems like we have consensus?  Any objections to applying #872?
+20:22:05 <kanzure> BlueMatt: i do logging
+20:22:28 <kanzure> at least the one in the /topic
+20:22:36 <BlueMatt> kanzure: plz2log libera
+20:22:39 <kanzure> just let me know where to point it to
+20:23:06 <BlueMatt> rusty: let me just suggest a different text for roasbeef on 872. we all know how long trivial prs lie around....
+20:23:57 <kanzure> will the channel be moving entirely or should i be logging both places?
+20:24:03 <kanzure> and if so, what is the new channel name?
+20:24:04 <rusty> BlueMatt: not if we pre-approve the open-coding now?  I'd rather agree to merge 872 (pending final test vector check), then pre-approve an open-coded BIP-69 replace assuming two of us sign off.
+20:24:04 <roasbeef> BlueMatt: which would be to essentially include the BIP 69 text?
+20:24:16 <BlueMatt> roasbeef: honestly, bip 69 is, itself, underspecified
+20:24:23 <BlueMatt> rusty: eh, whatever.
+20:24:29 <ariard> kanzure: i believe it's still lightning-dev
+20:24:37 <roasbeef> in this context, only becauase we added this tie-breaker, where else is it underspecified?
+20:25:07 <rusty> roasbeef: I believe the shorter-wins tiebreak is also unspecified in BIP-69.
+20:25:49 <roasbeef> gotcha, if so ofc it can be updated to make it more fully specified
+20:26:03 <rusty> i.e. "ab" < "abc".  Which is common convention, but still needs to be spelled out.
+20:26:30 <rusty> It's pretty trivial tho, so I think it comes under "spelling rule", esp if we've agreed here to it?
+20:26:41 <BlueMatt> anyway, either https://github.com/lightningnetwork/lightning-rfc/pull/872/files#r638250523 or I'll open a new pr with that text.
+20:26:45 <BlueMatt> either way ack the total with that.
+20:27:34 <rusty> BlueMatt: Ack that change.  We can clean it up into an ordered list as a spelling fix if we want.
+20:27:46 <BlueMatt> right, or that.
+20:27:46 <roasbeef> rusty: yeh I meant update BIP 69 itself for that length case
+20:28:03 <rusty> roasbeef: yeah, but BIP-69 is DOA afaict?
+20:28:14 <BlueMatt> roasbeef: bip 69 should basically be used absolutely never anyway. so why bother updating it? :)
+20:28:27 <roasbeef> is it?
+20:28:40 <BlueMatt> yes, I think that's a pretty universally-held view that bip 69 is fundamentally a bad idea.
+20:28:43 <roasbeef> BlueMatt: pretty useful in practice imo, just because you don't use it doesn't mean it isn't useful...
+20:28:56 <BlueMatt> well, outside of lightning where you need a consistent sort order, of course
+20:29:18 <BlueMatt> roasbeef: dunno, you're literally the first person I've spoken to who is sensible on these things who has thought it was a reasonable thing in almost any context outside of lightning.
+20:29:52 <devrandom> the order could be pseudo-random instead?
+20:29:54 <roasbeef> we use it in pool as an eaxmple, useful to have a cannonical ordering in any multi-party transaction context
+20:30:11 <BlueMatt> devrandom: yes, there is basically no reason to ever prefer sorted over random unless you're doing something like lightning
+20:30:42 <BlueMatt> anyway, this is quite a tangent
+20:31:05 <rusty> roasbeef: better is an order by shared secret-prefix SHA, though until taproot it's a bit pointless to try to hide IMHO?
+20:31:10 <roasbeef> idk make your own sorting BIP then if you don't like it, BIPs just say how things can be done, if ppl find them useful (like in thsi context), they'll use it
+20:31:11 <BlueMatt> (and if we ever had commitment transactions that weren't obviously-lightning I'd strongly suggest we permute the order by a shared secret)
+20:31:25 <roasbeef> seems this entire time, no one has cared enough to make another one
+20:31:34 <BlueMatt> roasbeef: why write a bip for the thing that all wallets that are halfway decent already do :)
+20:31:52 <roasbeef> BlueMatt: something something standards
+20:31:58 <rusty> BlueMatt: snap!  In fact, dual funding gives you this control over ordering.
+20:32:25 <BlueMatt> rusty: huh! good opportunity to do sorting with a shared-secret permutation?
+20:32:47 <BlueMatt> rusty: I'd strongly suggest we do that to avoid standing out (though i assume it doesnt matter until taproot?)
+20:33:01 <rusty> BlueMatt: on co-construction, you explicitly give an ordering.  So you can do whatever you want in this case.
+20:33:13 <niftynei> iiuc the DLC project uses the same protocol for ordering as the dual-funding proposal
+20:33:34 <BlueMatt> ah! hmmm, i guess sensible implementations will randomize. guess it'd be cool to just force it to be random based on some shared random values (like pubkeys that dont ever hit the chain)
+20:33:47 <BlueMatt> avoids one more parameter on the wire, which is also always good
+20:34:03 <ariard> yes we have custom inputs'serial_id in dlcs
+20:34:08 <rusty> BlueMatt: Naah, you may want explicit ordering for weird SIGHASH_SINGLE tricks etc.
+20:34:19 <BlueMatt> ohhh, hum. yuck but ok
+20:35:24 <rusty> Anyway, meanwhile I'm happy with Matt's text.  Simply spelling out the requirement is nice.
+20:35:56 * BlueMatt has always found it confusing to have to click through to bip 69, and was confused the first time he read it and had to look up implementation details for what to do if lengths differ
+20:38:20 <rusty> OK, so I think we're in bikeshed territory?  Let's hash it out on issue, and apply it with or without Matt's reword.  I'd rather not block it on tangential rewording.
+20:38:34 <roasbeef> it's mergeable as is imo
+20:39:05 <rusty> #action rusty Merge #872 (after validating test vectors).
+20:39:28 <rusty> I will split Matt's change into a separate PR myself, how's that?  Then we can argue there :)
+20:39:46 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/672
+20:40:24 <BlueMatt> this seems to have enough acks already?
+20:40:27 <BlueMatt> more than enough
+20:40:47 <rusty> BlueMatt: Indeed.  And we have Eclair and c-lightning tested interop on this (it's pretty trivial).  Note that c-lightning has not implemented bech32m yet, so there's no normal way for users to supply an actual v1 address.
+20:41:08 <rusty> Any objections to applying this?
+20:41:12 <BlueMatt> do it
+20:41:14 <roasbeef> heh yeh thought this was merged a while ago
+20:41:15 <roasbeef> do eet
+20:41:37 <rusty> #action rusty to merge #672
+20:42:22 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/issues/873
+20:42:46 <BlueMatt> yes, would be nice, someone's gotta do the work :/
+20:43:19 <rusty> Someone remind me of the purpose of this?  Is it more a "why not, it's free?"
+20:43:50 <BlueMatt> yea, basically, though marginally increases the cost of dos'ing a channel so you have to actually put up non-dust values
+20:44:03 <roasbeef> basically that someone can add dust and make your channel less useful
+20:44:21 <lnd-bot> [13lightning-rfc] 15TheBlueMatt opened pull request #876: Concretize Output Ordering to be less confusing (06master...062021-05-no-bip69) 02https://github.com/lightningnetwork/lightning-rfc/pull/876
+20:45:07 <rusty> Well, since dust levels don't have to be the same on both sides, this proposal is insufficient?
+20:45:20 <BlueMatt> tbh i didnt read the proposed text lol
+20:45:23 <rusty> I think it has to be "if either side considers it non-dust, we count it"?
+20:45:33 <BlueMatt> yea, probably what you said rusty
+20:46:21 <roasbeef> rusty: well the dust is already asymmetric, so I imagine this would be as well?
+20:46:54 <roasbeef> at a high level is proposes not counting dust htlcs to the max htlc limit
+20:47:09 <roasbeef> which would then be clamped only by the max dust settings
+20:47:17 <roasbeef> tho maybe just two limits a better?
+20:48:04 <BlueMatt> but if you have one side that adds a billion dust outputs but they aren't dust for the other side, then the other side cant broadcast a transaction cause it has a billion outputs?
+20:48:15 <rusty> Well, I guess if you propose 1M dust htlcs which are not dust for yourself, that's on you?
+20:48:17 <BlueMatt> cause the dust limit of the broadcaster applies to all the htlcs not just the broadcaster's htlcs
+20:48:33 <BlueMatt> wouldnt you be able to prevent someone from broadcasting their commitment tx?
+20:48:49 <rusty> BlueMatt: the proposal says you can't add an htlc if it would go over the max for the *other* side.
+20:48:55 <roasbeef> BlueMatt: each side says what their dust limit is tho
+20:49:05 <joost_> hi all. won't this open up a new vector where an attacker can send indeed a billion htlcs along the same (26 hop) route into the network? it won't weigh down on the commit txes, but it does on processing
+20:49:06 <rusty> BlueMatt: so I think you can only shoot yourself.
+20:49:24 <joost_> (1 msat htlcs)
+20:49:30 <roasbeef> joost_: yeh so there needs to be another count clamp on dust htlcs themselves
+20:49:50 <BlueMatt> joost_: I dont see why that needs a separate limit? you already have fees and its no different than any other htlc
+20:50:03 <roasbeef> I think the ML post has more context here also
+20:50:23 <rusty> BlueMatt: if you set fees to zero you get this problem though, I guess.
+20:50:35 <roasbeef> I g2g in 10
+20:50:40 <BlueMatt> rusty: I mean you get that problem if you send a bajillion 1sat htlcs too....
+20:51:41 <BlueMatt> rusty: ok, I think I agree that as worded you can only shoot yourself. I'd propose mentioning that you can shoot yourself in the spec.
+20:52:09 <roasbeef> BlueMatt: another limit since those would all be dust, you need to clamp dust and non dust in total count of each
+20:52:30 <BlueMatt> roasbeef: why
+20:52:41 <BlueMatt> roasbeef: what is wrong with having a ton of dust outputs?
+20:52:47 <roasbeef> that PR says don't count dust towards the max htlc number anymore
+20:52:50 <rusty> Thinking more, I'm not sure what the actual CPU limitation BigNum dust HTLCs would be.  I suspect we may have some O(N^2) somewhere in our tx construction code maybe?
+20:52:56 <roasbeef> what stops a commitment from being fully dusted if that isn't there BlueMatt ?
+20:53:04 <BlueMatt> rusty: it doesnt feed into tx construction, though?
+20:53:16 <BlueMatt> rusty: you dont have to send signatures for a dust htlc, too!
+20:53:20 <rusty> BlueMatt: we discard them though, and turn them into fees.
+20:53:26 <BlueMatt> roasbeef: you already have a limit on the total in-flight?
+20:53:30 <rusty> BlueMatt: I think that's O(N).
+20:53:40 <roasbeef> BlueMatt: that PR says you don't count dust towards total in flight anymore
+20:54:00 <BlueMatt> roasbeef: htlc count, I assumed we'd still count them towards value-in-flight
+20:54:15 <rusty> BlueMatt: yeah, but a 1 BTC channel can easily have > 10M dust htlcs.
+20:54:21 <BlueMatt> rusty: right, would need to read code carefully, but i was assuming signature creation/checking would basically dwarf you in any case
+20:54:53 <BlueMatt> ie even one signature could dwarf 1M simple ifs in a for loop....depending on how the code is
+20:54:59 <rusty> BlueMatt: I'd like to benchmark, just to be sure.  We never bothered optimizations for < 1000 htlcs as we have now.
+20:55:05 <BlueMatt> yes, agreed
+20:55:41 <rusty> OK, so next step is to turn it into actual patch with caveats mentioned here?
+20:55:46 <BlueMatt> +1
+20:55:56 <roasbeef> i'll ping eugene about that
+20:56:06 <roasbeef> (crypt-iq)
+20:56:07 <rusty> #action rusty to assign feature bit for #873
+20:56:11 <niftynei> seems like setting a "max fees from dust" limit might be a better way to approach this than a cap on the num of 'dust htlcs'
+20:56:16 <BlueMatt> let me paste this on the issue
+20:56:23 <BlueMatt> niftynei: sgtm
+20:57:00 <rusty> OK, I say we end the meeting early, rather than trying to squeeze something in 4 minutes?
+20:57:18 <BlueMatt> niftynei: its already hard to pick appropriate dust limits trying to munge a "max fees from dust" limit out of it. having an explicit "max fees from dust" seems strictly better than today in any case.
+20:57:22 <BlueMatt> rusty: ack
+20:58:01 <rusty> #endmeting
+20:58:06 <rusty> #endmeeting
