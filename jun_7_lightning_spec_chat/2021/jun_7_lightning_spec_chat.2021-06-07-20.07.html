@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev: jun-7 lightning spec chat</title>
+<style type="text/css">
+/* This is for the .html in the HTML2 writer */
+body {
+    font-family: Helvetica, sans-serif;
+    font-size:14px;
+}
+h1 {
+    text-align: center;
+}
+a {
+    color:navy;
+    text-decoration: none;
+    border-bottom:1px dotted navy;
+}
+a:hover {
+    text-decoration:none;
+    border-bottom: 0;
+    color:#0000B9;
+}
+hr {
+    border: 1px solid #ccc;
+}
+/* The (nick, time) item pairs, and other body text things. */
+.details {
+    font-size: 12px;
+    font-weight:bold;
+}
+/* The 'AGREED:', 'IDEA', etc, prefix to lines. */
+.itemtype {
+    font-style: normal;    /* un-italics it */
+    font-weight: bold;
+}
+/* Example: change single item types.  Capitalized command name.
+/* .TOPIC  {  color:navy;  } */
+/* .AGREED {  color:lime;  } */
+
+</style>
+</head>
+
+<body>
+<h1>#lightning-dev: jun-7 lightning spec chat</h1>
+<span class="details">
+Meeting started by niftynei at 20:07:51 UTC
+(<a href="jun_7_lightning_spec_chat.2021-06-07-20.07.log.html">full logs</a>).</span>
+
+<br><br>
+
+
+
+<h3>Meeting summary</h3>
+<ol>
+<li>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/877">https://github.com/lightningnetwork/lightning-rfc/pull/877</a>
+    ? <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-5'>rusty</a>,
+    20:08:41)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">remove htlc amount restriction</b> <span class="details">(<a href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-8'>niftynei</a>, 20:09:06)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/877">https://github.com/lightningnetwork/lightning-rfc/pull/877</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-9'>niftynei</a>,
+    20:09:11)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">t-bast (?) to
+    add flag to PR</span> <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-36'>niftynei</a>,
+    20:18:07)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">rusty to
+    check LND's params via testnet</span> <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-37'>niftynei</a>,
+    20:18:17)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">concretize output ordering to be less confusing</b> <span class="details">(<a href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-42'>niftynei</a>, 20:20:15)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/876">https://github.com/lightningnetwork/lightning-rfc/pull/876</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-43'>niftynei</a>,
+    20:20:19)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">merge PR
+    876</span> <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-48'>niftynei</a>,
+    20:23:05)</span></li>
+  <li><a
+    href="https://github.com/rust-bitcoin/rust-lightning/issues/927">https://github.com/rust-bitcoin/rust-lightning/issues/927</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-52'>jkczyz</a>,
+    20:23:15)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">BOLT 2: quiescence protocol</b> <span class="details">(<a href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-60'>niftynei</a>, 20:26:50)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/869">https://github.com/lightningnetwork/lightning-rfc/pull/869</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-61'>niftynei</a>,
+    20:26:56)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">rusty to
+    update spec; mention lack of leave-stfu in rationale + clarify
+    initiator selection</span> <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-89'>niftynei</a>,
+    20:36:20)</span></li>
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/868">https://github.com/lightningnetwork/lightning-rfc/pull/868</a>
+    ? <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-94'>rusty</a>,
+    20:37:18)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">bolt 2: upgrade protocol on reestablish</b> <span class="details">(<a href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-95'>niftynei</a>, 20:37:26)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/868">https://github.com/lightningnetwork/lightning-rfc/pull/868</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-96'>niftynei</a>,
+    20:37:33)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">rusty to put
+    feature bit into the PR, make quiescence depend on it.</span> <span
+    class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-114'>rusty</a>,
+    20:48:28)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">what rusty
+    said ;)</span> <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-117'>niftynei</a>,
+    20:48:58)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">rusty to put
+    feature bit into the PR, make quiescence depend on it.</span> <span
+    class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-119'>niftynei</a>,
+    20:49:07)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">proposal: added funding timeout recovery proposal (KEYOLO)</b> <span class="details">(<a href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-122'>niftynei</a>, 20:50:27)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/866">https://github.com/lightningnetwork/lightning-rfc/pull/866</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-123'>niftynei</a>,
+    20:50:32)</span></li>
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/854">https://github.com/lightningnetwork/lightning-rfc/pull/854</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-128'>niftynei</a>,
+    20:51:26)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">close #866 in
+    favor of #854</span> <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-131'>niftynei</a>,
+    20:52:33)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">clarify about length of an `r` field in invoice</b> <span class="details">(<a href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-133'>niftynei</a>, 20:53:36)</span>
+<ol type="a">
+  <li><a href="&lt;BlueMatt&gt;">&lt;BlueMatt&gt;</a> didnt we discuss
+    this last time or two times ago and decide against the keyolo
+    variant (after having been weakly in favor the week before)?  <span
+    class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-134'>niftynei</a>,
+    20:53:38)</span></li>
+  <li><a
+    href="https://github.com/lightningnetwork/lightning-rfc/pull/865">https://github.com/lightningnetwork/lightning-rfc/pull/865</a>
+    <span class="details">(<a
+    href='jun_7_lightning_spec_chat.2021-06-07-20.07.log.html#l-137'>niftynei</a>,
+    20:53:47)</span></li>
+</ol>
+</li>
+</ol>
+<br><br>
+
+
+
+<span class="details">
+Meeting ended at 21:03:20 UTC
+(<a href="jun_7_lightning_spec_chat.2021-06-07-20.07.log.html">full logs</a>).</span>
+
+<br><br>
+
+
+
+<h3>Action items</h3>
+<ol>
+  <li>t-bast (?) to add flag to PR</li>
+  <li>rusty to check LND's params via testnet</li>
+  <li>merge PR 876</li>
+  <li>rusty to update spec; mention lack of leave-stfu in rationale + clarify initiator selection</li>
+  <li>rusty to put feature bit into the PR, make quiescence depend on it.</li>
+  <li>what rusty said ;)</li>
+  <li>rusty to put feature bit into the PR, make quiescence depend on it.</li>
+  <li>close #866 in favor of #854</li>
+</ol>
+<br><br>
+
+
+
+<h3>Action items, by person</h3>
+<ol>
+  <li> rusty <ol>
+    <li>rusty to check LND's params via testnet</li>
+    <li>rusty to update spec; mention lack of leave-stfu in rationale + clarify initiator selection</li>
+    <li>rusty to put feature bit into the PR, make quiescence depend on it.</li>
+    <li>what rusty said ;)</li>
+    <li>rusty to put feature bit into the PR, make quiescence depend on it.</li>
+  </ol></li>
+  <li><b>UNASSIGNED</b><ol>
+    <li>t-bast (?) to add flag to PR</li>
+    <li>merge PR 876</li>
+    <li>close #866 in favor of #854</li>
+  </ol>
+</li>
+</ol>
+<br><br>
+
+
+
+<h3>People present (lines said)</h3>
+<ol>
+  <li>niftynei (62)</li>
+  <li>rusty (55)</li>
+  <li>BlueMatt (17)</li>
+  <li>jkczyz (7)</li>
+  <li>sstone (5)</li>
+  <li>michaelfolkson (3)</li>
+  <li>lndev-bot (3)</li>
+</ol>
+<br><br>
+
+
+
+<span class="details">Generated by <a href="http://wiki.debian.org/MeetBot">MeetBot</a> 0.1.4.</span>
+</body></html>

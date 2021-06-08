@@ -1,0 +1,152 @@
+20:07:51 <niftynei> #startmeeting jun-7 lightning spec chat
+20:07:51 <lndev-bot> Meeting started Mon Jun  7 20:07:51 2021 UTC and is due to finish in 60 minutes.  The chair is niftynei. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:07:51 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:07:51 <lndev-bot> The meeting name has been set to 'jun_7_lightning_spec_chat'
+20:08:41 <rusty> https://github.com/lightningnetwork/lightning-rfc/pull/877 ?
+20:08:49 <rusty> (and work our way backwards? )
+20:08:56 <niftynei> let's start there. thanks!
+20:09:06 <niftynei> #topic remove htlc amount restriction
+20:09:11 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/877
+20:09:59 <niftynei> to summarize, there's a specified limit on how big an individual HTLC can be
+20:10:31 <rusty> This is "wumbo HTLCs" BTW.
+20:10:47 <rusty> (i.e. wumbo payments, vs wumbo channels)
+20:10:55 <niftynei> this PR proposes removing the spec level HTLC cap, reasoning being that max_htlc_value_in_flight_msat is a better method to restrict this amount by
+20:11:05 <niftynei> would this need a flag?
+20:11:24 <rusty> niftynei: weirdly, c-lightning also doesn't enforce this on receive!  (Though we do on send!)
+20:11:51 <rusty> niftynei: not if  nobody was actually enforcing it.  Apparently Eclair wasn't, so I guess LND is the only question?
+20:11:55 <niftynei> well that's convenient for rolling this change out then
+20:12:32 <niftynei> do we have anyone from LND here?
+20:12:36 <sstone> would c-lightning relay such payments (guess not if you would not send them) ?
+20:13:02 <rusty> sstone: no, but we can roll this out pretty fast, since release is next week.  As long as LND allows, really.
+20:13:03 <niftynei> sstone iiuc we'd relay them but not be able to initiate them
+20:13:18 <rusty> niftynei: naah, we'd refuse to add them to the outgoing channel
+20:13:26 <niftynei> oh i see
+20:13:36 <michaelfolkson> rust-lightning does/doesn't? It probably should't be removed from spec if c-lighting still enforces this restriction on the receive?
+20:14:18 <rusty> michaelfolkson: to be clear, we *don't* enforce on receive.  BlueMatt should tell is what rust-lightning does?
+20:14:37 <rusty> niftynei: I can test LND on testnet, I think I'm still testnet rich...
+20:14:56 <michaelfolkson> rusty: Oh sorry, on send, not receive
+20:15:07 <sstone> electrum does check, that how we found this issue
+20:15:35 <rusty> sstone: gah, OK, then it needs to be a feature flag (assuming it checks on receive?)
+20:15:50 <BlueMatt> rusty: good question! sec.
+20:16:35 <jkczyz> couldn't find anything but may not be looking in the right places :P
+20:16:59 <sstone> rusty: yes, on receive
+20:17:28 <rusty> sstone: OK, then we need option_wumbo_htlcs...
+20:17:30 <BlueMatt> yea, well we dont allow wumbo channels anyway, so I dont think it matters, we dont appear to be enforcing this directly in any case.
+20:17:55 <niftynei> rusty why does the check-on receive necessitate a flag, but the check-on send not?
+20:18:07 <niftynei> #action t-bast (?) to add flag to PR
+20:18:17 <niftynei> #action rusty to check LND's params via testnet
+20:18:45 <rusty> niftynei: you're not even supposed to *try* to send, the other side can close channel.
+20:19:00 <niftynei> oh i see.
+20:19:51 <niftynei> ok should we move on?
+20:19:56 <rusty> OK, I'm assigning a feature bit now, on issue.  Move on!
+20:20:15 <niftynei> #topic concretize output ordering to be less confusing
+20:20:19 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/876
+20:20:47 <niftynei> we discussed this last meeting, needs another ACK
+20:21:45 <niftynei> tldr: removes reference to BIP69, instead specify the output ordering heuristics explicitly
+20:22:24 <rusty> Ack, I read it just before.  It's nice and clear, good work BlueMatt.
+20:22:59 <niftynei> ok just needs to be merged then
+20:23:05 <niftynei> #action merge PR 876
+20:23:07 <niftynei> moving on
+20:23:08 <rusty> Acked on issue.
+20:23:13 <jkczyz> I ran into some trouble testing on RL, fwiw
+20:23:15 <jkczyz> https://github.com/rust-bitcoin/rust-lightning/issues/927
+20:23:25 <jkczyz> similar problem when the test vectors were last changed
+20:23:46 <jkczyz> haven't had time to dive into unfortunately. could be on our end
+20:24:27 <BlueMatt> last time the test vectors were changed for this? I had thought without diggint into it a ton it was cause of some confusion over the way it was put into the test vector?
+20:25:29 <jkczyz> ah, rather changes that came from 872
+20:26:19 <jkczyz> which is already merged, so feel free to move on. can discuss offline
+20:26:24 <niftynei> ok great
+20:26:41 <niftynei> next up in the PR list is rusty's quiescence protocol PR
+20:26:50 <niftynei> #topic BOLT 2: quiescence protocol
+20:26:56 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/869
+20:27:07 <niftynei> t-bast gave it a review about a month ago
+20:27:09 <michaelfolkson> A definition of "quiescence" is probably in order first off :)
+20:27:42 <rusty> OK, the idea is to ensure both sides' commitment txs are symmetrical, and stay that way (no changes in flight)
+20:27:43 <BlueMatt> michaelfolkson: see spec
+20:27:56 <rusty> OK, I've implemented this.  It's now slightly asymmetrical, in that one side proposes the other accepts: if they both propose at the same time, opener wins by tiebreak.
+20:28:17 <rusty> (This is useful for splice, where the "initiator" is the one who's proposing the splice).
+20:29:08 <rusty> It's pretty damn simple, really.  Kind of a subset of what we do when shutdown occurs (in that case, there must be no HTLCs present either: here there can be HTLCs).
+20:29:12 <BlueMatt> rusty: do you intend to have a leave-stfu-mode message? or that comes via other things?
+20:29:16 <BlueMatt> (and disconnection)
+20:29:38 <rusty> BlueMatt: yeah, the splice draft defines it to end when splice negotiation is complete.
+20:30:12 <rusty> Since quiescing isn't very useful unless you're going to *do* something, it reads a bit unfinished as is
+20:30:31 <BlueMatt> yea, ok, maybe mention that in rationale.
+20:30:44 <BlueMatt> about initator, does it matter? cant you just figure that out in the actual splice protocol or so?
+20:31:20 <rusty> BlueMatt: you could, but in practice it's the same one who requested quiescence, and adding it to quiescence is easier.
+20:31:34 <BlueMatt> yea, ok
+20:31:39 <rusty> (Like, trivial: if it's a reply, don't set the flag)
+20:31:48 <BlueMatt> should the loses-the-tiebreaker node respond with a stfu-0?
+20:32:07 <BlueMatt> in either case can we more concretely specify that?
+20:32:22 <rusty> BlueMatt: I think that's overkill, though it's important to make sure we test this (easy with lnprototest)
+20:32:29 <BlueMatt> ie "we are considered in quiscence mode when we get a stfu-1 as well"
+20:32:42 <BlueMatt> just to make it super explicit
+20:32:50 <BlueMatt> I'm fine with either answer, just write it down :)
+20:33:58 <rusty> BlueMatt: indeed, it should explicitly say "once you've sent and received, we're quiescent".
+20:34:22 <rusty> (It only says that on the receiver side, it should on the sender too)
+20:34:41 <rusty> OK, two updates then.  Anything else?
+20:35:22 <rusty> Oh, and note that it does not have a feature bit!  Was planning on implying it by splice.
+20:35:40 <rusty> (Perhaps, in future, anything else which wants it, like upgrade protocol)
+20:36:20 <niftynei> #action rusty to update spec; mention lack of leave-stfu in rationale + clarify initiator selection
+20:36:28 <rusty> niftynei: thanks!
+20:36:40 <rusty> (Next PR is update-protocol, which is a bit more exciting!)
+20:37:10 <niftynei> (not having a feature bit sounds similar to the tx construction protocol -- implicit in embedded workflow, so to speak)
+20:37:14 <niftynei> ok let's move on
+20:37:18 <rusty> https://github.com/lightningnetwork/lightning-rfc/pull/868 ?
+20:37:26 <niftynei> #topic bolt 2: upgrade protocol on reestablish
+20:37:33 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/868
+20:38:10 <rusty> OK, so this is implemented now, so I know it's sane!
+20:38:25 <rusty> We support option_static_remotekey upgrade, which is pretty neat.
+20:38:59 <rusty> I stole roasbeef's idea of "channel types" explicitly; they're just a set of feature bits.
+20:40:32 <rusty> Opener (random tiebreaker that she is) says "here's the type of channel I want" in reconnect, and the other side says "here's the type we are, and here are the possible upgrades".  If you're quiescent, and if "desired channel" is in "possible upgrades", you're upgraded.  Otherwise you're "current type" still.
+20:41:06 <rusty> This is robust against reconnections and other changes, and message loss.
+20:41:53 <niftynei> that seems nicely lightweight imo
+20:42:15 <rusty> The "channel type" can be nicely reused to put a TLV in opening messages later, as roasbeef suggested, so you can choose explicitly what channel features you want rather than assumiing that the latest features are best.
+20:42:52 <rusty> Oh, and ofc, you can quiesce, if you weren't quiescent, then reconnect, if you want to force an upgrade (say, if next version won't support the old channel type)
+20:43:47 <rusty> Implmentation note: we had to change "option_static_remotekey" in our db internally from a boolean, to a pair of commitment numbers (local and remote).
+20:44:24 <rusty> So we know, based on commitment number, how to handle it onchain.  Simple thing though.
+20:44:37 <rusty> Any questions?
+20:45:32 <sstone> how does upgrading channels impact the handling of revoked commit txs ? is the change you mention above enough ?
+20:45:41 <rusty> If not, I'll grab features 34/35, and imply support for quiescence.
+20:46:19 <rusty> sstone: yeah, that change is sufficient.  We also have handling for "unknown" commitment txs, which have to be careful to handle both static remotekey and not (this is for future commitments, where we rolled back our db, so it's a minor point).
+20:46:47 <rusty> (Since commitment number is encoded in the tx, it's a simple lookup)
+20:47:18 <sstone> thanks
+20:47:26 <niftynei> eltoo fixes this?? ;)
+20:48:28 <rusty> #action rusty to put feature bit into the PR, make quiescence depend on it.
+20:48:49 <rusty> (I don't know if I can action or not, actually)
+20:48:56 <rusty> Next?
+20:48:58 <niftynei> #action what rusty said ;)
+20:49:00 <niftynei> jk
+20:49:07 <niftynei> #action rusty to put feature bit into the PR, make quiescence depend on it.
+20:49:29 <niftynei> next is 867, which is a draft
+20:50:09 <niftynei> let's skip it and go to 866
+20:50:27 <niftynei> #topic proposal: added funding timeout recovery proposal (KEYOLO)
+20:50:32 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/866
+20:51:07 <BlueMatt> didnt we discuss this last time or two times ago and decide against the keyolo variant (after having been weakly in favor the week before)?
+20:51:16 <BlueMatt> i had thought there was rough consensus against keyolo
+20:51:22 <BlueMatt> in favor of sighash any
+20:51:25 <niftynei> (note that the discussion is over on #854)
+20:51:26 <niftynei> https://github.com/lightningnetwork/lightning-rfc/pull/854
+20:51:56 <rusty> BlueMatt: indeed, we should note that and close this one.
+20:52:20 <niftynei> thanks for that context BlueMatt, ok let's keep going then.
+20:52:33 <niftynei> #action close #866 in favor of #854
+20:53:19 <niftynei> moving on then
+20:53:36 <niftynei> #topic clarify about length of an `r` field in invoice
+20:53:38 <niftynei> #link <BlueMatt> didnt we discuss this last time or two times ago and decide against the keyolo variant (after having been weakly in favor the week before)?
+20:53:38 <niftynei> <BlueMatt> i had thought there was rough consensus against keyolo
+20:53:41 <niftynei> oops
+20:53:47 <niftynei> #link https://github.com/lightningnetwork/lightning-rfc/pull/865
+20:55:09 <rusty> I think this is wrong?  Data length is in 5-words, so it's actually max 5x1024 bits.
+20:56:43 <rusty> Commented on issue
+20:56:59 <niftynei> thanks rusty
+20:57:24 <niftynei> we've got about 5 minutes left
+20:57:39 <niftynei> the next up PR is rusty's splice draft
+20:57:50 <niftynei> should we cover something else?
+20:58:10 <rusty> niftynei: hmm, not much progress on splice, I'm going to circle back after the next c-lightning release.
+20:58:20 <rusty> (Which is in a week or two!)
+20:58:45 <niftynei> fact
+20:58:49 <niftynei> *facts
+21:00:48 <niftynei> i got a few questions at the conference this past weekend about rendezvous routing
+21:01:09 <niftynei> does anyone have an update on that proposal?
+21:02:39 <rusty> niftynei: unf cdecker is sailing and t-bast is training, so maybe we need to defer?  Trampoline and rr would be good to get back to!
+21:03:08 <niftynei> ok, i think that's a wrap then
+21:03:20 <niftynei> #endmeeting

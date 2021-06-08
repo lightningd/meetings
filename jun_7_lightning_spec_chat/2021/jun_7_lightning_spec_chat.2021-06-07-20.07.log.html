@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:07:51</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">jun-7 lightning spec chat</span>
+<a name="l-2"></a><span class="tm">20:07:51</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Jun  7 20:07:51 2021 UTC and is due to finish in 60 minutes.  The chair is niftynei. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:07:51</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:07:51</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'jun_7_lightning_spec_chat'
+<a name="l-5"></a><span class="tm">20:08:41</span><span class="nk"> &lt;rusty&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/877 ?
+<a name="l-6"></a><span class="tm">20:08:49</span><span class="nk"> &lt;rusty&gt;</span> (and work our way backwards? )
+<a name="l-7"></a><span class="tm">20:08:56</span><span class="nk"> &lt;niftynei&gt;</span> let's start there. thanks!
+<a name="l-8"></a><span class="tm">20:09:06</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">remove htlc amount restriction</span>
+<a name="l-9"></a><span class="tm">20:09:11</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/877</span>
+<a name="l-10"></a><span class="tm">20:09:59</span><span class="nk"> &lt;niftynei&gt;</span> to summarize, there's a specified limit on how big an individual HTLC can be
+<a name="l-11"></a><span class="tm">20:10:31</span><span class="nk"> &lt;rusty&gt;</span> This is "wumbo HTLCs" BTW.
+<a name="l-12"></a><span class="tm">20:10:47</span><span class="nk"> &lt;rusty&gt;</span> (i.e. wumbo payments, vs wumbo channels)
+<a name="l-13"></a><span class="tm">20:10:55</span><span class="nk"> &lt;niftynei&gt;</span> this PR proposes removing the spec level HTLC cap, reasoning being that max_htlc_value_in_flight_msat is a better method to restrict this amount by
+<a name="l-14"></a><span class="tm">20:11:05</span><span class="nk"> &lt;niftynei&gt;</span> would this need a flag?
+<a name="l-15"></a><span class="tm">20:11:24</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> weirdly, c-lightning also doesn't enforce this on receive!  (Though we do on send!)
+<a name="l-16"></a><span class="tm">20:11:51</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> not if  nobody was actually enforcing it.  Apparently Eclair wasn't, so I guess LND is the only question?
+<a name="l-17"></a><span class="tm">20:11:55</span><span class="nk"> &lt;niftynei&gt;</span> well that's convenient for rolling this change out then
+<a name="l-18"></a><span class="tm">20:12:32</span><span class="nk"> &lt;niftynei&gt;</span> do we have anyone from LND here?
+<a name="l-19"></a><span class="tm">20:12:36</span><span class="nk"> &lt;sstone&gt;</span> would c-lightning relay such payments (guess not if you would not send them) ?
+<a name="l-20"></a><span class="tm">20:13:02</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">sstone:</span> no, but we can roll this out pretty fast, since release is next week.  As long as LND allows, really.
+<a name="l-21"></a><span class="tm">20:13:03</span><span class="nk"> &lt;niftynei&gt;</span> sstone iiuc we'd relay them but not be able to initiate them
+<a name="l-22"></a><span class="tm">20:13:18</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> naah, we'd refuse to add them to the outgoing channel
+<a name="l-23"></a><span class="tm">20:13:26</span><span class="nk"> &lt;niftynei&gt;</span> oh i see
+<a name="l-24"></a><span class="tm">20:13:36</span><span class="nk"> &lt;michaelfolkson&gt;</span> rust-lightning does/doesn't? It probably should't be removed from spec if c-lighting still enforces this restriction on the receive?
+<a name="l-25"></a><span class="tm">20:14:18</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">michaelfolkson:</span> to be clear, we *don't* enforce on receive.  BlueMatt should tell is what rust-lightning does?
+<a name="l-26"></a><span class="tm">20:14:37</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> I can test LND on testnet, I think I'm still testnet rich...
+<a name="l-27"></a><span class="tm">20:14:56</span><span class="nk"> &lt;michaelfolkson&gt;</span> <span class="hi">rusty:</span> Oh sorry, on send, not receive
+<a name="l-28"></a><span class="tm">20:15:07</span><span class="nk"> &lt;sstone&gt;</span> electrum does check, that how we found this issue
+<a name="l-29"></a><span class="tm">20:15:35</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">sstone:</span> gah, OK, then it needs to be a feature flag (assuming it checks on receive?)
+<a name="l-30"></a><span class="tm">20:15:50</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> good question! sec.
+<a name="l-31"></a><span class="tm">20:16:35</span><span class="nk"> &lt;jkczyz&gt;</span> couldn't find anything but may not be looking in the right places :P
+<a name="l-32"></a><span class="tm">20:16:59</span><span class="nk"> &lt;sstone&gt;</span> <span class="hi">rusty:</span> yes, on receive
+<a name="l-33"></a><span class="tm">20:17:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">sstone:</span> OK, then we need option_wumbo_htlcs...
+<a name="l-34"></a><span class="tm">20:17:30</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, well we dont allow wumbo channels anyway, so I dont think it matters, we dont appear to be enforcing this directly in any case.
+<a name="l-35"></a><span class="tm">20:17:55</span><span class="nk"> &lt;niftynei&gt;</span> rusty why does the check-on receive necessitate a flag, but the check-on send not?
+<a name="l-36"></a><span class="tm">20:18:07</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast (?) to add flag to PR</span>
+<a name="l-37"></a><span class="tm">20:18:17</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to check LND's params via testnet</span>
+<a name="l-38"></a><span class="tm">20:18:45</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> you're not even supposed to *try* to send, the other side can close channel.
+<a name="l-39"></a><span class="tm">20:19:00</span><span class="nk"> &lt;niftynei&gt;</span> oh i see.
+<a name="l-40"></a><span class="tm">20:19:51</span><span class="nk"> &lt;niftynei&gt;</span> ok should we move on?
+<a name="l-41"></a><span class="tm">20:19:56</span><span class="nk"> &lt;rusty&gt;</span> OK, I'm assigning a feature bit now, on issue.  Move on!
+<a name="l-42"></a><span class="tm">20:20:15</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">concretize output ordering to be less confusing</span>
+<a name="l-43"></a><span class="tm">20:20:19</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/876</span>
+<a name="l-44"></a><span class="tm">20:20:47</span><span class="nk"> &lt;niftynei&gt;</span> we discussed this last meeting, needs another ACK
+<a name="l-45"></a><span class="tm">20:21:45</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">tldr:</span> removes reference to BIP69, instead specify the output ordering heuristics explicitly
+<a name="l-46"></a><span class="tm">20:22:24</span><span class="nk"> &lt;rusty&gt;</span> Ack, I read it just before.  It's nice and clear, good work BlueMatt.
+<a name="l-47"></a><span class="tm">20:22:59</span><span class="nk"> &lt;niftynei&gt;</span> ok just needs to be merged then
+<a name="l-48"></a><span class="tm">20:23:05</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">merge PR 876</span>
+<a name="l-49"></a><span class="tm">20:23:07</span><span class="nk"> &lt;niftynei&gt;</span> moving on
+<a name="l-50"></a><span class="tm">20:23:08</span><span class="nk"> &lt;rusty&gt;</span> Acked on issue.
+<a name="l-51"></a><span class="tm">20:23:13</span><span class="nk"> &lt;jkczyz&gt;</span> I ran into some trouble testing on RL, fwiw
+<a name="l-52"></a><span class="tm">20:23:15</span><span class="nk"> &lt;jkczyz&gt;</span> https://github.com/rust-bitcoin/rust-lightning/issues/927
+<a name="l-53"></a><span class="tm">20:23:25</span><span class="nk"> &lt;jkczyz&gt;</span> similar problem when the test vectors were last changed
+<a name="l-54"></a><span class="tm">20:23:46</span><span class="nk"> &lt;jkczyz&gt;</span> haven't had time to dive into unfortunately. could be on our end
+<a name="l-55"></a><span class="tm">20:24:27</span><span class="nk"> &lt;BlueMatt&gt;</span> last time the test vectors were changed for this? I had thought without diggint into it a ton it was cause of some confusion over the way it was put into the test vector?
+<a name="l-56"></a><span class="tm">20:25:29</span><span class="nk"> &lt;jkczyz&gt;</span> ah, rather changes that came from 872
+<a name="l-57"></a><span class="tm">20:26:19</span><span class="nk"> &lt;jkczyz&gt;</span> which is already merged, so feel free to move on. can discuss offline
+<a name="l-58"></a><span class="tm">20:26:24</span><span class="nk"> &lt;niftynei&gt;</span> ok great
+<a name="l-59"></a><span class="tm">20:26:41</span><span class="nk"> &lt;niftynei&gt;</span> next up in the PR list is rusty's quiescence protocol PR
+<a name="l-60"></a><span class="tm">20:26:50</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">BOLT 2: quiescence protocol</span>
+<a name="l-61"></a><span class="tm">20:26:56</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/869</span>
+<a name="l-62"></a><span class="tm">20:27:07</span><span class="nk"> &lt;niftynei&gt;</span> t-bast gave it a review about a month ago
+<a name="l-63"></a><span class="tm">20:27:09</span><span class="nk"> &lt;michaelfolkson&gt;</span> A definition of "quiescence" is probably in order first off :)
+<a name="l-64"></a><span class="tm">20:27:42</span><span class="nk"> &lt;rusty&gt;</span> OK, the idea is to ensure both sides' commitment txs are symmetrical, and stay that way (no changes in flight)
+<a name="l-65"></a><span class="tm">20:27:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">michaelfolkson:</span> see spec
+<a name="l-66"></a><span class="tm">20:27:56</span><span class="nk"> &lt;rusty&gt;</span> OK, I've implemented this.  It's now slightly asymmetrical, in that one side proposes the other accepts: if they both propose at the same time, opener wins by tiebreak.
+<a name="l-67"></a><span class="tm">20:28:17</span><span class="nk"> &lt;rusty&gt;</span> (This is useful for splice, where the "initiator" is the one who's proposing the splice).
+<a name="l-68"></a><span class="tm">20:29:08</span><span class="nk"> &lt;rusty&gt;</span> It's pretty damn simple, really.  Kind of a subset of what we do when shutdown occurs (in that case, there must be no HTLCs present either: here there can be HTLCs).
+<a name="l-69"></a><span class="tm">20:29:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> do you intend to have a leave-stfu-mode message? or that comes via other things?
+<a name="l-70"></a><span class="tm">20:29:16</span><span class="nk"> &lt;BlueMatt&gt;</span> (and disconnection)
+<a name="l-71"></a><span class="tm">20:29:38</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, the splice draft defines it to end when splice negotiation is complete.
+<a name="l-72"></a><span class="tm">20:30:12</span><span class="nk"> &lt;rusty&gt;</span> Since quiescing isn't very useful unless you're going to *do* something, it reads a bit unfinished as is
+<a name="l-73"></a><span class="tm">20:30:31</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, ok, maybe mention that in rationale.
+<a name="l-74"></a><span class="tm">20:30:44</span><span class="nk"> &lt;BlueMatt&gt;</span> about initator, does it matter? cant you just figure that out in the actual splice protocol or so?
+<a name="l-75"></a><span class="tm">20:31:20</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> you could, but in practice it's the same one who requested quiescence, and adding it to quiescence is easier.
+<a name="l-76"></a><span class="tm">20:31:34</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, ok
+<a name="l-77"></a><span class="tm">20:31:39</span><span class="nk"> &lt;rusty&gt;</span> (Like, trivial: if it's a reply, don't set the flag)
+<a name="l-78"></a><span class="tm">20:31:48</span><span class="nk"> &lt;BlueMatt&gt;</span> should the loses-the-tiebreaker node respond with a stfu-0?
+<a name="l-79"></a><span class="tm">20:32:07</span><span class="nk"> &lt;BlueMatt&gt;</span> in either case can we more concretely specify that?
+<a name="l-80"></a><span class="tm">20:32:22</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> I think that's overkill, though it's important to make sure we test this (easy with lnprototest)
+<a name="l-81"></a><span class="tm">20:32:29</span><span class="nk"> &lt;BlueMatt&gt;</span> ie "we are considered in quiscence mode when we get a stfu-1 as well"
+<a name="l-82"></a><span class="tm">20:32:42</span><span class="nk"> &lt;BlueMatt&gt;</span> just to make it super explicit
+<a name="l-83"></a><span class="tm">20:32:50</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm fine with either answer, just write it down :)
+<a name="l-84"></a><span class="tm">20:33:58</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> indeed, it should explicitly say "once you've sent and received, we're quiescent".
+<a name="l-85"></a><span class="tm">20:34:22</span><span class="nk"> &lt;rusty&gt;</span> (It only says that on the receiver side, it should on the sender too)
+<a name="l-86"></a><span class="tm">20:34:41</span><span class="nk"> &lt;rusty&gt;</span> OK, two updates then.  Anything else?
+<a name="l-87"></a><span class="tm">20:35:22</span><span class="nk"> &lt;rusty&gt;</span> Oh, and note that it does not have a feature bit!  Was planning on implying it by splice.
+<a name="l-88"></a><span class="tm">20:35:40</span><span class="nk"> &lt;rusty&gt;</span> (Perhaps, in future, anything else which wants it, like upgrade protocol)
+<a name="l-89"></a><span class="tm">20:36:20</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to update spec; mention lack of leave-stfu in rationale + clarify initiator selection</span>
+<a name="l-90"></a><span class="tm">20:36:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> thanks!
+<a name="l-91"></a><span class="tm">20:36:40</span><span class="nk"> &lt;rusty&gt;</span> (Next PR is update-protocol, which is a bit more exciting!)
+<a name="l-92"></a><span class="tm">20:37:10</span><span class="nk"> &lt;niftynei&gt;</span> (not having a feature bit sounds similar to the tx construction protocol -- implicit in embedded workflow, so to speak)
+<a name="l-93"></a><span class="tm">20:37:14</span><span class="nk"> &lt;niftynei&gt;</span> ok let's move on
+<a name="l-94"></a><span class="tm">20:37:18</span><span class="nk"> &lt;rusty&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/868 ?
+<a name="l-95"></a><span class="tm">20:37:26</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">bolt 2: upgrade protocol on reestablish</span>
+<a name="l-96"></a><span class="tm">20:37:33</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/868</span>
+<a name="l-97"></a><span class="tm">20:38:10</span><span class="nk"> &lt;rusty&gt;</span> OK, so this is implemented now, so I know it's sane!
+<a name="l-98"></a><span class="tm">20:38:25</span><span class="nk"> &lt;rusty&gt;</span> We support option_static_remotekey upgrade, which is pretty neat.
+<a name="l-99"></a><span class="tm">20:38:59</span><span class="nk"> &lt;rusty&gt;</span> I stole roasbeef's idea of "channel types" explicitly; they're just a set of feature bits.
+<a name="l-100"></a><span class="tm">20:40:32</span><span class="nk"> &lt;rusty&gt;</span> Opener (random tiebreaker that she is) says "here's the type of channel I want" in reconnect, and the other side says "here's the type we are, and here are the possible upgrades".  If you're quiescent, and if "desired channel" is in "possible upgrades", you're upgraded.  Otherwise you're "current type" still.
+<a name="l-101"></a><span class="tm">20:41:06</span><span class="nk"> &lt;rusty&gt;</span> This is robust against reconnections and other changes, and message loss.
+<a name="l-102"></a><span class="tm">20:41:53</span><span class="nk"> &lt;niftynei&gt;</span> that seems nicely lightweight imo
+<a name="l-103"></a><span class="tm">20:42:15</span><span class="nk"> &lt;rusty&gt;</span> The "channel type" can be nicely reused to put a TLV in opening messages later, as roasbeef suggested, so you can choose explicitly what channel features you want rather than assumiing that the latest features are best.
+<a name="l-104"></a><span class="tm">20:42:52</span><span class="nk"> &lt;rusty&gt;</span> Oh, and ofc, you can quiesce, if you weren't quiescent, then reconnect, if you want to force an upgrade (say, if next version won't support the old channel type)
+<a name="l-105"></a><span class="tm">20:43:47</span><span class="nk"> &lt;rusty&gt;</span> Implmentation note: we had to change "option_static_remotekey" in our db internally from a boolean, to a pair of commitment numbers (local and remote).
+<a name="l-106"></a><span class="tm">20:44:24</span><span class="nk"> &lt;rusty&gt;</span> So we know, based on commitment number, how to handle it onchain.  Simple thing though.
+<a name="l-107"></a><span class="tm">20:44:37</span><span class="nk"> &lt;rusty&gt;</span> Any questions?
+<a name="l-108"></a><span class="tm">20:45:32</span><span class="nk"> &lt;sstone&gt;</span> how does upgrading channels impact the handling of revoked commit txs ? is the change you mention above enough ?
+<a name="l-109"></a><span class="tm">20:45:41</span><span class="nk"> &lt;rusty&gt;</span> If not, I'll grab features 34/35, and imply support for quiescence.
+<a name="l-110"></a><span class="tm">20:46:19</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">sstone:</span> yeah, that change is sufficient.  We also have handling for "unknown" commitment txs, which have to be careful to handle both static remotekey and not (this is for future commitments, where we rolled back our db, so it's a minor point).
+<a name="l-111"></a><span class="tm">20:46:47</span><span class="nk"> &lt;rusty&gt;</span> (Since commitment number is encoded in the tx, it's a simple lookup)
+<a name="l-112"></a><span class="tm">20:47:18</span><span class="nk"> &lt;sstone&gt;</span> thanks
+<a name="l-113"></a><span class="tm">20:47:26</span><span class="nk"> &lt;niftynei&gt;</span> eltoo fixes this?? ;)
+<a name="l-114"></a><span class="tm">20:48:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to put feature bit into the PR, make quiescence depend on it.</span>
+<a name="l-115"></a><span class="tm">20:48:49</span><span class="nk"> &lt;rusty&gt;</span> (I don't know if I can action or not, actually)
+<a name="l-116"></a><span class="tm">20:48:56</span><span class="nk"> &lt;rusty&gt;</span> Next?
+<a name="l-117"></a><span class="tm">20:48:58</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">what rusty said ;)</span>
+<a name="l-118"></a><span class="tm">20:49:00</span><span class="nk"> &lt;niftynei&gt;</span> jk
+<a name="l-119"></a><span class="tm">20:49:07</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to put feature bit into the PR, make quiescence depend on it.</span>
+<a name="l-120"></a><span class="tm">20:49:29</span><span class="nk"> &lt;niftynei&gt;</span> next is 867, which is a draft
+<a name="l-121"></a><span class="tm">20:50:09</span><span class="nk"> &lt;niftynei&gt;</span> let's skip it and go to 866
+<a name="l-122"></a><span class="tm">20:50:27</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">proposal: added funding timeout recovery proposal (KEYOLO)</span>
+<a name="l-123"></a><span class="tm">20:50:32</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/866</span>
+<a name="l-124"></a><span class="tm">20:51:07</span><span class="nk"> &lt;BlueMatt&gt;</span> didnt we discuss this last time or two times ago and decide against the keyolo variant (after having been weakly in favor the week before)?
+<a name="l-125"></a><span class="tm">20:51:16</span><span class="nk"> &lt;BlueMatt&gt;</span> i had thought there was rough consensus against keyolo
+<a name="l-126"></a><span class="tm">20:51:22</span><span class="nk"> &lt;BlueMatt&gt;</span> in favor of sighash any
+<a name="l-127"></a><span class="tm">20:51:25</span><span class="nk"> &lt;niftynei&gt;</span> (note that the discussion is over on #854)
+<a name="l-128"></a><span class="tm">20:51:26</span><span class="nk"> &lt;niftynei&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/854
+<a name="l-129"></a><span class="tm">20:51:56</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> indeed, we should note that and close this one.
+<a name="l-130"></a><span class="tm">20:52:20</span><span class="nk"> &lt;niftynei&gt;</span> thanks for that context BlueMatt, ok let's keep going then.
+<a name="l-131"></a><span class="tm">20:52:33</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#action </span><span class="cmdline">close #866 in favor of #854</span>
+<a name="l-132"></a><span class="tm">20:53:19</span><span class="nk"> &lt;niftynei&gt;</span> moving on then
+<a name="l-133"></a><span class="tm">20:53:36</span><span class="nk"> &lt;niftynei&gt;</span> <span class="topic">#topic </span><span class="topicline">clarify about length of an `r` field in invoice</span>
+<a name="l-134"></a><span class="tm">20:53:38</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">&lt;BlueMatt&gt; didnt we discuss this last time or two times ago and decide against the keyolo variant (after having been weakly in favor the week before)?</span>
+<a name="l-135"></a><span class="tm">20:53:38</span><span class="nk"> &lt;niftynei&gt;</span> &lt;BlueMatt&gt; i had thought there was rough consensus against keyolo
+<a name="l-136"></a><span class="tm">20:53:41</span><span class="nk"> &lt;niftynei&gt;</span> oops
+<a name="l-137"></a><span class="tm">20:53:47</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/865</span>
+<a name="l-138"></a><span class="tm">20:55:09</span><span class="nk"> &lt;rusty&gt;</span> I think this is wrong?  Data length is in 5-words, so it's actually max 5x1024 bits.
+<a name="l-139"></a><span class="tm">20:56:43</span><span class="nk"> &lt;rusty&gt;</span> Commented on issue
+<a name="l-140"></a><span class="tm">20:56:59</span><span class="nk"> &lt;niftynei&gt;</span> thanks rusty
+<a name="l-141"></a><span class="tm">20:57:24</span><span class="nk"> &lt;niftynei&gt;</span> we've got about 5 minutes left
+<a name="l-142"></a><span class="tm">20:57:39</span><span class="nk"> &lt;niftynei&gt;</span> the next up PR is rusty's splice draft
+<a name="l-143"></a><span class="tm">20:57:50</span><span class="nk"> &lt;niftynei&gt;</span> should we cover something else?
+<a name="l-144"></a><span class="tm">20:58:10</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> hmm, not much progress on splice, I'm going to circle back after the next c-lightning release.
+<a name="l-145"></a><span class="tm">20:58:20</span><span class="nk"> &lt;rusty&gt;</span> (Which is in a week or two!)
+<a name="l-146"></a><span class="tm">20:58:45</span><span class="nk"> &lt;niftynei&gt;</span> fact
+<a name="l-147"></a><span class="tm">20:58:49</span><span class="nk"> &lt;niftynei&gt;</span> *facts
+<a name="l-148"></a><span class="tm">21:00:48</span><span class="nk"> &lt;niftynei&gt;</span> i got a few questions at the conference this past weekend about rendezvous routing
+<a name="l-149"></a><span class="tm">21:01:09</span><span class="nk"> &lt;niftynei&gt;</span> does anyone have an update on that proposal?
+<a name="l-150"></a><span class="tm">21:02:39</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> unf cdecker is sailing and t-bast is training, so maybe we need to defer?  Trampoline and rr would be good to get back to!
+<a name="l-151"></a><span class="tm">21:03:08</span><span class="nk"> &lt;niftynei&gt;</span> ok, i think that's a wrap then
+<a name="l-152"></a><span class="tm">21:03:20</span><span class="nk"> &lt;niftynei&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>
