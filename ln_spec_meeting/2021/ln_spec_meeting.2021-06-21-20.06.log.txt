@@ -1,0 +1,265 @@
+20:06:12 <t-bast> #startmeeting LN Spec Meeting
+20:06:12 <lndev-bot> Meeting started Mon Jun 21 20:06:12 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:06:12 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:06:12 <lndev-bot> The meeting name has been set to 'ln_spec_meeting'
+20:06:26 <t-bast> roasbeef: it's always when we're away that the best things happen!
+20:06:35 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/issues/879
+20:06:51 <t-bast> #topic BIP69 must die
+20:06:53 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/876
+20:07:04 <t-bast> I think we have agreement on this PR
+20:07:12 <cdecker> ack
+20:07:16 <rusty> ack (again)
+20:08:09 <BlueMatt> can i ack my own pr? seems like its me + 2 impls, so thats good?
+20:08:10 <roasbeef> t-bast: what about the inputs?
+20:08:26 <BlueMatt> there are no cases in lightning where you need to sort inputs
+20:08:29 <roasbeef> as in it removes bip 69, but then only specifies output ordering
+20:08:29 <BlueMatt> (today)
+20:08:47 <roasbeef> dual funding?
+20:08:55 <roasbeef> (dunno what it specifies there tho)
+20:08:59 <BlueMatt> yes, with dual funding presumably that will change. iirc thats still a pr.
+20:09:06 <t-bast> we don't need it now, but not sure if we'll need it later
+20:09:16 <BlueMatt> tho we *should* be randomizing things
+20:09:17 <t-bast> we can probably address it later when we add multiple inputs that need sorting?
+20:09:23 <t-bast> or don
+20:09:25 <t-bast> 't
+20:09:26 <rusty> roasbeef: df uses explicit enumeration for sorting, which gives each side some control (or, more commonly, random)
+20:09:32 <BlueMatt> if niftynei agrees to randomize inputs then we dont need to specify :)
+20:09:36 <niftynei> dual-funding intros its own ordering mechanics
+20:09:40 <BlueMatt> yay
+20:09:50 <roasbeef> no strong pref, but imo weird to say bip 69 is underspecified, then replace it w/ something that specifies even list w.r.t the tx data structure
+20:09:58 <roasbeef> even less*
+20:10:17 <roasbeef> I guess remove "Input and" from the top header there?
+20:10:25 <roasbeef> > Transaction Input and Output Ordering
+20:11:19 <rusty> +1, but I think that comes under the "spelling" rule :)
+20:11:27 <BlueMatt> done
+20:11:54 <t-bast> ack on the latest
+20:12:09 <rusty> BlueMatt: sorry, can you fix ToC ?
+20:12:18 <BlueMatt> ToC?
+20:12:25 <BlueMatt> oh contents
+20:12:27 <rusty> Table of Contents :)  Then I will ack :)
+20:12:39 <rusty> BLUE I WANT THE BIKESHED BLUE I WILL DIE ON THIS HILL
+20:12:45 <BlueMatt> fine, done
+20:13:04 * t-bast is looking for something else to change to see how much BlueMatt can take...
+20:13:42 <rusty> Acked on issue,thanks BlueMatt
+20:14:14 <t-bast> Let's merge this :)
+20:14:55 <t-bast> #topic (Obsolete?) HTLC amount restriction
+20:14:57 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/877
+20:15:02 <roasbeef> ah I realize the github bot is still on freenode
+20:15:20 <BlueMatt> *which* freenode, tho
+20:15:20 <t-bast> This PR removes what seems like an obsolete restriction on htlc amounts
+20:15:36 <roasbeef> t-bast: not caught up on this, but from our PoV this went away after wumbo (impl wise)
+20:15:54 <t-bast> roasbeef: ok, that's what I thought, we'd have noticed it earlier if you didn't remove it
+20:16:17 <rusty> t-bast: ack.  Turns out c-lightning only ever restricted what we send, not receive.  So once Electrum (who actually do restrict receive) rolls out their new version, we can simply remove requirement and bingo.
+20:16:19 <t-bast> electrum said they'd just remove it on their end as well, which is the simplest way to deploy a fix
+20:16:43 <rusty> (We should get someone from Electrum at these meetings, this stuff is only going to come up more often)
+20:16:57 <t-bast> It's already removed from their master branch: https://github.com/spesmilo/electrum/commit/f52c0fd571d35c1287b29712c61f58f1174d2e97
+20:17:20 <t-bast> and it looks like they even made a release: https://github.com/spesmilo/electrum/releases/tag/4.1.4
+20:18:05 <rusty> Hmm, is anyone tracking versions on the network?  EVen ad-hoc measures would be nice.  Gah, drop that, we'd be in User-Agent hell again...
+20:18:19 <roasbeef> we track feature bits
+20:18:25 <BlueMatt> lol, was just gonna ask if you had a user agent field pr handy :p
+20:18:34 <roasbeef> alias is basically user agent
+20:18:46 <t-bast> I'll need to revert the second commit on the PR, I think we should only keep the first one, right?
+20:18:54 <BlueMatt> so....pr to require alias not be configurable and just be treated as a user-agent? :p
+20:18:56 <roasbeef> but also maybe not a good idea to make what you're running explicit
+20:19:15 <BlueMatt> roasbeef: I'd put really good money on it being observable in one way or another for ~every node.
+20:19:29 <roasbeef> yeh w/ poking ofc, that's diff that just being able to do an easy scan tho
+20:19:46 <roasbeef> many ppl use it as a user agent already as is tho (they tag lnd or w/e)
+20:19:52 <BlueMatt> any vuln that would come to bear probably takes about as much effort to exploit as it does to build a scanner to know *who* to exploit
+20:19:58 <BlueMatt> I'd be *astounded* if it mattered
+20:20:50 <rusty> Yeah, it's mainly for issues like this, and CVE reveal.  I'm happy with an active scan, I just don't want to write the code :)
+20:21:01 <ariard> yeah, nmap for lightning network, just scan node and fingerprint on accept_channel policy
+20:22:34 <t-bast> I pushed the branch to keep only the first commit, should be easier to review
+20:24:29 <rusty> t-bast: I know "everyone knows" but maybe we should merge the removal of the *receiving* restriction now, and the sending restriction in 3-6 months time?
+20:25:00 <cdecker> Meh, doesn't really matter does it?
+20:25:12 <roasbeef> yeh everyone already does it
+20:25:49 <t-bast> I think it would be cleaner, but since we're in a state where a big chunk of the network already ignores the sending restriction, maybe just going with it makes more sense?
+20:26:20 <rusty> ... except Electrum got it wrong.  t-bast OK, I'm a bit nervous but I guess there's a natural delay between fixing spec and updating the impl's anyway.
+20:26:25 <t-bast> I'm curious whether rust-lightning implemented that restriction or not by the way?
+20:26:31 <rusty> ("wrong" meaning right here!)
+20:27:22 <BlueMatt> t-bast: we haven't bothered turning on wumbo currently, the mainnet testing that exists is still "testing"-level stuff, or close enough to it that we're in no rush.
+20:27:24 <roasbeef> in terms of what's widely used in the wild, the limits basically don't exist anymore already, and if an impl supports mpp then it was already masked from the user when sending
+20:27:27 <BlueMatt> so it doesn't paply
+20:27:29 <BlueMatt> apply
+20:27:49 <t-bast> BlueMatt: thanks
+20:28:19 <rusty> (Side note: this did find us an issue, where for historical reasons we still refused to issue an invoice for more than 2^32 msat!  Fixed in coming release)
+20:28:50 <t-bast> rusty: but since we want to remove this restriction, I'd remove it right now to avoid other new implementations from following the current rule while the network doesn't :)
+20:28:50 <BlueMatt> well with bitcoin price where it is maybe its time to un-wumbo cause, like, dont need it anymore :)
+20:29:10 <rusty> t-bast: agreed.  Ack from me.
+20:29:58 <t-bast> Let me all know if we should merge this PR or wait for a round of review / github acks after the meeting
+20:30:31 <roasbeef> t-bast: do eet
+20:30:36 <rusty> Ah, apparently just causes disconnect, not channel loss.  Though I'm pretty sure it'll get stuck if you've sent commitment_signed (we'd just re-xmit, for example).
+20:31:16 <roasbeef> in the routing context, impls should be setting their max_htlc field on edges anyway, since that guides path finding
+20:31:32 <t-bast> rusty: yes, we'd retransmit so the channel is quite unusable...but since one needs to upgrade anyway to unblock (either the sender to add the restriction or the receiver to lift it, since electrum already shipped the removal, it's the quickest way!)
+20:31:46 <rusty> t-bast: true@!
+20:31:53 <rusty> OK, you've convinced me.
+20:32:18 <t-bast> roasbeef: agreed, we have max_htlc limits for that one, and I think node operators should correctly tweak those (and at some point we should make them dynamic!)
+20:32:38 <t-bast> rusty: yay!
+20:33:15 <cdecker> They are dynamic in the spec, but I guess no impl allows runtime tweaking yet
+20:33:31 <roasbeef> cdecker: of the channel update level parm?
+20:33:33 <roasbeef> param*
+20:33:43 <rusty> roasbeef: good point, we set that to 2^32-1, probably can up that now...
+20:33:47 <cdecker> (with the usual caveat that updates are not instantaneous thus both policies need to be accepted in the transition)
+20:33:57 <t-bast> cdecker: yeah, actually tweaking them at runtime is in fact harder than it looks, what do you do if it becomes actually invalid when you receive it? close the channel?
+20:33:58 <cdecker> roasbeef: yep
+20:34:01 <roasbeef> (we do allow ppl to update the channel update param at runtime fwiw)
+20:34:11 <cdecker> Ah very nice 👍
+20:34:16 <roasbeef> t-bast: same w/ diff fees right?
+20:34:30 <roasbeef> either you have a grace period, or you reject it, then send the latest version to the sender
+20:34:50 <rusty> You can define it easily if you use quiescence, FWIW.  Or, y'know, the simplified update mechanism :)
+20:35:14 <t-bast> yes, I'd do it with quiescence to make sure it cannot cause channel closing regardless of the remote node's policy
+20:35:21 <crypt-iq> t-bast: why can't you just accept the add and fail back with a channel update?
+20:35:37 <crypt-iq> t-bast: why close the channel?
+20:36:08 <cdecker> The max htlc only applies to the outgoing edge, so accepting and erroring is sufficient imho
+20:36:18 <roasbeef> same thing applies to any sort of policy violation triggered by an inconseistnecy
+20:36:42 <t-bast> crypt-iq: if my current limit is 50mBTC and I want to lower it, but we're currently almost at 50mBTC, what should I do?
+20:37:17 <crypt-iq> t-bast: what do you mean by "currently almost at 50mBTC"?
+20:37:20 <t-bast> true, I can start failing HTLCs right after adding them
+20:37:23 <roasbeef> t-bast: what limit, max_htlc? that's just the largest single htlc
+20:37:29 <t-bast> instead of relaying
+20:37:35 <rusty> It's always a q of "why are you restricting it".  If it's because you never ever want it to happen, you need your peer to not send it, since they can get you to hold it for one cycle in your commitment tx.
+20:37:40 <t-bast> I meant max_htlc_value_in_flight_msat
+20:37:58 <t-bast> To reduce exposure to pending HTLCs in high fee environment for example
+20:38:02 <rusty> t-bast:  in that case, you only check when adding and you're good (you can be over, you just can't *go* over).
+20:38:03 <roasbeef> t-bast: ok we're talking about diff things, you can't change that rn anyway
+20:38:24 <rusty> But needs to be carefully defined and implemented, true.
+20:38:34 <cdecker> Right, I was talking about the channel_update gossipped max single HTLC
+20:38:47 <roasbeef> cdecker: yeh same
+20:38:51 <t-bast> sorry for the confusion! I didn't realize that :)
+20:38:53 <crypt-iq> t-bast: I thought you had meant the max_htlc not the sum, my mistake.  Though you do have exposure to that pending HTLC
+20:39:15 <t-bast> we're all in agreement then ;)
+20:39:21 <roasbeef> lol @ irc
+20:39:37 <t-bast> for something like max_htlc_value_inflight_msat I think using quiescence or something like it is the safest way to update
+20:39:49 <rusty> t-bast: yes :)
+20:39:51 <cdecker> Definitely
+20:40:30 <t-bast> Shall we merge the PR and move to the next topic?
+20:41:02 <rusty> t-bast: Please!
+20:41:05 <cdecker> Yep
+20:42:06 <t-bast> #topic Explicit channel type negotiation
+20:42:08 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/880
+20:42:23 <t-bast> Thanks rusty for posting that PR, it was long due and very useful!
+20:42:32 <roasbeef> so we have a version of this that just uses integers for channel types, rather than feature bits
+20:42:52 <t-bast> roasbeef: similar to https://github.com/lightningnetwork/lightning-rfc/pull/880#discussion_r655197765 ?
+20:42:54 <roasbeef> since feature bits aren't sparsely encoded, you can end up w/ a pretty large byte slice there just to communicate you want to use some fringe channel type
+20:42:55 <rusty> Yeah, don't do that.
+20:43:20 <roasbeef> sending over multiple feature bits doesn't make things explicit, don't see what it attempts to achieve
+20:43:43 <roasbeef> t-bast: yeh basically exactly that
+20:43:45 <BlueMatt> do we care *that* much if open_channel gets big(ish)?
+20:43:45 <rusty> We're pretty good at assigning feature bits.  Now you have to assign another thing, too.  I've already doubled the size with option_simplified_update, for example!
+20:43:58 <roasbeef> t-bast: https://github.com/lightningnetwork/lnd/pull/5373
+20:44:18 <roasbeef> rusty: seems like a pretty light lift
+20:44:20 <t-bast> rusty: but what's the behavior when you don't receive exactly the set of feature bits you expect? just consider that this is a channel type you don't know?
+20:44:29 <roasbeef> this is just ambiguous as is
+20:44:29 <rusty> t-bast: yes, of course.
+20:44:31 <BlueMatt> t-bast: yes.
+20:44:35 <roasbeef> and doesn't make things explicit
+20:44:53 <t-bast> rusty: ok, I can live with that, but probably worth making it explicit that it's this exact set of feature bits that is expected
+20:44:53 <roasbeef> vs just sending the type you want (based off their advertised feature bits) and them rejecting or not
+20:45:04 <BlueMatt> roasbeef: if your concern is that open_channel gets too big, do you have a concrete size in mind that would/does make it too big?
+20:45:19 <roasbeef> BlueMatt: see above, this is just ambiguous as defined, and isn't explicit negotiation
+20:45:21 <rusty> I mean, you can treat it as a weird enumeration, but it's easy to know how to extend this to your boutique thing you want.
+20:45:29 <BlueMatt> roasbeef: or are you worried about combinatorial explosion if people are willing to implement that?
+20:45:34 <rusty> roasbeef: it seems very concrete to me?
+20:45:41 <BlueMatt> roasbeef: I dont get how it isn't concrete?
+20:46:07 <roasbeef> what if I send static key bit set and anchors bit set, what happens then?
+20:46:09 <rusty> Technically, we could halve it by only having one bit (not even odd) per feature, but that seems like too much work for too little gain.
+20:46:22 <roasbeef> all you need is a single type
+20:46:23 <rusty> roasbeef: you mean, as defined in the table?
+20:46:40 <roasbeef> this just kinda moves around the current implicit negotiation
+20:47:13 <rusty> roasbeef: it fits neatly in the existing implementation, in that it's trivial to define "channel_type" for old channels which didn't use this.
+20:47:16 <cdecker> roasbeef: so you'd have a separate document that maps a single type to a set of featurebits?
+20:47:40 <roasbeef> cdecker: just a single type to the channel type, feature bits are then just used to advertise what you understand
+20:47:51 <cdecker> seems like that'd just be a shorter encoding of this PR
+20:48:00 <roasbeef> cdecker: yeh that and it's actually explicit
+20:48:01 <rusty> roasbeef: that's what this is, but it's just not compactly encoded?
+20:48:24 <roasbeef> this also seems to leave in the downgrade stuff we had to work around, when we made the static key bit required
+20:48:34 <t-bast> I started implementing it and what irked me a bit was whether I should allow receiving `mpp + static_remotekey + anchor_output` and ignore the `mpp` part as an (harmless) implementation mistake, but if we're strict on the exact features that map to each channel_type, that works for me
+20:48:36 <cdecker> Adds the overhead of maintaining that document, and ultimately everybody will self-assign an experimental type ID?
+20:48:39 <roasbeef> if we go w/ what they send in accept, I just bail if I don't like it?
+20:49:01 <rusty> t-bast: yep, don't open.
+20:49:01 <roasbeef> cdecker: maintainence of the BOLTs is already weird as is, we have a lot of in-line if statements, and not really clear where a new implementor is meant to start
+20:49:20 <roasbeef> docs have grown to pretty massive sizes
+20:49:21 <rusty> roasbeef: you bail if they don't exactly mirror one you offered, yes./
+20:49:24 <cdecker> True, so why add to that load?
+20:49:32 <roasbeef> rusty: yeh that's not explicit, vs just saying "I want to use this type"
+20:49:51 <roasbeef> me sending a set of bits and you choosing one isn't explicit
+20:49:59 <rusty> roasbeef: opener: here are the types are support.  accepter: this is the one I choose.
+20:50:00 <roasbeef> me just sending the type I want to open is
+20:50:07 <rusty> roasbeef: sure, then only send one?
+20:50:21 <roasbeef> rusty: sure, then why not just sent a single int at that ppoint?
+20:50:43 <roasbeef> rusty: the acceptor clause means the downgrade stuff like the static key required thing we had to work around still exists
+20:50:51 <rusty> roasbeef: no, don't offer that!
+20:50:58 * roasbeef sighs
+20:51:02 <rusty> Using a different enumeration does not change this.
+20:51:36 <rusty> And if you only offer anchors, then that's the only thing they can accept.  I don't see what we're missing here?
+20:51:46 <cdecker> Agreed, the list of featurebitsets enables a superset of the functionality of a type enumeration imho
+20:52:20 <roasbeef> cdecker: no it isn't, it doesn't give the channel opener control of what type of channel is there if multiple bits are advertised and the acceptor chooses
+20:52:24 <rusty> Sure, the enumeration is built from feature bits.  That makes it trivial to extend in future, though a bit verbose.  It makes it easy to implement.
+20:52:29 <roasbeef> why send bits again if they already exist in the node ann, and using the node ann I can see what you support?
+20:52:51 <roasbeef> then you only need to specify in open_chan, the responder can take it or leave it
+20:52:53 <niftynei> arent bits just an 'exploded number' anyway? you could condense them to a single value if you wanted to....
+20:53:07 <rusty> roasbeef: it's not an arbitrary bitset.  It's an enumeration built out of feature bits.
+20:53:08 * niftynei realizes this is extremely besides the point
+20:53:19 <roasbeef> niftynei: yeh exactly, and they already also follow a clear orderong, so no extra overhead to say ok this is 0, 1, 2, 3, etc
+20:53:19 <BlueMatt> sorry, got distracted by process servers 🎉
+20:53:23 <cdecker> Ok, we seem to have a major misunderstanding here: the PR offers a list of selections [ [ANCHOR, STATIC], [STATIC]] and the acceptor choses 0, or 1
+20:53:34 <roasbeef> cdecker: why send it again?
+20:53:37 <t-bast> roasbeef: just to make sure, have you seen that the PR doesn't send just a features bits array in the open message, but actually an *array* of features bits array (one per channel type proposed)?
+20:53:47 <roasbeef> we already know the feature bits and their types, so you just need to send a single integer
+20:53:49 <cdecker> Roasbeefs enum variant says: offer channel [0, 1], and acceptor looks into the enum doc and selects 0
+20:53:54 <roasbeef> this does implciit negotiation at basically 2 places
+20:54:05 <BlueMatt> I dont see how your proposal changes that?
+20:54:35 <cdecker> Yeah, plus it adds a lookup in a table which needs maintaining
+20:54:36 <roasbeef> BlueMatt: it leaves the node advertisement and send a single type at funding negotiation time
+20:54:57 <roasbeef> we already have look up tables for this stuff, as we all map the feature bits into an actual channel type at the impl level
+20:54:57 <niftynei> well the nice thing about using bits to derive the number, so to speak, is that there's no enumeration required for what the numbers *mean*
+20:55:10 <cdecker> The PR doesn't change the node_announcement does it?
+20:55:23 <crypt-iq> It only changes open/accept channel iirc
+20:55:37 <roasbeef> cdecker: no, but it sends the same feature bit information at the chan open level, when I already know what you support, so I can just send the type
+20:55:40 <cdecker> Right, which is functionally equivalent to roasbeef's thing
+20:55:41 <BlueMatt> roasbeef: I dont see why you'd need to always use lookup tables at an impl level, and even if you did, its easy to map
+20:55:56 <roasbeef> BlueMatt: feature bit -> actual type for the channel in codebase?
+20:56:00 <cdecker> But you also send a list of types in the open, don't you?
+20:56:07 <crypt-iq> Since it is a TLV field (which is optional?), I don't see why any other impl's need to care if they don't understand it?
+20:56:50 <BlueMatt> roasbeef: sure, but, like, can I not implement it as "features X and Y" at the impl level, if the impl of X and Y are wholly separate things?
+20:57:02 <rusty> I don't want YA pinchpoint. in the spec.  I don't want to ahve to assign a new channel_type.
+20:57:10 <roasbeef> BlueMatt: dunno what you mean
+20:57:49 <roasbeef> rusty: it's pretty simple, use the feature bit position number if you want to, no extra selection needed
+20:57:55 <BlueMatt> like, I dont see why its relevant that you want to implement this as an enum of channel types
+20:58:06 <rusty> roasbeef: option_simplified_update is *additive* to the others though!
+20:58:13 <BlueMatt> I may not want to, and especially for two features which are in separate parts of the code, why would I want to enum that?
+20:58:22 <BlueMatt> sure, for some parts, yes, but others no
+20:58:25 <rusty> So now you want a bitset, OOPS.
+20:58:27 <cdecker> Well, we can just make the enum use large numbers that happen to have the corresponding bits set, done
+20:58:32 <roasbeef> rusty: yeh you need to unroll, yuo'd need to impl that anew for any channel type that makes a drastic departure
+20:58:32 <cdecker> :-)
+20:59:00 <cdecker> (thanks niftynei for that idea )
+20:59:00 <roasbeef> like that simplified update protocol may need to be defined for new channel types in teh future, so that would add a new channel type iteslf for each iteration
+20:59:06 <rusty> roasbeef: yeah, well defining values by reusing feature bits avoids this problem.
+20:59:08 <roasbeef> otherwise you have the same feature bit incompat again
+20:59:08 <t-bast> I think the option_simplified_update being additive is a good argument in favor of rusty's version, it can easily be added on top and is orthogonal to commitment format (which is impacted by the choice of static_remotekey / anchor / anchor-0-fees)
+20:59:24 * BlueMatt -> time out, sorry, y'all. thanks for the time
+20:59:37 <roasbeef> t-bast: I g2g, but please re-read what I wrote above, it doesn't achieve explicit feature bit negotiation, and maybe take a glance at that PR of ours I linked above
+20:59:40 <rusty> (option_simplified_update was my motivation here: you may want to advertize support for it, but not have it your preferred methd)
+20:59:51 <rusty> roasbeef: sure, but you're completely wrong.
+20:59:55 <BlueMatt> roasbeef: can you write up your objection more full-form?
+21:00:00 <BlueMatt> I dont think anyone here understood your points
+21:00:01 <t-bast> roasbeef: will do, I'll keep working on it this week
+21:00:05 <rusty> Yeah, I think we got our wires crossed :(
+21:00:22 <cdecker> Sorry, a go PR is not a spec PR that can be understood without spending loads of time to get the context
+21:00:25 <roasbeef> rusty: sure, we've implemented it and it achieves the goals we set out, but what you've described doesn't, I guess you can use whichever
+21:00:41 <rusty> roasbeef: I disagree :)
+21:00:43 <BlueMatt> roasbeef: please write up, in long-form english, why that is.
+21:00:47 <BlueMatt> roasbeef: and post it on the pr :)
+21:00:51 <roasbeef> cdecker: yeh we've been prototpying to make sure nothign weird comes up
+21:01:31 <cdecker> That's fine, but here we have an explicit PR that achieves the goal, vs experimental code that is far too spread apart to really get the gist of
+21:01:34 <rusty> FWIW, this channel_type idea gets into splice, too, so we can update to a taproot channel.  It's a pretty neat encapsulation (thanks roasbeef for the idea)
+21:01:55 <rusty> cdecker: I also have an implementation, FWIW, but I'm still writing lnprototests for it.
+21:03:06 <t-bast> I'll do more work on the eclair implementation this week and keep in mind both approaches and will report back on the spec PR
+21:03:08 <rusty> I should probably make it v. clear in the PR, that this is not some arbitrary feature bits, but reusing their values for convenience.  I am happy to switch from odd -> even, too...
+21:03:24 * cdecker is also reaching timeout. Thanks everyone ^^
+21:03:42 <BlueMatt> se y'all.
+21:03:47 <t-bast> Alright it looks like we're at the limit and many are dropping off, maybe we should call it a day?
+21:03:50 <rusty> Thanks!  I think we've fallen below quorum, but happy to chat for a whil longer.
+21:04:04 <t-bast> crypt-iq: we'll put your two issues at the top of the agenda next time
+21:04:13 <crypt-iq> t-bast: sounds good to me
+21:04:16 <t-bast> #endmeeting

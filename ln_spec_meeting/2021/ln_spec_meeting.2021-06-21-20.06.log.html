@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:06:12</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">LN Spec Meeting</span>
+<a name="l-2"></a><span class="tm">20:06:12</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Jun 21 20:06:12 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:06:12</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:06:12</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'ln_spec_meeting'
+<a name="l-5"></a><span class="tm">20:06:26</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it's always when we're away that the best things happen!
+<a name="l-6"></a><span class="tm">20:06:35</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/issues/879</span>
+<a name="l-7"></a><span class="tm">20:06:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">BIP69 must die</span>
+<a name="l-8"></a><span class="tm">20:06:53</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/876</span>
+<a name="l-9"></a><span class="tm">20:07:04</span><span class="nk"> &lt;t-bast&gt;</span> I think we have agreement on this PR
+<a name="l-10"></a><span class="tm">20:07:12</span><span class="nk"> &lt;cdecker&gt;</span> ack
+<a name="l-11"></a><span class="tm">20:07:16</span><span class="nk"> &lt;rusty&gt;</span> ack (again)
+<a name="l-12"></a><span class="tm">20:08:09</span><span class="nk"> &lt;BlueMatt&gt;</span> can i ack my own pr? seems like its me + 2 impls, so thats good?
+<a name="l-13"></a><span class="tm">20:08:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> what about the inputs?
+<a name="l-14"></a><span class="tm">20:08:26</span><span class="nk"> &lt;BlueMatt&gt;</span> there are no cases in lightning where you need to sort inputs
+<a name="l-15"></a><span class="tm">20:08:29</span><span class="nk"> &lt;roasbeef&gt;</span> as in it removes bip 69, but then only specifies output ordering
+<a name="l-16"></a><span class="tm">20:08:29</span><span class="nk"> &lt;BlueMatt&gt;</span> (today)
+<a name="l-17"></a><span class="tm">20:08:47</span><span class="nk"> &lt;roasbeef&gt;</span> dual funding?
+<a name="l-18"></a><span class="tm">20:08:55</span><span class="nk"> &lt;roasbeef&gt;</span> (dunno what it specifies there tho)
+<a name="l-19"></a><span class="tm">20:08:59</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, with dual funding presumably that will change. iirc thats still a pr.
+<a name="l-20"></a><span class="tm">20:09:06</span><span class="nk"> &lt;t-bast&gt;</span> we don't need it now, but not sure if we'll need it later
+<a name="l-21"></a><span class="tm">20:09:16</span><span class="nk"> &lt;BlueMatt&gt;</span> tho we *should* be randomizing things
+<a name="l-22"></a><span class="tm">20:09:17</span><span class="nk"> &lt;t-bast&gt;</span> we can probably address it later when we add multiple inputs that need sorting?
+<a name="l-23"></a><span class="tm">20:09:23</span><span class="nk"> &lt;t-bast&gt;</span> or don
+<a name="l-24"></a><span class="tm">20:09:25</span><span class="nk"> &lt;t-bast&gt;</span> 't
+<a name="l-25"></a><span class="tm">20:09:26</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> df uses explicit enumeration for sorting, which gives each side some control (or, more commonly, random)
+<a name="l-26"></a><span class="tm">20:09:32</span><span class="nk"> &lt;BlueMatt&gt;</span> if niftynei agrees to randomize inputs then we dont need to specify :)
+<a name="l-27"></a><span class="tm">20:09:36</span><span class="nk"> &lt;niftynei&gt;</span> dual-funding intros its own ordering mechanics
+<a name="l-28"></a><span class="tm">20:09:40</span><span class="nk"> &lt;BlueMatt&gt;</span> yay
+<a name="l-29"></a><span class="tm">20:09:50</span><span class="nk"> &lt;roasbeef&gt;</span> no strong pref, but imo weird to say bip 69 is underspecified, then replace it w/ something that specifies even list w.r.t the tx data structure
+<a name="l-30"></a><span class="tm">20:09:58</span><span class="nk"> &lt;roasbeef&gt;</span> even less*
+<a name="l-31"></a><span class="tm">20:10:17</span><span class="nk"> &lt;roasbeef&gt;</span> I guess remove "Input and" from the top header there?
+<a name="l-32"></a><span class="tm">20:10:25</span><span class="nk"> &lt;roasbeef&gt;</span> &gt; Transaction Input and Output Ordering
+<a name="l-33"></a><span class="tm">20:11:19</span><span class="nk"> &lt;rusty&gt;</span> +1, but I think that comes under the "spelling" rule :)
+<a name="l-34"></a><span class="tm">20:11:27</span><span class="nk"> &lt;BlueMatt&gt;</span> done
+<a name="l-35"></a><span class="tm">20:11:54</span><span class="nk"> &lt;t-bast&gt;</span> ack on the latest
+<a name="l-36"></a><span class="tm">20:12:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> sorry, can you fix ToC ?
+<a name="l-37"></a><span class="tm">20:12:18</span><span class="nk"> &lt;BlueMatt&gt;</span> ToC?
+<a name="l-38"></a><span class="tm">20:12:25</span><span class="nk"> &lt;BlueMatt&gt;</span> oh contents
+<a name="l-39"></a><span class="tm">20:12:27</span><span class="nk"> &lt;rusty&gt;</span> Table of Contents :)  Then I will ack :)
+<a name="l-40"></a><span class="tm">20:12:39</span><span class="nk"> &lt;rusty&gt;</span> BLUE I WANT THE BIKESHED BLUE I WILL DIE ON THIS HILL
+<a name="l-41"></a><span class="tm">20:12:45</span><span class="nk"> &lt;BlueMatt&gt;</span> fine, done
+<a name="l-42"></a><span class="tm">20:13:04 </span><span class="nka">* t-bast</span> <span class="ac">is looking for something else to change to see how much BlueMatt can take...</span>
+<a name="l-43"></a><span class="tm">20:13:42</span><span class="nk"> &lt;rusty&gt;</span> Acked on issue,thanks BlueMatt
+<a name="l-44"></a><span class="tm">20:14:14</span><span class="nk"> &lt;t-bast&gt;</span> Let's merge this :)
+<a name="l-45"></a><span class="tm">20:14:55</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">(Obsolete?) HTLC amount restriction</span>
+<a name="l-46"></a><span class="tm">20:14:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/877</span>
+<a name="l-47"></a><span class="tm">20:15:02</span><span class="nk"> &lt;roasbeef&gt;</span> ah I realize the github bot is still on freenode
+<a name="l-48"></a><span class="tm">20:15:20</span><span class="nk"> &lt;BlueMatt&gt;</span> *which* freenode, tho
+<a name="l-49"></a><span class="tm">20:15:20</span><span class="nk"> &lt;t-bast&gt;</span> This PR removes what seems like an obsolete restriction on htlc amounts
+<a name="l-50"></a><span class="tm">20:15:36</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> not caught up on this, but from our PoV this went away after wumbo (impl wise)
+<a name="l-51"></a><span class="tm">20:15:54</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> ok, that's what I thought, we'd have noticed it earlier if you didn't remove it
+<a name="l-52"></a><span class="tm">20:16:17</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> ack.  Turns out c-lightning only ever restricted what we send, not receive.  So once Electrum (who actually do restrict receive) rolls out their new version, we can simply remove requirement and bingo.
+<a name="l-53"></a><span class="tm">20:16:19</span><span class="nk"> &lt;t-bast&gt;</span> electrum said they'd just remove it on their end as well, which is the simplest way to deploy a fix
+<a name="l-54"></a><span class="tm">20:16:43</span><span class="nk"> &lt;rusty&gt;</span> (We should get someone from Electrum at these meetings, this stuff is only going to come up more often)
+<a name="l-55"></a><span class="tm">20:16:57</span><span class="nk"> &lt;t-bast&gt;</span> It's already removed from their master branch: https://github.com/spesmilo/electrum/commit/f52c0fd571d35c1287b29712c61f58f1174d2e97
+<a name="l-56"></a><span class="tm">20:17:20</span><span class="nk"> &lt;t-bast&gt;</span> and it looks like they even made a release: https://github.com/spesmilo/electrum/releases/tag/4.1.4
+<a name="l-57"></a><span class="tm">20:18:05</span><span class="nk"> &lt;rusty&gt;</span> Hmm, is anyone tracking versions on the network?  EVen ad-hoc measures would be nice.  Gah, drop that, we'd be in User-Agent hell again...
+<a name="l-58"></a><span class="tm">20:18:19</span><span class="nk"> &lt;roasbeef&gt;</span> we track feature bits
+<a name="l-59"></a><span class="tm">20:18:25</span><span class="nk"> &lt;BlueMatt&gt;</span> lol, was just gonna ask if you had a user agent field pr handy :p
+<a name="l-60"></a><span class="tm">20:18:34</span><span class="nk"> &lt;roasbeef&gt;</span> alias is basically user agent
+<a name="l-61"></a><span class="tm">20:18:46</span><span class="nk"> &lt;t-bast&gt;</span> I'll need to revert the second commit on the PR, I think we should only keep the first one, right?
+<a name="l-62"></a><span class="tm">20:18:54</span><span class="nk"> &lt;BlueMatt&gt;</span> so....pr to require alias not be configurable and just be treated as a user-agent? :p
+<a name="l-63"></a><span class="tm">20:18:56</span><span class="nk"> &lt;roasbeef&gt;</span> but also maybe not a good idea to make what you're running explicit
+<a name="l-64"></a><span class="tm">20:19:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I'd put really good money on it being observable in one way or another for ~every node.
+<a name="l-65"></a><span class="tm">20:19:29</span><span class="nk"> &lt;roasbeef&gt;</span> yeh w/ poking ofc, that's diff that just being able to do an easy scan tho
+<a name="l-66"></a><span class="tm">20:19:46</span><span class="nk"> &lt;roasbeef&gt;</span> many ppl use it as a user agent already as is tho (they tag lnd or w/e)
+<a name="l-67"></a><span class="tm">20:19:52</span><span class="nk"> &lt;BlueMatt&gt;</span> any vuln that would come to bear probably takes about as much effort to exploit as it does to build a scanner to know *who* to exploit
+<a name="l-68"></a><span class="tm">20:19:58</span><span class="nk"> &lt;BlueMatt&gt;</span> I'd be *astounded* if it mattered
+<a name="l-69"></a><span class="tm">20:20:50</span><span class="nk"> &lt;rusty&gt;</span> Yeah, it's mainly for issues like this, and CVE reveal.  I'm happy with an active scan, I just don't want to write the code :)
+<a name="l-70"></a><span class="tm">20:21:01</span><span class="nk"> &lt;ariard&gt;</span> yeah, nmap for lightning network, just scan node and fingerprint on accept_channel policy
+<a name="l-71"></a><span class="tm">20:22:34</span><span class="nk"> &lt;t-bast&gt;</span> I pushed the branch to keep only the first commit, should be easier to review
+<a name="l-72"></a><span class="tm">20:24:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> I know "everyone knows" but maybe we should merge the removal of the *receiving* restriction now, and the sending restriction in 3-6 months time?
+<a name="l-73"></a><span class="tm">20:25:00</span><span class="nk"> &lt;cdecker&gt;</span> Meh, doesn't really matter does it?
+<a name="l-74"></a><span class="tm">20:25:12</span><span class="nk"> &lt;roasbeef&gt;</span> yeh everyone already does it
+<a name="l-75"></a><span class="tm">20:25:49</span><span class="nk"> &lt;t-bast&gt;</span> I think it would be cleaner, but since we're in a state where a big chunk of the network already ignores the sending restriction, maybe just going with it makes more sense?
+<a name="l-76"></a><span class="tm">20:26:20</span><span class="nk"> &lt;rusty&gt;</span> ... except Electrum got it wrong.  t-bast OK, I'm a bit nervous but I guess there's a natural delay between fixing spec and updating the impl's anyway.
+<a name="l-77"></a><span class="tm">20:26:25</span><span class="nk"> &lt;t-bast&gt;</span> I'm curious whether rust-lightning implemented that restriction or not by the way?
+<a name="l-78"></a><span class="tm">20:26:31</span><span class="nk"> &lt;rusty&gt;</span> ("wrong" meaning right here!)
+<a name="l-79"></a><span class="tm">20:27:22</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> we haven't bothered turning on wumbo currently, the mainnet testing that exists is still "testing"-level stuff, or close enough to it that we're in no rush.
+<a name="l-80"></a><span class="tm">20:27:24</span><span class="nk"> &lt;roasbeef&gt;</span> in terms of what's widely used in the wild, the limits basically don't exist anymore already, and if an impl supports mpp then it was already masked from the user when sending
+<a name="l-81"></a><span class="tm">20:27:27</span><span class="nk"> &lt;BlueMatt&gt;</span> so it doesn't paply
+<a name="l-82"></a><span class="tm">20:27:29</span><span class="nk"> &lt;BlueMatt&gt;</span> apply
+<a name="l-83"></a><span class="tm">20:27:49</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> thanks
+<a name="l-84"></a><span class="tm">20:28:19</span><span class="nk"> &lt;rusty&gt;</span> (Side note: this did find us an issue, where for historical reasons we still refused to issue an invoice for more than 2^32 msat!  Fixed in coming release)
+<a name="l-85"></a><span class="tm">20:28:50</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but since we want to remove this restriction, I'd remove it right now to avoid other new implementations from following the current rule while the network doesn't :)
+<a name="l-86"></a><span class="tm">20:28:50</span><span class="nk"> &lt;BlueMatt&gt;</span> well with bitcoin price where it is maybe its time to un-wumbo cause, like, dont need it anymore :)
+<a name="l-87"></a><span class="tm">20:29:10</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> agreed.  Ack from me.
+<a name="l-88"></a><span class="tm">20:29:58</span><span class="nk"> &lt;t-bast&gt;</span> Let me all know if we should merge this PR or wait for a round of review / github acks after the meeting
+<a name="l-89"></a><span class="tm">20:30:31</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> do eet
+<a name="l-90"></a><span class="tm">20:30:36</span><span class="nk"> &lt;rusty&gt;</span> Ah, apparently just causes disconnect, not channel loss.  Though I'm pretty sure it'll get stuck if you've sent commitment_signed (we'd just re-xmit, for example).
+<a name="l-91"></a><span class="tm">20:31:16</span><span class="nk"> &lt;roasbeef&gt;</span> in the routing context, impls should be setting their max_htlc field on edges anyway, since that guides path finding
+<a name="l-92"></a><span class="tm">20:31:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> yes, we'd retransmit so the channel is quite unusable...but since one needs to upgrade anyway to unblock (either the sender to add the restriction or the receiver to lift it, since electrum already shipped the removal, it's the quickest way!)
+<a name="l-93"></a><span class="tm">20:31:46</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> true@!
+<a name="l-94"></a><span class="tm">20:31:53</span><span class="nk"> &lt;rusty&gt;</span> OK, you've convinced me.
+<a name="l-95"></a><span class="tm">20:32:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> agreed, we have max_htlc limits for that one, and I think node operators should correctly tweak those (and at some point we should make them dynamic!)
+<a name="l-96"></a><span class="tm">20:32:38</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> yay!
+<a name="l-97"></a><span class="tm">20:33:15</span><span class="nk"> &lt;cdecker&gt;</span> They are dynamic in the spec, but I guess no impl allows runtime tweaking yet
+<a name="l-98"></a><span class="tm">20:33:31</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> of the channel update level parm?
+<a name="l-99"></a><span class="tm">20:33:33</span><span class="nk"> &lt;roasbeef&gt;</span> param*
+<a name="l-100"></a><span class="tm">20:33:43</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> good point, we set that to 2^32-1, probably can up that now...
+<a name="l-101"></a><span class="tm">20:33:47</span><span class="nk"> &lt;cdecker&gt;</span> (with the usual caveat that updates are not instantaneous thus both policies need to be accepted in the transition)
+<a name="l-102"></a><span class="tm">20:33:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> yeah, actually tweaking them at runtime is in fact harder than it looks, what do you do if it becomes actually invalid when you receive it? close the channel?
+<a name="l-103"></a><span class="tm">20:33:58</span><span class="nk"> &lt;cdecker&gt;</span> <span class="hi">roasbeef:</span> yep
+<a name="l-104"></a><span class="tm">20:34:01</span><span class="nk"> &lt;roasbeef&gt;</span> (we do allow ppl to update the channel update param at runtime fwiw)
+<a name="l-105"></a><span class="tm">20:34:11</span><span class="nk"> &lt;cdecker&gt;</span> Ah very nice 👍
+<a name="l-106"></a><span class="tm">20:34:16</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> same w/ diff fees right?
+<a name="l-107"></a><span class="tm">20:34:30</span><span class="nk"> &lt;roasbeef&gt;</span> either you have a grace period, or you reject it, then send the latest version to the sender
+<a name="l-108"></a><span class="tm">20:34:50</span><span class="nk"> &lt;rusty&gt;</span> You can define it easily if you use quiescence, FWIW.  Or, y'know, the simplified update mechanism :)
+<a name="l-109"></a><span class="tm">20:35:14</span><span class="nk"> &lt;t-bast&gt;</span> yes, I'd do it with quiescence to make sure it cannot cause channel closing regardless of the remote node's policy
+<a name="l-110"></a><span class="tm">20:35:21</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">t-bast:</span> why can't you just accept the add and fail back with a channel update?
+<a name="l-111"></a><span class="tm">20:35:37</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">t-bast:</span> why close the channel?
+<a name="l-112"></a><span class="tm">20:36:08</span><span class="nk"> &lt;cdecker&gt;</span> The max htlc only applies to the outgoing edge, so accepting and erroring is sufficient imho
+<a name="l-113"></a><span class="tm">20:36:18</span><span class="nk"> &lt;roasbeef&gt;</span> same thing applies to any sort of policy violation triggered by an inconseistnecy
+<a name="l-114"></a><span class="tm">20:36:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">crypt-iq:</span> if my current limit is 50mBTC and I want to lower it, but we're currently almost at 50mBTC, what should I do?
+<a name="l-115"></a><span class="tm">20:37:17</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">t-bast:</span> what do you mean by "currently almost at 50mBTC"?
+<a name="l-116"></a><span class="tm">20:37:20</span><span class="nk"> &lt;t-bast&gt;</span> true, I can start failing HTLCs right after adding them
+<a name="l-117"></a><span class="tm">20:37:23</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> what limit, max_htlc? that's just the largest single htlc
+<a name="l-118"></a><span class="tm">20:37:29</span><span class="nk"> &lt;t-bast&gt;</span> instead of relaying
+<a name="l-119"></a><span class="tm">20:37:35</span><span class="nk"> &lt;rusty&gt;</span> It's always a q of "why are you restricting it".  If it's because you never ever want it to happen, you need your peer to not send it, since they can get you to hold it for one cycle in your commitment tx.
+<a name="l-120"></a><span class="tm">20:37:40</span><span class="nk"> &lt;t-bast&gt;</span> I meant max_htlc_value_in_flight_msat
+<a name="l-121"></a><span class="tm">20:37:58</span><span class="nk"> &lt;t-bast&gt;</span> To reduce exposure to pending HTLCs in high fee environment for example
+<a name="l-122"></a><span class="tm">20:38:02</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span>  in that case, you only check when adding and you're good (you can be over, you just can't *go* over).
+<a name="l-123"></a><span class="tm">20:38:03</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> ok we're talking about diff things, you can't change that rn anyway
+<a name="l-124"></a><span class="tm">20:38:24</span><span class="nk"> &lt;rusty&gt;</span> But needs to be carefully defined and implemented, true.
+<a name="l-125"></a><span class="tm">20:38:34</span><span class="nk"> &lt;cdecker&gt;</span> Right, I was talking about the channel_update gossipped max single HTLC
+<a name="l-126"></a><span class="tm">20:38:47</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> yeh same
+<a name="l-127"></a><span class="tm">20:38:51</span><span class="nk"> &lt;t-bast&gt;</span> sorry for the confusion! I didn't realize that :)
+<a name="l-128"></a><span class="tm">20:38:53</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">t-bast:</span> I thought you had meant the max_htlc not the sum, my mistake.  Though you do have exposure to that pending HTLC
+<a name="l-129"></a><span class="tm">20:39:15</span><span class="nk"> &lt;t-bast&gt;</span> we're all in agreement then ;)
+<a name="l-130"></a><span class="tm">20:39:21</span><span class="nk"> &lt;roasbeef&gt;</span> lol @ irc
+<a name="l-131"></a><span class="tm">20:39:37</span><span class="nk"> &lt;t-bast&gt;</span> for something like max_htlc_value_inflight_msat I think using quiescence or something like it is the safest way to update
+<a name="l-132"></a><span class="tm">20:39:49</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yes :)
+<a name="l-133"></a><span class="tm">20:39:51</span><span class="nk"> &lt;cdecker&gt;</span> Definitely
+<a name="l-134"></a><span class="tm">20:40:30</span><span class="nk"> &lt;t-bast&gt;</span> Shall we merge the PR and move to the next topic?
+<a name="l-135"></a><span class="tm">20:41:02</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> Please!
+<a name="l-136"></a><span class="tm">20:41:05</span><span class="nk"> &lt;cdecker&gt;</span> Yep
+<a name="l-137"></a><span class="tm">20:42:06</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Explicit channel type negotiation</span>
+<a name="l-138"></a><span class="tm">20:42:08</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/880</span>
+<a name="l-139"></a><span class="tm">20:42:23</span><span class="nk"> &lt;t-bast&gt;</span> Thanks rusty for posting that PR, it was long due and very useful!
+<a name="l-140"></a><span class="tm">20:42:32</span><span class="nk"> &lt;roasbeef&gt;</span> so we have a version of this that just uses integers for channel types, rather than feature bits
+<a name="l-141"></a><span class="tm">20:42:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> similar to https://github.com/lightningnetwork/lightning-rfc/pull/880#discussion_r655197765 ?
+<a name="l-142"></a><span class="tm">20:42:54</span><span class="nk"> &lt;roasbeef&gt;</span> since feature bits aren't sparsely encoded, you can end up w/ a pretty large byte slice there just to communicate you want to use some fringe channel type
+<a name="l-143"></a><span class="tm">20:42:55</span><span class="nk"> &lt;rusty&gt;</span> Yeah, don't do that.
+<a name="l-144"></a><span class="tm">20:43:20</span><span class="nk"> &lt;roasbeef&gt;</span> sending over multiple feature bits doesn't make things explicit, don't see what it attempts to achieve
+<a name="l-145"></a><span class="tm">20:43:43</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh basically exactly that
+<a name="l-146"></a><span class="tm">20:43:45</span><span class="nk"> &lt;BlueMatt&gt;</span> do we care *that* much if open_channel gets big(ish)?
+<a name="l-147"></a><span class="tm">20:43:45</span><span class="nk"> &lt;rusty&gt;</span> We're pretty good at assigning feature bits.  Now you have to assign another thing, too.  I've already doubled the size with option_simplified_update, for example!
+<a name="l-148"></a><span class="tm">20:43:58</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> https://github.com/lightningnetwork/lnd/pull/5373
+<a name="l-149"></a><span class="tm">20:44:18</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> seems like a pretty light lift
+<a name="l-150"></a><span class="tm">20:44:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but what's the behavior when you don't receive exactly the set of feature bits you expect? just consider that this is a channel type you don't know?
+<a name="l-151"></a><span class="tm">20:44:29</span><span class="nk"> &lt;roasbeef&gt;</span> this is just ambiguous as is
+<a name="l-152"></a><span class="tm">20:44:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yes, of course.
+<a name="l-153"></a><span class="tm">20:44:31</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> yes.
+<a name="l-154"></a><span class="tm">20:44:35</span><span class="nk"> &lt;roasbeef&gt;</span> and doesn't make things explicit
+<a name="l-155"></a><span class="tm">20:44:53</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> ok, I can live with that, but probably worth making it explicit that it's this exact set of feature bits that is expected
+<a name="l-156"></a><span class="tm">20:44:53</span><span class="nk"> &lt;roasbeef&gt;</span> vs just sending the type you want (based off their advertised feature bits) and them rejecting or not
+<a name="l-157"></a><span class="tm">20:45:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> if your concern is that open_channel gets too big, do you have a concrete size in mind that would/does make it too big?
+<a name="l-158"></a><span class="tm">20:45:19</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> see above, this is just ambiguous as defined, and isn't explicit negotiation
+<a name="l-159"></a><span class="tm">20:45:21</span><span class="nk"> &lt;rusty&gt;</span> I mean, you can treat it as a weird enumeration, but it's easy to know how to extend this to your boutique thing you want.
+<a name="l-160"></a><span class="tm">20:45:29</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> or are you worried about combinatorial explosion if people are willing to implement that?
+<a name="l-161"></a><span class="tm">20:45:34</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> it seems very concrete to me?
+<a name="l-162"></a><span class="tm">20:45:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I dont get how it isn't concrete?
+<a name="l-163"></a><span class="tm">20:46:07</span><span class="nk"> &lt;roasbeef&gt;</span> what if I send static key bit set and anchors bit set, what happens then?
+<a name="l-164"></a><span class="tm">20:46:09</span><span class="nk"> &lt;rusty&gt;</span> Technically, we could halve it by only having one bit (not even odd) per feature, but that seems like too much work for too little gain.
+<a name="l-165"></a><span class="tm">20:46:22</span><span class="nk"> &lt;roasbeef&gt;</span> all you need is a single type
+<a name="l-166"></a><span class="tm">20:46:23</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> you mean, as defined in the table?
+<a name="l-167"></a><span class="tm">20:46:40</span><span class="nk"> &lt;roasbeef&gt;</span> this just kinda moves around the current implicit negotiation
+<a name="l-168"></a><span class="tm">20:47:13</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> it fits neatly in the existing implementation, in that it's trivial to define "channel_type" for old channels which didn't use this.
+<a name="l-169"></a><span class="tm">20:47:16</span><span class="nk"> &lt;cdecker&gt;</span> <span class="hi">roasbeef:</span> so you'd have a separate document that maps a single type to a set of featurebits?
+<a name="l-170"></a><span class="tm">20:47:40</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> just a single type to the channel type, feature bits are then just used to advertise what you understand
+<a name="l-171"></a><span class="tm">20:47:51</span><span class="nk"> &lt;cdecker&gt;</span> seems like that'd just be a shorter encoding of this PR
+<a name="l-172"></a><span class="tm">20:48:00</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> yeh that and it's actually explicit
+<a name="l-173"></a><span class="tm">20:48:01</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> that's what this is, but it's just not compactly encoded?
+<a name="l-174"></a><span class="tm">20:48:24</span><span class="nk"> &lt;roasbeef&gt;</span> this also seems to leave in the downgrade stuff we had to work around, when we made the static key bit required
+<a name="l-175"></a><span class="tm">20:48:34</span><span class="nk"> &lt;t-bast&gt;</span> I started implementing it and what irked me a bit was whether I should allow receiving `mpp + static_remotekey + anchor_output` and ignore the `mpp` part as an (harmless) implementation mistake, but if we're strict on the exact features that map to each channel_type, that works for me
+<a name="l-176"></a><span class="tm">20:48:36</span><span class="nk"> &lt;cdecker&gt;</span> Adds the overhead of maintaining that document, and ultimately everybody will self-assign an experimental type ID?
+<a name="l-177"></a><span class="tm">20:48:39</span><span class="nk"> &lt;roasbeef&gt;</span> if we go w/ what they send in accept, I just bail if I don't like it?
+<a name="l-178"></a><span class="tm">20:49:01</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yep, don't open.
+<a name="l-179"></a><span class="tm">20:49:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> maintainence of the BOLTs is already weird as is, we have a lot of in-line if statements, and not really clear where a new implementor is meant to start
+<a name="l-180"></a><span class="tm">20:49:20</span><span class="nk"> &lt;roasbeef&gt;</span> docs have grown to pretty massive sizes
+<a name="l-181"></a><span class="tm">20:49:21</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> you bail if they don't exactly mirror one you offered, yes./
+<a name="l-182"></a><span class="tm">20:49:24</span><span class="nk"> &lt;cdecker&gt;</span> True, so why add to that load?
+<a name="l-183"></a><span class="tm">20:49:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> yeh that's not explicit, vs just saying "I want to use this type"
+<a name="l-184"></a><span class="tm">20:49:51</span><span class="nk"> &lt;roasbeef&gt;</span> me sending a set of bits and you choosing one isn't explicit
+<a name="l-185"></a><span class="tm">20:49:59</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> opener: here are the types are support.  accepter: this is the one I choose.
+<a name="l-186"></a><span class="tm">20:50:00</span><span class="nk"> &lt;roasbeef&gt;</span> me just sending the type I want to open is
+<a name="l-187"></a><span class="tm">20:50:07</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> sure, then only send one?
+<a name="l-188"></a><span class="tm">20:50:21</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> sure, then why not just sent a single int at that ppoint?
+<a name="l-189"></a><span class="tm">20:50:43</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> the acceptor clause means the downgrade stuff like the static key required thing we had to work around still exists
+<a name="l-190"></a><span class="tm">20:50:51</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> no, don't offer that!
+<a name="l-191"></a><span class="tm">20:50:58 </span><span class="nka">* roasbeef</span> <span class="ac">sighs</span>
+<a name="l-192"></a><span class="tm">20:51:02</span><span class="nk"> &lt;rusty&gt;</span> Using a different enumeration does not change this.
+<a name="l-193"></a><span class="tm">20:51:36</span><span class="nk"> &lt;rusty&gt;</span> And if you only offer anchors, then that's the only thing they can accept.  I don't see what we're missing here?
+<a name="l-194"></a><span class="tm">20:51:46</span><span class="nk"> &lt;cdecker&gt;</span> Agreed, the list of featurebitsets enables a superset of the functionality of a type enumeration imho
+<a name="l-195"></a><span class="tm">20:52:20</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> no it isn't, it doesn't give the channel opener control of what type of channel is there if multiple bits are advertised and the acceptor chooses
+<a name="l-196"></a><span class="tm">20:52:24</span><span class="nk"> &lt;rusty&gt;</span> Sure, the enumeration is built from feature bits.  That makes it trivial to extend in future, though a bit verbose.  It makes it easy to implement.
+<a name="l-197"></a><span class="tm">20:52:29</span><span class="nk"> &lt;roasbeef&gt;</span> why send bits again if they already exist in the node ann, and using the node ann I can see what you support?
+<a name="l-198"></a><span class="tm">20:52:51</span><span class="nk"> &lt;roasbeef&gt;</span> then you only need to specify in open_chan, the responder can take it or leave it
+<a name="l-199"></a><span class="tm">20:52:53</span><span class="nk"> &lt;niftynei&gt;</span> arent bits just an 'exploded number' anyway? you could condense them to a single value if you wanted to....
+<a name="l-200"></a><span class="tm">20:53:07</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> it's not an arbitrary bitset.  It's an enumeration built out of feature bits.
+<a name="l-201"></a><span class="tm">20:53:08 </span><span class="nka">* niftynei</span> <span class="ac">realizes this is extremely besides the point</span>
+<a name="l-202"></a><span class="tm">20:53:19</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> yeh exactly, and they already also follow a clear orderong, so no extra overhead to say ok this is 0, 1, 2, 3, etc
+<a name="l-203"></a><span class="tm">20:53:19</span><span class="nk"> &lt;BlueMatt&gt;</span> sorry, got distracted by process servers 🎉
+<a name="l-204"></a><span class="tm">20:53:23</span><span class="nk"> &lt;cdecker&gt;</span> Ok, we seem to have a major misunderstanding here: the PR offers a list of selections [ [ANCHOR, STATIC], [STATIC]] and the acceptor choses 0, or 1
+<a name="l-205"></a><span class="tm">20:53:34</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> why send it again?
+<a name="l-206"></a><span class="tm">20:53:37</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> just to make sure, have you seen that the PR doesn't send just a features bits array in the open message, but actually an *array* of features bits array (one per channel type proposed)?
+<a name="l-207"></a><span class="tm">20:53:47</span><span class="nk"> &lt;roasbeef&gt;</span> we already know the feature bits and their types, so you just need to send a single integer
+<a name="l-208"></a><span class="tm">20:53:49</span><span class="nk"> &lt;cdecker&gt;</span> Roasbeefs enum variant says: offer channel [0, 1], and acceptor looks into the enum doc and selects 0
+<a name="l-209"></a><span class="tm">20:53:54</span><span class="nk"> &lt;roasbeef&gt;</span> this does implciit negotiation at basically 2 places
+<a name="l-210"></a><span class="tm">20:54:05</span><span class="nk"> &lt;BlueMatt&gt;</span> I dont see how your proposal changes that?
+<a name="l-211"></a><span class="tm">20:54:35</span><span class="nk"> &lt;cdecker&gt;</span> Yeah, plus it adds a lookup in a table which needs maintaining
+<a name="l-212"></a><span class="tm">20:54:36</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> it leaves the node advertisement and send a single type at funding negotiation time
+<a name="l-213"></a><span class="tm">20:54:57</span><span class="nk"> &lt;roasbeef&gt;</span> we already have look up tables for this stuff, as we all map the feature bits into an actual channel type at the impl level
+<a name="l-214"></a><span class="tm">20:54:57</span><span class="nk"> &lt;niftynei&gt;</span> well the nice thing about using bits to derive the number, so to speak, is that there's no enumeration required for what the numbers *mean*
+<a name="l-215"></a><span class="tm">20:55:10</span><span class="nk"> &lt;cdecker&gt;</span> The PR doesn't change the node_announcement does it?
+<a name="l-216"></a><span class="tm">20:55:23</span><span class="nk"> &lt;crypt-iq&gt;</span> It only changes open/accept channel iirc
+<a name="l-217"></a><span class="tm">20:55:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> no, but it sends the same feature bit information at the chan open level, when I already know what you support, so I can just send the type
+<a name="l-218"></a><span class="tm">20:55:40</span><span class="nk"> &lt;cdecker&gt;</span> Right, which is functionally equivalent to roasbeef's thing
+<a name="l-219"></a><span class="tm">20:55:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I dont see why you'd need to always use lookup tables at an impl level, and even if you did, its easy to map
+<a name="l-220"></a><span class="tm">20:55:56</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> feature bit -&gt; actual type for the channel in codebase?
+<a name="l-221"></a><span class="tm">20:56:00</span><span class="nk"> &lt;cdecker&gt;</span> But you also send a list of types in the open, don't you?
+<a name="l-222"></a><span class="tm">20:56:07</span><span class="nk"> &lt;crypt-iq&gt;</span> Since it is a TLV field (which is optional?), I don't see why any other impl's need to care if they don't understand it?
+<a name="l-223"></a><span class="tm">20:56:50</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> sure, but, like, can I not implement it as "features X and Y" at the impl level, if the impl of X and Y are wholly separate things?
+<a name="l-224"></a><span class="tm">20:57:02</span><span class="nk"> &lt;rusty&gt;</span> I don't want YA pinchpoint. in the spec.  I don't want to ahve to assign a new channel_type.
+<a name="l-225"></a><span class="tm">20:57:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> dunno what you mean
+<a name="l-226"></a><span class="tm">20:57:49</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> it's pretty simple, use the feature bit position number if you want to, no extra selection needed
+<a name="l-227"></a><span class="tm">20:57:55</span><span class="nk"> &lt;BlueMatt&gt;</span> like, I dont see why its relevant that you want to implement this as an enum of channel types
+<a name="l-228"></a><span class="tm">20:58:06</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> option_simplified_update is *additive* to the others though!
+<a name="l-229"></a><span class="tm">20:58:13</span><span class="nk"> &lt;BlueMatt&gt;</span> I may not want to, and especially for two features which are in separate parts of the code, why would I want to enum that?
+<a name="l-230"></a><span class="tm">20:58:22</span><span class="nk"> &lt;BlueMatt&gt;</span> sure, for some parts, yes, but others no
+<a name="l-231"></a><span class="tm">20:58:25</span><span class="nk"> &lt;rusty&gt;</span> So now you want a bitset, OOPS.
+<a name="l-232"></a><span class="tm">20:58:27</span><span class="nk"> &lt;cdecker&gt;</span> Well, we can just make the enum use large numbers that happen to have the corresponding bits set, done
+<a name="l-233"></a><span class="tm">20:58:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> yeh you need to unroll, yuo'd need to impl that anew for any channel type that makes a drastic departure
+<a name="l-234"></a><span class="tm">20:58:32</span><span class="nk"> &lt;cdecker&gt;</span> :-)
+<a name="l-235"></a><span class="tm">20:59:00</span><span class="nk"> &lt;cdecker&gt;</span> (thanks niftynei for that idea )
+<a name="l-236"></a><span class="tm">20:59:00</span><span class="nk"> &lt;roasbeef&gt;</span> like that simplified update protocol may need to be defined for new channel types in teh future, so that would add a new channel type iteslf for each iteration
+<a name="l-237"></a><span class="tm">20:59:06</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, well defining values by reusing feature bits avoids this problem.
+<a name="l-238"></a><span class="tm">20:59:08</span><span class="nk"> &lt;roasbeef&gt;</span> otherwise you have the same feature bit incompat again
+<a name="l-239"></a><span class="tm">20:59:08</span><span class="nk"> &lt;t-bast&gt;</span> I think the option_simplified_update being additive is a good argument in favor of rusty's version, it can easily be added on top and is orthogonal to commitment format (which is impacted by the choice of static_remotekey / anchor / anchor-0-fees)
+<a name="l-240"></a><span class="tm">20:59:24 </span><span class="nka">* BlueMatt</span> <span class="ac">-&gt; time out, sorry, y'all. thanks for the time</span>
+<a name="l-241"></a><span class="tm">20:59:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> I g2g, but please re-read what I wrote above, it doesn't achieve explicit feature bit negotiation, and maybe take a glance at that PR of ours I linked above
+<a name="l-242"></a><span class="tm">20:59:40</span><span class="nk"> &lt;rusty&gt;</span> (option_simplified_update was my motivation here: you may want to advertize support for it, but not have it your preferred methd)
+<a name="l-243"></a><span class="tm">20:59:51</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> sure, but you're completely wrong.
+<a name="l-244"></a><span class="tm">20:59:55</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> can you write up your objection more full-form?
+<a name="l-245"></a><span class="tm">21:00:00</span><span class="nk"> &lt;BlueMatt&gt;</span> I dont think anyone here understood your points
+<a name="l-246"></a><span class="tm">21:00:01</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> will do, I'll keep working on it this week
+<a name="l-247"></a><span class="tm">21:00:05</span><span class="nk"> &lt;rusty&gt;</span> Yeah, I think we got our wires crossed :(
+<a name="l-248"></a><span class="tm">21:00:22</span><span class="nk"> &lt;cdecker&gt;</span> Sorry, a go PR is not a spec PR that can be understood without spending loads of time to get the context
+<a name="l-249"></a><span class="tm">21:00:25</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> sure, we've implemented it and it achieves the goals we set out, but what you've described doesn't, I guess you can use whichever
+<a name="l-250"></a><span class="tm">21:00:41</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> I disagree :)
+<a name="l-251"></a><span class="tm">21:00:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> please write up, in long-form english, why that is.
+<a name="l-252"></a><span class="tm">21:00:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> and post it on the pr :)
+<a name="l-253"></a><span class="tm">21:00:51</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> yeh we've been prototpying to make sure nothign weird comes up
+<a name="l-254"></a><span class="tm">21:01:31</span><span class="nk"> &lt;cdecker&gt;</span> That's fine, but here we have an explicit PR that achieves the goal, vs experimental code that is far too spread apart to really get the gist of
+<a name="l-255"></a><span class="tm">21:01:34</span><span class="nk"> &lt;rusty&gt;</span> FWIW, this channel_type idea gets into splice, too, so we can update to a taproot channel.  It's a pretty neat encapsulation (thanks roasbeef for the idea)
+<a name="l-256"></a><span class="tm">21:01:55</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker:</span> I also have an implementation, FWIW, but I'm still writing lnprototests for it.
+<a name="l-257"></a><span class="tm">21:03:06</span><span class="nk"> &lt;t-bast&gt;</span> I'll do more work on the eclair implementation this week and keep in mind both approaches and will report back on the spec PR
+<a name="l-258"></a><span class="tm">21:03:08</span><span class="nk"> &lt;rusty&gt;</span> I should probably make it v. clear in the PR, that this is not some arbitrary feature bits, but reusing their values for convenience.  I am happy to switch from odd -&gt; even, too...
+<a name="l-259"></a><span class="tm">21:03:24 </span><span class="nka">* cdecker</span> <span class="ac">is also reaching timeout. Thanks everyone ^^</span>
+<a name="l-260"></a><span class="tm">21:03:42</span><span class="nk"> &lt;BlueMatt&gt;</span> se y'all.
+<a name="l-261"></a><span class="tm">21:03:47</span><span class="nk"> &lt;t-bast&gt;</span> Alright it looks like we're at the limit and many are dropping off, maybe we should call it a day?
+<a name="l-262"></a><span class="tm">21:03:50</span><span class="nk"> &lt;rusty&gt;</span> Thanks!  I think we've fallen below quorum, but happy to chat for a whil longer.
+<a name="l-263"></a><span class="tm">21:04:04</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">crypt-iq:</span> we'll put your two issues at the top of the agenda next time
+<a name="l-264"></a><span class="tm">21:04:13</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">t-bast:</span> sounds good to me
+<a name="l-265"></a><span class="tm">21:04:16</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>
