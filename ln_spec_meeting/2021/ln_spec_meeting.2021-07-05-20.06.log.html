@@ -1,0 +1,425 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:06:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">LN Spec Meeting</span>
+<a name="l-2"></a><span class="tm">20:06:56</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Jul  5 20:06:56 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:06:56</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:06:56</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'ln_spec_meeting'
+<a name="l-5"></a><span class="tm">20:07:04</span><span class="nk"> &lt;BlueMatt&gt;</span> just negotiate it when you connect, and give up.....its really not that expensive to connect and ask, yo.
+<a name="l-6"></a><span class="tm">20:07:06</span><span class="nk"> &lt;t-bast&gt;</span> Starting the meeting to record our discussions ;)
+<a name="l-7"></a><span class="tm">20:07:17</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Channel type negotiation</span>
+<a name="l-8"></a><span class="tm">20:07:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/880</span>
+<a name="l-9"></a><span class="tm">20:07:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> or just ditch negotiation, and funder sends what type they want, receiver can reject, gg -- much simpler
+<a name="l-10"></a><span class="tm">20:07:45</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> right, though now you have to probe node by node to assert the features-announced channel types is matching the ongoing, dynamic list of channel types
+<a name="l-11"></a><span class="tm">20:07:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> probing is super-duper-incredibly cheap!
+<a name="l-12"></a><span class="tm">20:08:00</span><span class="nk"> &lt;BlueMatt&gt;</span> just probe, please.
+<a name="l-13"></a><span class="tm">20:08:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> wrong, you've just moved negotiation up a level, made it less defined.
+<a name="l-14"></a><span class="tm">20:08:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> but why is it better? It's more round-trips for the same end result then?
+<a name="l-15"></a><span class="tm">20:08:20</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> not any less defined, you already know what they want
+<a name="l-16"></a><span class="tm">20:08:30</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> depends if you have to authenticate first with the counterparty to listen the channel types allowed
+<a name="l-17"></a><span class="tm">20:08:30</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> there's no extra round trips, you only need the chan_type field in the open chan message
+<a name="l-18"></a><span class="tm">20:08:31</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> negotiating supports your use-case and supports others as well
+<a name="l-19"></a><span class="tm">20:08:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> if we do that we *at least* need to define exactly how the error process works there, and maybe a new error message, or a new tlv at the end of error.
+<a name="l-20"></a><span class="tm">20:08:46</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> is it really ncessary though? just another layer of complexity
+<a name="l-21"></a><span class="tm">20:08:49</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> if the receiver doesn't agree with your first choice, there will be back and forths
+<a name="l-22"></a><span class="tm">20:09:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeah was thinking the same thing, carla has this proposal to add error codes
+<a name="l-23"></a><span class="tm">20:09:05</span><span class="nk"> &lt;roasbeef&gt;</span> so you can more easily handle the reject
+<a name="l-24"></a><span class="tm">20:09:18</span><span class="nk"> &lt;roasbeef&gt;</span> to the reg error message, or some ppl have suggested add another one just for that
+<a name="l-25"></a><span class="tm">20:09:23</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> its still dirt cheap! Unless we're talking about like asking the user for a password, but lets not. probing is *cheap*, period.
+<a name="l-26"></a><span class="tm">20:09:29</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> they should only advertise feature bits they accept
+<a name="l-27"></a><span class="tm">20:09:57</span><span class="nk"> &lt;roasbeef&gt;</span> then you already know what they want
+<a name="l-28"></a><span class="tm">20:10:19</span><span class="nk"> &lt;roasbeef&gt;</span> I also don't really see a case in the future, where the funder doesn't _know_ what theuy
+<a name="l-29"></a><span class="tm">20:10:32</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> but probing also assumes interactivity and now i can log that your node was interested at X by channel type Y, though we can mitigate on another layer with rotating node pubkey
+<a name="l-30"></a><span class="tm">20:10:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> I disagree, how would you handle different channel types for mobile nodes and routing nodes then?
+<a name="l-31"></a><span class="tm">20:10:38</span><span class="nk"> &lt;ariard&gt;</span> but still ip addr
+<a name="l-32"></a><span class="tm">20:10:38</span><span class="nk"> &lt;roasbeef&gt;</span> they'll want 100%, like if we find some other issue in anchors and you need to upgrade to a new patched type, why would they accept anything else?
+<a name="l-33"></a><span class="tm">20:10:47</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> how do those cases differ?
+<a name="l-34"></a><span class="tm">20:10:59</span><span class="nk"> &lt;BlueMatt&gt;</span> I mean funder can totally be happy with 10 different channel types, so its more a question of if you want to send 9 open_channel + error, then one accept_channel, or one open_channel_negoatiate, then one accept_channel_type, then an open_channel, IMO
+<a name="l-35"></a><span class="tm">20:11:09</span><span class="nk"> &lt;BlueMatt&gt;</span> they're really pretty similar in terms of feature set, just different message sequences
+<a name="l-36"></a><span class="tm">20:11:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> imagine I want to prefer opening one type of channels with routing nodes and another type with wallets - I need to turn on the feature bits for those, but want to decide after *init* which one I'll propose to each type of node
+<a name="l-37"></a><span class="tm">20:11:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> bleh, ok, now we're getting a ways out on a tangent - you can come up with any amount of edge-cases to anything :p
+<a name="l-38"></a><span class="tm">20:12:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> would you really be able to distinguish them effectively? you can just send the reject and they try again w/ a diff type if they want to
+<a name="l-39"></a><span class="tm">20:12:27</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> routing nodes will think they can open a channel with type XXX with me whereas I'll reject their channel open because I only do that for wallets
+<a name="l-40"></a><span class="tm">20:12:30</span><span class="nk"> &lt;roasbeef&gt;</span> rn it's an issue independent of this, that channels are rejected and ppl don't know why (min chan size, etc) -- which shows the need for the error message w/ prpoer types here again
+<a name="l-41"></a><span class="tm">20:12:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> so if I reject and they retry with another channel type, why not do it in a single step where they send me their list of channel types?
+<a name="l-42"></a><span class="tm">20:12:57</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> so they can try again, do you already implement such logic today w/ the existing chan types? how do you finger print a routing node?
+<a name="l-43"></a><span class="tm">20:13:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I dunno if that matters - imo error types are only useful if they specify an exact action to be taken by the sender of the original message in response.
+<a name="l-44"></a><span class="tm">20:13:07</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> but that's the point we should disssociate features bit expression from channel types policy, because you might restrain your accepted channel types to a subset of nodes
+<a name="l-45"></a><span class="tm">20:13:15</span><span class="nk"> &lt;BlueMatt&gt;</span> in the case of "not enough money to fund channel", probably you just say "ok, I'll try another node"
+<a name="l-46"></a><span class="tm">20:13:21</span><span class="nk"> &lt;BlueMatt&gt;</span> so I dont really think error types "fix" that.
+<a name="l-47"></a><span class="tm">20:13:23</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> exactly, and that's hard, at the least.
+<a name="l-48"></a><span class="tm">20:13:29</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> we fingerprint wallet nodes instead, for example by opening channels to them after a swap
+<a name="l-49"></a><span class="tm">20:13:30</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> rn ppl always complain they can't open channels to ppl because they don't know the accepted min chan size, w/ this they'd at least get that value in an error and can retry
+<a name="l-50"></a><span class="tm">20:13:46</span><span class="nk"> &lt;BlueMatt&gt;</span> at least for the "nope, try next channel type" error type/action you know what to do now :)
+<a name="l-51"></a><span class="tm">20:13:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> ok yeh if you know the wallet is running your software it's diff, but don't see that generically being the case, unless we provide hints w.r.t how to fingerprint nodes or something?
+<a name="l-52"></a><span class="tm">20:13:59</span><span class="nk"> &lt;roasbeef&gt;</span> which would be wierd
+<a name="l-53"></a><span class="tm">20:14:05</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I mean the error messages I've seen from nodes have always been very clear and understanable
+<a name="l-54"></a><span class="tm">20:14:14</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> and afaik always even provide the minimum funding amount
+<a name="l-55"></a><span class="tm">20:14:25</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm not sure what the issue is aside from being able to include that in gossip (please, no)
+<a name="l-56"></a><span class="tm">20:14:26</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> users that report these issues to me don't think so
+<a name="l-57"></a><span class="tm">20:14:29</span><span class="nk"> &lt;cdecker&gt;</span> Indeed and channel_types can have less information (no threshold associated)
+<a name="l-58"></a><span class="tm">20:15:18</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> maybe the other-node-provided human-readable error message should be more prominently exposed, or we should be filing bug reports against the sender of the error message to make their "human-readable" errors more "human readable" :)
+<a name="l-59"></a><span class="tm">20:15:28</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm not sure "error types" changes this at all
+<a name="l-60"></a><span class="tm">20:15:40</span><span class="nk"> &lt;cdecker&gt;</span> Also these kinds of policy requirements are orthogonal to channel features imho
+<a name="l-61"></a><span class="tm">20:15:40</span><span class="nk"> &lt;roasbeef&gt;</span> ofc it does, it gives feedback where rn there's non
+<a name="l-62"></a><span class="tm">20:15:53</span><span class="nk"> &lt;roasbeef&gt;</span> as there's other reasons today a channel funding can be rejected: bad csv, bad min depth, etc, etc
+<a name="l-63"></a><span class="tm">20:15:59</span><span class="nk"> &lt;roasbeef&gt;</span> but bad in this case is node policy
+<a name="l-64"></a><span class="tm">20:16:02</span><span class="nk"> &lt;ariard&gt;</span> well you could automate channel opening corrective action based on error types, if you're few sats under the min funding amount
+<a name="l-65"></a><span class="tm">20:16:10</span><span class="nk"> &lt;BlueMatt&gt;</span> but more on-topic, one related question here is "if node wants to have a different maximum channel value or different fees for anchor-vs-not, how do you communicate that when negotiating channel type"
+<a name="l-66"></a><span class="tm">20:16:12</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh exactly
+<a name="l-67"></a><span class="tm">20:16:23</span><span class="nk"> &lt;rusty&gt;</span> Got a link to Carla's proposal BTW?  I can't find it...
+<a name="l-68"></a><span class="tm">20:16:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> today there's great feedback on why a channel is rejected!
+<a name="l-69"></a><span class="tm">20:16:35</span><span class="nk"> &lt;BlueMatt&gt;</span> at least if you're in a world where you want a human to respond
+<a name="l-70"></a><span class="tm">20:16:44</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> not in my experience, not the experience of all the users that're frustrated w/ it in the wild
+<a name="l-71"></a><span class="tm">20:16:46</span><span class="nk"> &lt;roasbeef&gt;</span> nor*
+<a name="l-72"></a><span class="tm">20:16:47</span><span class="nk"> &lt;BlueMatt&gt;</span> if you wnat a machine to respond (which I dont think you can do in most of the errors you mention here), then you cannot
+<a name="l-73"></a><span class="tm">20:16:48</span><span class="nk"> &lt;ariard&gt;</span> this one https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-February/002964.html iirc
+<a name="l-74"></a><span class="tm">20:17:00</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, so the fix for that is to improve the human-readable messages that are being sent
+<a name="l-75"></a><span class="tm">20:17:12</span><span class="nk"> &lt;roasbeef&gt;</span> or give error codes so machines can handle them and send back error messages
+<a name="l-76"></a><span class="tm">20:17:13</span><span class="nk"> &lt;BlueMatt&gt;</span> not to add error codes so that you can then map those to your own human-readable messages that are more clear
+<a name="l-77"></a><span class="tm">20:17:18</span><span class="nk"> &lt;roasbeef&gt;</span> do you really want to string match in a wallet based on an error?
+<a name="l-78"></a><span class="tm">20:17:22</span><span class="nk"> &lt;BlueMatt&gt;</span> but the machine cannot respond to those error codes anyway
+<a name="l-79"></a><span class="tm">20:17:24</span><span class="nk"> &lt;roasbeef&gt;</span> that's backwards
+<a name="l-80"></a><span class="tm">20:17:26</span><span class="nk"> &lt;t-bast&gt;</span> we haven't had this issue with our node, the error messages we receive are more than enough to usually figure out what's wrong with a rejected channel_open
+<a name="l-81"></a><span class="tm">20:17:38</span><span class="nk"> &lt;BlueMatt&gt;</span> if you have an error type that you want a machine to respond in an automated way, then, yes, we agree
+<a name="l-82"></a><span class="tm">20:17:43</span><span class="nk"> &lt;roasbeef&gt;</span> a wallet can take the code, and present an error to the user, as maybe they need to disaply it in a diff langauge even
+<a name="l-83"></a><span class="tm">20:17:52</span><span class="nk"> &lt;BlueMatt&gt;</span> but "not enough value" and "csv delay bad" are not things that a wallet can automatically handle
+<a name="l-84"></a><span class="tm">20:18:03</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> thx, was looking on GH.
+<a name="l-85"></a><span class="tm">20:18:26</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> yeh that's it above, she started with enumerating common error paths across impls and came up with a proposed initial set
+<a name="l-86"></a><span class="tm">20:18:39</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> hmmmm  you could have pre-loaded channel acceptance strategies, like beyond csv upper-bound don't open anymore
+<a name="l-87"></a><span class="tm">20:18:56</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> you're pushing the boundary of reasonable things to actually do :p
+<a name="l-88"></a><span class="tm">20:19:06</span><span class="nk"> &lt;ariard&gt;</span> i mean opening there as the opener is the one receiving error types
+<a name="l-89"></a><span class="tm">20:19:19</span><span class="nk"> &lt;roasbeef&gt;</span> but to the original topic: not clear how you'd even create a negotiation layer to account for all the edge cases that exist, if channel options start to multiply, and there're combinations together that just don't make sense
+<a name="l-90"></a><span class="tm">20:19:19</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> but, right, the receiving node already decided "is that ok or not"
+<a name="l-91"></a><span class="tm">20:19:37</span><span class="nk"> &lt;rusty&gt;</span> I agree with roasbeef, I would love structured errors.  But BlueMatt is right, it's useless without being able to define actions.  For example, that list is mostly "Your impl fucked up", and there's literally one code for "Funding params unacceptable (eg, channel too small)".
+<a name="l-92"></a><span class="tm">20:19:37</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> but that's for implementations to decide
+<a name="l-93"></a><span class="tm">20:19:48</span><span class="nk"> &lt;roasbeef&gt;</span> the other thing at hand here is the types vs the set of feature bits
+<a name="l-94"></a><span class="tm">20:19:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> sounds....undefined :p
+<a name="l-95"></a><span class="tm">20:20:05</span><span class="nk"> &lt;cdecker&gt;</span> So are you proposing having a "negotiation through errors" _after_ the failed opening, because that's how it sounds like :-)
+<a name="l-96"></a><span class="tm">20:20:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> but implementations are gonna decide which sets of features make sense together either way
+<a name="l-97"></a><span class="tm">20:20:13</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> don't agree that it's "useless", maybe has less use for certain cases, but it's 100% a value add
+<a name="l-98"></a><span class="tm">20:20:28</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> yeah but you know at some point i expect Smart Software(tm) to react on mempool congestion/spikes and decide to open as much chan you can, without waiting your node operator to wake up in the middle of the night :p
+<a name="l-99"></a><span class="tm">20:20:33</span><span class="nk"> &lt;BlueMatt&gt;</span> but, point being, roasbeef, do you disagree with my above description of this?
+<a name="l-100"></a><span class="tm">20:20:47</span><span class="nk"> &lt;BlueMatt&gt;</span> "more a question of if you want to send 9 open_channel + error, then one accept_channel, or one open_channel_negoatiate, then one accept_channel_type, then an open_channel, IMO"
+<a name="l-101"></a><span class="tm">20:20:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker:</span> I guess I'm of the stance that I don't think negotiation should really exist, the funder either give it a shot or goes somewhere else, seems there'll be sooo many params, particularly as more and more channel types are added
+<a name="l-102"></a><span class="tm">20:21:03</span><span class="nk"> &lt;BlueMatt&gt;</span> also, one related question here is "if node wants to have a different maximum channel value or different fees for anchor-vs-not, how do you communicate that when negotiating channel type"
+<a name="l-103"></a><span class="tm">20:21:22</span><span class="nk"> &lt;roasbeef&gt;</span> feels like there'll also inevitably be weird cases where the funder ends up w/ something they don't want, and maybe turns out to actually be insecure (by don't want here I mean the user)
+<a name="l-104"></a><span class="tm">20:21:23</span><span class="nk"> &lt;cdecker&gt;</span> Right, but then why try to have machine-reactable errors at all? If it's just try-fail-try-somewhere-else
+<a name="l-105"></a><span class="tm">20:21:27</span><span class="nk"> &lt;ariard&gt;</span> i think the question is channel types negotation should be guided in typed errors or a completely different mechanism ?
+<a name="l-106"></a><span class="tm">20:21:42</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> you're still specifying a negotiation structure, just a "open_channel failed, try again with other parameters"
+<a name="l-107"></a><span class="tm">20:21:58</span><span class="nk"> &lt;BlueMatt&gt;</span> which almost certainly means different channel type
+<a name="l-108"></a><span class="tm">20:22:11</span><span class="nk"> &lt;roasbeef&gt;</span> or the just back off /shrug
+<a name="l-109"></a><span class="tm">20:22:14</span><span class="nk"> &lt;BlueMatt&gt;</span> I dont really understand why you'd reasonably try with eg different feerate/csv delay in an automated way
+<a name="l-110"></a><span class="tm">20:22:27</span><span class="nk"> &lt;BlueMatt&gt;</span> so imo either way you're negotiating channel type
+<a name="l-111"></a><span class="tm">20:22:41</span><span class="nk"> &lt;BlueMatt&gt;</span> but in one case you're doing it *with* the channel parameters in the same context
+<a name="l-112"></a><span class="tm">20:22:50</span><span class="nk"> &lt;BlueMatt&gt;</span> in another case you're doing it *without* the channel parameters, but all at once
+<a name="l-113"></a><span class="tm">20:23:14</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> also re your example in that comment, 1KB I don't think is the extreme, that comes in when someone picks a very far off channel type in the feature bit namespaces (several thousand bits)
+<a name="l-114"></a><span class="tm">20:23:16</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> let's say you want to open 5 channels best-case scenario and 3 channels in worst-case scenario, you're okay bleeding on feerate, but you want to do this before the mempool start to congestion again?
+<a name="l-115"></a><span class="tm">20:23:45</span><span class="nk"> &lt;ariard&gt;</span> like you give an opening budget holistically and not per-channel
+<a name="l-116"></a><span class="tm">20:24:11</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> there's no reason to pick a feature bit in the range &gt; 1000 TBH, I don't think that's something we'll reasonably see in practice
+<a name="l-117"></a><span class="tm">20:24:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> you mean you want to basically probe a node to see when it will accept the channel? like you may be willing to "negotiate" a feerate by trying over and over to open? I mean maybe, but you also cannot do that later - an hour later you will go to update the fee and just get the channel closed on you.
+<a name="l-118"></a><span class="tm">20:24:34</span><span class="nk"> &lt;rusty&gt;</span> roasbeef is right that this should be a pre-negotiation, before other parameters, but damn it's easier to implement like this :(
+<a name="l-119"></a><span class="tm">20:24:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> so at least for the feerate example I think it doesnt actually address the issue
+<a name="l-120"></a><span class="tm">20:25:31</span><span class="nk"> &lt;roasbeef&gt;</span> impl wise the send and forget-maybe-they-accept seems 100x simpler to me, it's what happens rn already effectively, as we see w/ the current fee rate "negotiation" (which again is very underspecified and we've had issues w/ in the past) this dynamic stuff is hard to get right in practice
+<a name="l-121"></a><span class="tm">20:25:46</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> Do you think it *matters* to be able to *also* negotaite the csv delay at the same time as different channel types? eg different csv delay for anchor vs not?
+<a name="l-122"></a><span class="tm">20:25:55</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> right, with the legacy `update_fee` channel model in mind, but with a future `option_negiotated_fee_commitment` you might have stable feerate, decided once-for-all at opening?
+<a name="l-123"></a><span class="tm">20:26:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> sure, but then you can figure out how to negotiate at open in that spec :)
+<a name="l-124"></a><span class="tm">20:26:31</span><span class="nk"> &lt;roasbeef&gt;</span> also notice that w/ the chan_type tlv, if the other party doesn't support it, then it falls back to the current implicit stuff unless you set that required bit, vs having two different negotiation mechanisms across the protocol
+<a name="l-125"></a><span class="tm">20:26:31</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> well, feerate def matters.
+<a name="l-126"></a><span class="tm">20:26:57</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> it can happen in practice /shrug
+<a name="l-127"></a><span class="tm">20:27:17</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> and i think we're back to an early discussion of channel_types, this fee-sharing scheme might leak across a bunch of other channel types, eltoo/taproot/...
+<a name="l-128"></a><span class="tm">20:27:19</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it can happen, because everyone can do dumb things, but why would you though?
+<a name="l-129"></a><span class="tm">20:27:29</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> right, but I guess I'm not really sure how you negotiate channel types without sending a full open_channel message and let the recipient reject-or-not....if you want to negotiate fee/csv at the same time.
+<a name="l-130"></a><span class="tm">20:27:35</span><span class="nk"> &lt;BlueMatt&gt;</span> (tho note that you cannot today negotiate fee at all)
+<a name="l-131"></a><span class="tm">20:27:40</span><span class="nk"> &lt;ariard&gt;</span> and now you're mechanism isn't specific to *this* spec, so might be better to think about a generic mechanism
+<a name="l-132"></a><span class="tm">20:27:53</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> and why would you use such a feature bit in a channel type if you want to send a huge list of them? I think it's a bit far-fetched...
+<a name="l-133"></a><span class="tm">20:28:26</span><span class="nk"> &lt;BlueMatt&gt;</span> also, honestly, who cares about sending 1KB? Or even 20KB or 30KB...I mean we're talking 15 packets, who cares?
+<a name="l-134"></a><span class="tm">20:28:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> when 4 bytes will do and can encode the same information?
+<a name="l-135"></a><span class="tm">20:28:52</span><span class="nk"> &lt;BlueMatt&gt;</span> (if it were 30KB * 10k messages, sure, but its 30KB per channel open...)
+<a name="l-136"></a><span class="tm">20:28:56</span><span class="nk"> &lt;t-bast&gt;</span> I agree, especially for something that only happens when setting up a channel
+<a name="l-137"></a><span class="tm">20:29:01</span><span class="nk"> &lt;roasbeef&gt;</span> let's just unroll al our integers!!
+<a name="l-138"></a><span class="tm">20:29:04</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> right.
+<a name="l-139"></a><span class="tm">20:29:11</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> who cares? if its easier for the programmers, better!
+<a name="l-140"></a><span class="tm">20:29:30</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> imo not easier for the programmers, you know need this feature bit intersection code to actually map that down to something you accecpt or not
+<a name="l-141"></a><span class="tm">20:29:30</span><span class="nk"> &lt;t-bast&gt;</span> At least I don't think it's a good enough argument for or against any of the two proposals
+<a name="l-142"></a><span class="tm">20:29:33</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> creating another enumeration requirement *blocks* changes.
+<a name="l-143"></a><span class="tm">20:29:35</span><span class="nk"> &lt;t-bast&gt;</span> We should focus on the other points
+<a name="l-144"></a><span class="tm">20:29:42</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> well if you have to probe significant part of the graph and you're a mobile ?
+<a name="l-145"></a><span class="tm">20:29:44</span><span class="nk"> &lt;roasbeef&gt;</span> ppl are gonna have a big match/switch statement either way, might as well flatten that down
+<a name="l-146"></a><span class="tm">20:29:45</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, well imo first lets agree on the design consierations here.
+<a name="l-147"></a><span class="tm">20:29:55</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm kinda coming back to needing to do basically roasbeef's proposal
+<a name="l-148"></a><span class="tm">20:29:57</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> there isn't one, you just use the feature bit position as the type
+<a name="l-149"></a><span class="tm">20:30:05</span><span class="nk"> &lt;BlueMatt&gt;</span> but we can debate over how to communicate a type later
+<a name="l-150"></a><span class="tm">20:30:09</span><span class="nk"> &lt;roasbeef&gt;</span> so the bit and the type get assigned at the same time basically
+<a name="l-151"></a><span class="tm">20:30:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> except there's an intersection.  turbo channels!  simplified commitment update!  etc.
+<a name="l-152"></a><span class="tm">20:30:48</span><span class="nk"> &lt;BlueMatt&gt;</span> eg specifically cause I think its reasonable to negotiate the csv at the same time as the channel type (ie more csv for non-anchor)
+<a name="l-153"></a><span class="tm">20:30:52</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> I don't know how many times I have to repeat this.
+<a name="l-154"></a><span class="tm">20:30:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> yeh so you just roll those out, you'd need to be able to handle that intersection anyway, now it's on _one_ dimension
+<a name="l-155"></a><span class="tm">20:30:56</span><span class="nk"> &lt;t-bast&gt;</span> I agree with BlueMatt, let's not focus on how to communicate the type, but on whether we want a negotiation step or just send one channel_type per attempt and handle errors
+<a name="l-156"></a><span class="tm">20:30:57</span><span class="nk"> &lt;BlueMatt&gt;</span> then you basically *have* to do it in an open_channel message
+<a name="l-157"></a><span class="tm">20:31:15</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeh you need to know what you're opening before you send the params
+<a name="l-158"></a><span class="tm">20:31:59</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> as it's also feasible those modifiers can't be defined for certain combinations, like simplified commitment w/ eltoo is undefined prob -- since it's an entirely different commitment type
+<a name="l-159"></a><span class="tm">20:32:12</span><span class="nk"> &lt;roasbeef&gt;</span> so it really only applies to certain asymmetric state commitment types
+<a name="l-160"></a><span class="tm">20:32:12</span><span class="nk"> &lt;t-bast&gt;</span> I agree with roasbeef that sending a single channel_type per attempt simplifies the negotiation of the channel parameters. I liked sending multiple channel types to avoid going back and forth, but if in the end we fail because of a channel parameters mismatch we're back to square one.
+<a name="l-161"></a><span class="tm">20:33:02</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> absolutely, but I can tell you immediately what that channel_type will look like.  No need to do a level of indirection, race with different features being implemented at the same time in the spect, etc
+<a name="l-162"></a><span class="tm">20:33:14</span><span class="nk"> &lt;rusty&gt;</span> Frankly, flattening the enumeration is centralizing.
+<a name="l-163"></a><span class="tm">20:33:16</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> your thoughts on doing it *in* an open_channel/error-tlv negotiation?
+<a name="l-164"></a><span class="tm">20:33:21</span><span class="nk"> &lt;ariard&gt;</span> right, first lock-down the channel_type then try channel_parameters, though in case of failure on step two you can still downgrade to step one hmmmm
+<a name="l-165"></a><span class="tm">20:33:24</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> can you elaborate on the "race w/ diff features?" you mean if someone takes your feature bit?
+<a name="l-166"></a><span class="tm">20:33:30</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yep....
+<a name="l-167"></a><span class="tm">20:33:42</span><span class="nk"> &lt;t-bast&gt;</span> Let's forget about the flattening for now and first see whether we want to send only one channel_type per attempt or many :)
+<a name="l-168"></a><span class="tm">20:33:42</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> no, someone else takes your flattened channel_types.
+<a name="l-169"></a><span class="tm">20:33:59</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> something something xor? :p
+<a name="l-170"></a><span class="tm">20:34:12</span><span class="nk"> &lt;roasbeef&gt;</span> how can that happen though, that's the same as a feature bit conflict right?
+<a name="l-171"></a><span class="tm">20:35:23</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> there are private feature bits (100+) defined already, it's easy to get an assignment, and the coordination is simple.  The coordination required for a range of channel_types is not.
+<a name="l-172"></a><span class="tm">20:35:46</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> there's no coordination if the type integer is just the feature bit position, right?
+<a name="l-173"></a><span class="tm">20:35:53</span><span class="nk"> &lt;ariard&gt;</span> if you assume a first channel type negotation step, you can also assume the receiver is going to give you a window for channel parameters, so ensure success with 99,999%
+<a name="l-174"></a><span class="tm">20:36:08</span><span class="nk"> &lt;ariard&gt;</span> and then error types, if you're out for some dynamic reasons
+<a name="l-175"></a><span class="tm">20:36:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> so mechanically mapping the bit to an integer
+<a name="l-176"></a><span class="tm">20:36:15</span><span class="nk"> &lt;BlueMatt&gt;</span> (imo if we agree that we should be doing the negotiation via open_channel/error mesasges instead of an explicit list then there is no reason to discuss the type-integer-vs-feature-bitset any further, it goes from trivial to even-more-trivial and we can just *definitely* use the feature-bit-set)
+<a name="l-177"></a><span class="tm">20:36:21</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> How do I indicate I want an anchor_outputs turbochannel then?
+<a name="l-178"></a><span class="tm">20:36:25</span><span class="nk"> &lt;cdecker[m]&gt;</span> Can't help but think this discussion would be much easier in person...
+<a name="l-179"></a><span class="tm">20:36:28</span><span class="nk"> &lt;roasbeef&gt;</span> if we have modifier bits and type bits, then use the upper and lower half or something
+<a name="l-180"></a><span class="tm">20:36:45</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> +1 here, let's decide first on negotiation mechanism before to envision the signaling space itself
+<a name="l-181"></a><span class="tm">20:36:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> could do upper is concrete types, and lower is modifiers or something like that
+<a name="l-182"></a><span class="tm">20:36:52</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> now you're reinventing feature bits....
+<a name="l-183"></a><span class="tm">20:36:56</span><span class="nk"> &lt;roasbeef&gt;</span> kek
+<a name="l-184"></a><span class="tm">20:37:01</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> !
+<a name="l-185"></a><span class="tm">20:37:15</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> sure they're two diff things
+<a name="l-186"></a><span class="tm">20:37:29</span><span class="nk"> &lt;roasbeef&gt;</span> tho related-ish...
+<a name="l-187"></a><span class="tm">20:37:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> I agree xD
+<a name="l-188"></a><span class="tm">20:37:48</span><span class="nk"> &lt;rusty&gt;</span> I don't forsee a requirement to do the negotiation, but I defer to others if they can see one?
+<a name="l-189"></a><span class="tm">20:38:57</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well, I still like the ability to offer a couple of types and the other one picking one that suits them
+<a name="l-190"></a><span class="tm">20:38:58</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> if the initiator sends a list of channel types, I think it should be negotiated *before* sending the actual parameters as they'll likely be different depending on the channel type chosen by the receiver
+<a name="l-191"></a><span class="tm">20:38:59</span><span class="nk"> &lt;rusty&gt;</span> And if everyone is going to only propose 1 type anyway, it seems weird to put an array in there.
+<a name="l-192"></a><span class="tm">20:39:34</span><span class="nk"> &lt;t-bast&gt;</span> But I think it's overkill to try to pre-negotiate channel parameters, so maybe sending a single channel type is actually simpler in practice
+<a name="l-193"></a><span class="tm">20:39:36</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> why do they need to send a list, if the feature bits are being re-used? I don't think the "I finger print nodes and offer diff types depending" will be widely implemented, in your context it's your wallet so you know more directly
+<a name="l-194"></a><span class="tm">20:39:43</span><span class="nk"> &lt;cdecker[m]&gt;</span> We can hardly offer only a single type, that'd forever freeze the features since a new feature would immediately result in a net-split won't it?
+<a name="l-195"></a><span class="tm">20:39:43</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker[m]:</span> it *sounds* good, but I'm trying to think how we'd use it.  The opener, after all, tends to have pretty fixed opinions on what they want.
+<a name="l-196"></a><span class="tm">20:39:44</span><span class="nk"> &lt;BlueMatt&gt;</span> there's pretty strong reason to do different csv values for anchor or not, imo
+<a name="l-197"></a><span class="tm">20:39:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> why would it
+<a name="l-198"></a><span class="tm">20:39:56</span><span class="nk"> &lt;roasbeef&gt;</span> ?
+<a name="l-199"></a><span class="tm">20:40:01</span><span class="nk"> &lt;roasbeef&gt;</span> given feature bits exist
+<a name="l-200"></a><span class="tm">20:40:26</span><span class="nk"> &lt;rusty&gt;</span> Yeah, it'd still be illegal to try to open a type which it doesn't advertize as supported.
+<a name="l-201"></a><span class="tm">20:40:34</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker:</span> you would internally have a list and try them in order, starting from your preferred one and then "downgrading"
+<a name="l-202"></a><span class="tm">20:40:34</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well, the first one to implement it adds it to a new channel type and signals only that. No channel between new and old versions can be opened -&gt; split
+<a name="l-203"></a><span class="tm">20:40:35</span><span class="nk"> &lt;ariard&gt;</span> i'm thinking we should let an authentication/compensation step between/before sending channel type
+<a name="l-204"></a><span class="tm">20:40:35</span><span class="nk"> &lt;roasbeef&gt;</span> rn if you have anchors, would you ever want to open another chan type w/ someone? (not saying there's always be one preferred type in the future though)
+<a name="l-205"></a><span class="tm">20:41:09</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> they have all their connections still though, they just need to find new ppl, we had a diff issue related to this after we signalled required for the static chan key and netsplit w/ eclair (an actual connection level split)
+<a name="l-206"></a><span class="tm">20:41:21</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker[m]:</span>  that's true today if you set a compulsory bit though?
+<a name="l-207"></a><span class="tm">20:41:23</span><span class="nk"> &lt;roasbeef&gt;</span> in this case, we just wouldn't make new channels w/ them, but would keep the same connections as you wouldn't really make those chan type bits required
+<a name="l-208"></a><span class="tm">20:41:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> auth can do that in its own spec, no need to introduce that to this discussion?
+<a name="l-209"></a><span class="tm">20:41:32</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">t-bast:</span> right but that's just moving the "negotiation" after the attempt, and we actually have to move through the list in linear order, which we could skip if we just compared the two lists
+<a name="l-210"></a><span class="tm">20:41:42</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> like one compensation step could be the specified mechanism to buy turbo channels
+<a name="l-211"></a><span class="tm">20:41:51</span><span class="nk"> &lt;ariard&gt;</span> but sure, just lets room
+<a name="l-212"></a><span class="tm">20:41:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> again, lets discuss that when we get to having a spec for that?
+<a name="l-213"></a><span class="tm">20:42:22</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">rusty:</span> right, that's why we have optional versions though. With types you can't signal optionals afaik
+<a name="l-214"></a><span class="tm">20:42:25</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> unclear to me how you'd really even define this "comparison" operation, and how it wouldn't lead to weird instances where the funder ends up w/ something they didn't actually want due to the _interpretation_ of the receiver of the feature bits
+<a name="l-215"></a><span class="tm">20:42:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> but how do you communicate "i support anchor with csv x or non-anchor with csv 5*x"?
+<a name="l-216"></a><span class="tm">20:42:30</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> i agree, i'm just pointing your reply to a channel_type probe might function of such authentication phase
+<a name="l-217"></a><span class="tm">20:42:51</span><span class="nk"> &lt;rusty&gt;</span> Oh, and re structure error codes (yeah, I'll respond on list): for bolt12 errors we specify (TLV, so optional) "erroneous field", "suggested value" as well as error, so you can at least get an idea of what they didn't like.
+<a name="l-218"></a><span class="tm">20:43:25</span><span class="nk"> &lt;ariard&gt;</span> but easy to reply `please_authenticate` to `open_channel_type` and if the initial sender isn't upgrade/understand authentication drop the channel opening
+<a name="l-219"></a><span class="tm">20:43:48</span><span class="nk"> &lt;cdecker[m]&gt;</span> So JSON array of objects listing features w/ parameters it is then, all agreed? xD
+<a name="l-220"></a><span class="tm">20:43:57</span><span class="nk"> &lt;roasbeef&gt;</span> ok so...single chan_type in open_channel, no negotiation, type and modified feature bits (I can live w/ the wasted space and a larger switch statement)?
+<a name="l-221"></a><span class="tm">20:44:01</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> I don't udnerstand where this authentication thing is coming from?  Did I miss something.
+<a name="l-222"></a><span class="tm">20:44:24</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> but the important question: are feature bits odd or even?!?!? :)
+<a name="l-223"></a><span class="tm">20:44:43</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> your turn to paint the bikeshed.
+<a name="l-224"></a><span class="tm">20:44:52</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> that's where I'm leaning
+<a name="l-225"></a><span class="tm">20:44:53</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> xD
+<a name="l-226"></a><span class="tm">20:45:00</span><span class="nk"> &lt;roasbeef&gt;</span> sheep it
+<a name="l-227"></a><span class="tm">20:45:08</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> in the end I don't care, I found examples where either choice is confusing
+<a name="l-228"></a><span class="tm">20:45:19</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> with a tlv in the error message that includes type-1 "I want a different channel type"
+<a name="l-229"></a><span class="tm">20:45:22</span><span class="nk"> &lt;rusty&gt;</span> (even makes more sense, I chose odd... because it's one less letter to type?)
+<a name="l-230"></a><span class="tm">20:45:39</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> see my comment on structured errors above
+<a name="l-231"></a><span class="tm">20:45:55</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> well authentication could be defined by paying a premium fee, did pop up among discussion with DLC folks about who is bearing the mempool congestion risk in case of unilateral fee-bumping of dual-funded chan
+<a name="l-232"></a><span class="tm">20:45:59</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> +1
+<a name="l-233"></a><span class="tm">20:46:01</span><span class="nk"> &lt;ariard&gt;</span> sorry for the outside context
+<a name="l-234"></a><span class="tm">20:46:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> yea, I'm happy with that, but thats a lot more work to hold up channel types on.
+<a name="l-235"></a><span class="tm">20:46:19</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, totally we should untie that.
+<a name="l-236"></a><span class="tm">20:46:32</span><span class="nk"> &lt;roasbeef&gt;</span> and then something implicit that we no longer set required feature bits for channel types?
+<a name="l-237"></a><span class="tm">20:46:38</span><span class="nk"> &lt;rusty&gt;</span> (Initially you'll assume that you should try a diff type if you get some erorr)
+<a name="l-238"></a><span class="tm">20:46:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> but, yea, specify the exact field and the amount I guess I can live with, as much as I think its entirely useless and redundant with human-readable error messages.
+<a name="l-239"></a><span class="tm">20:46:47</span><span class="nk"> &lt;roasbeef&gt;</span> in the innit, as otherwise you lose your connection to a peer if they try to leave behind your channel type
+<a name="l-240"></a><span class="tm">20:47:01</span><span class="nk"> &lt;roasbeef&gt;</span> which is what happened to us, and forces us to downgrade our advertised feature bits for certain eclair nodes
+<a name="l-241"></a><span class="tm">20:47:18</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> I think you should try another channel type no matter what error you get! If you get a "csv too low error" you could totally just pick another type with the same csv and get a success!
+<a name="l-242"></a><span class="tm">20:47:48</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> not eclair node, eclair-mobile
+<a name="l-243"></a><span class="tm">20:48:12</span><span class="nk"> &lt;cdecker[m]&gt;</span> So we're really mixing open parameter negotiation with open feature negotiation?
+<a name="l-244"></a><span class="tm">20:48:53</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> gotcha
+<a name="l-245"></a><span class="tm">20:48:57</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">cdecker[m]:</span> well how do you interpret a "csv too low error" is up to you can purse parameter negotiation or fallback to open feature negotiation?
+<a name="l-246"></a><span class="tm">20:49:12</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> they're kinda the same, you can't populate the message unless you know what type is being opened
+<a name="l-247"></a><span class="tm">20:49:15</span><span class="nk"> &lt;ariard&gt;</span> where pursuing parameter negotiation means try with a higher csv
+<a name="l-248"></a><span class="tm">20:49:34</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> there's one thing about the features included in channel types that came up in discussions I had with sstone and pm47. It's hard to articulate what makes a specific feature bit part of the channel type and what doesn't. Why isnt the wumbo feature bit included in channel type? Or upfront_shutdown_script?
+<a name="l-249"></a><span class="tm">20:49:36</span><span class="nk"> &lt;cdecker[m]&gt;</span> Right, just wanted to make sure I got that right, and that we're no longer "just" talking about features here
+<a name="l-250"></a><span class="tm">20:50:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> correct
+<a name="l-251"></a><span class="tm">20:50:06</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> I have a vague heuristic which is "a feature that somewhat drastically changes how the channel operates"
+<a name="l-252"></a><span class="tm">20:50:11</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> good q, right now we kinda mix the negotiation on a few diff layers, maybe we should make the "type" and "modifier" designation explicit?
+<a name="l-253"></a><span class="tm">20:50:17</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but it's really hand-wavy
+<a name="l-254"></a><span class="tm">20:50:31</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> completely agree with you, the channel type is just an arbitrary bundle of features
+<a name="l-255"></a><span class="tm">20:50:39</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> certain bits are explicitly called out in the spec as "sticky": i.e. they depend on negotiation when the channel was opened, not since then!
+<a name="l-256"></a><span class="tm">20:50:40</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> but we'd have the same issue, what is a modifier and what is a fundamental feature?
+<a name="l-257"></a><span class="tm">20:51:13</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> one changes the commitment structure and the other changes certain other behavior?
+<a name="l-258"></a><span class="tm">20:51:15</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> e.g. you can go wumbo by reconnecting and negotiating wumbo bits.  You cannot do anchor_outputs that way.
+<a name="l-259"></a><span class="tm">20:51:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but upfront_shutdown_script is sticky :D
+<a name="l-260"></a><span class="tm">20:51:36</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> but the "certain other behavior" is really handwavy!
+<a name="l-261"></a><span class="tm">20:52:02</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> maybe we could typify more channels fee-bumping scheme/closing policy/outputs scripts/... at least `update_fee` is conflicting with `anchor` but doesn't say anything about the taprootness of the funding script
+<a name="l-262"></a><span class="tm">20:52:06</span><span class="nk"> &lt;t-bast&gt;</span> I agree that I'm nit-picking, I think it's ok to be hand-wavy here about what features are fundamental enough to be a channel type
+<a name="l-263"></a><span class="tm">20:52:15</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh, no good way around it...unless we say the modifiers are on the featurebit level and the type is what's explicit as the thing in the msg?
+<a name="l-264"></a><span class="tm">20:52:19</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> the value is, the bit really isn't.  Anyway, this is why explicit enumeration is clear.  For future bits, you've got to decide.
+<a name="l-265"></a><span class="tm">20:52:20</span><span class="nk"> &lt;t-bast&gt;</span> But I thought it was worth mentioning, as readers will wonder about that heuristic
+<a name="l-266"></a><span class="tm">20:52:47</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, what rusty said, just make sure its specified in the table when you add a new feature bit!
+<a name="l-267"></a><span class="tm">20:52:49</span><span class="nk"> &lt;rusty&gt;</span> (These days an empty script == no restrictions).
+<a name="l-268"></a><span class="tm">20:52:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeah true, but I guess you'd need to re-define what the anchor script looked like post taproot?
+<a name="l-269"></a><span class="tm">20:52:56</span><span class="nk"> &lt;BlueMatt&gt;</span> but, agreed, should write it down :)
+<a name="l-270"></a><span class="tm">20:53:29</span><span class="nk"> &lt;t-bast&gt;</span> SGTM, we're all in agreement on that heuristic ;)
+<a name="l-271"></a><span class="tm">20:53:30</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> right we should abstract the fee-bumping mechanism from the script support level
+<a name="l-272"></a><span class="tm">20:54:06</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh makes sense, can all this be tackled in one go though? we started as just being able to open diff channel types across the set of advertised feature bits
+<a name="l-273"></a><span class="tm">20:54:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to remove array and negotiation from PR, just "take it or or leave it"</span>
+<a name="l-274"></a><span class="tm">20:54:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> +1
+<a name="l-275"></a><span class="tm">20:54:43</span><span class="nk"> &lt;rusty&gt;</span> I'll leave in the "accept_channel mirrors the channel_type" since that tells you it worked, otherwise you need to be using default.,
+<a name="l-276"></a><span class="tm">20:54:53</span><span class="nk"> &lt;roasbeef&gt;</span> do we need to make a decision here w.r.t modifiers vs chan types? or we just deal w/ that later
+<a name="l-277"></a><span class="tm">20:55:05</span><span class="nk"> &lt;t-bast&gt;</span> so IIUC, our current rough consensus is: we send a single channel type in open_channel and let implementations deal with errors however they see fit, we use the existing feature bits (the channel type list defined by rusty) and we can extend that in the future based on real-world feedback. Is that a fair conclusion or did I misunderstand?
+<a name="l-278"></a><span class="tm">20:55:10</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> well i believe we'll get better with time rolling out minimal subtypes components instead of big bundle like `anchor_output` type
+<a name="l-279"></a><span class="tm">20:55:11</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> :100:
+<a name="l-280"></a><span class="tm">20:55:22</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> that's my understanding, yes.
+<a name="l-281"></a><span class="tm">20:55:42</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> yep!
+<a name="l-282"></a><span class="tm">20:55:50</span><span class="nk"> &lt;BlueMatt&gt;</span> see? consensus *is* possible!
+<a name="l-283"></a><span class="tm">20:55:57</span><span class="nk"> &lt;t-bast&gt;</span> Yay!
+<a name="l-284"></a><span class="tm">20:56:05</span><span class="nk"> &lt;rusty&gt;</span> Can we move on to turbo channels, or peer backup storage, or onion messages, or trampolines or something cool?
+<a name="l-285"></a><span class="tm">20:56:09</span><span class="nk"> &lt;cdecker[m]&gt;</span> Huzzah :-)
+<a name="l-286"></a><span class="tm">20:56:18</span><span class="nk"> &lt;ariard&gt;</span> yeah SGTM for now
+<a name="l-287"></a><span class="tm">20:56:35</span><span class="nk"> &lt;rusty&gt;</span> (I forgot to buy coffee grounds yesterday, and I am v. grumpy this morning!)
+<a name="l-288"></a><span class="tm">20:56:47 </span><span class="nka">* BlueMatt</span> <span class="ac">wont mention anything about australian coffee</span>
+<a name="l-289"></a><span class="tm">20:57:07</span><span class="nk"> &lt;t-bast&gt;</span> I need to do some work on peer backup storage, I have a commit to add before we can discuss it so let's do something else today
+<a name="l-290"></a><span class="tm">20:57:19</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> yay onion messages?
+<a name="l-291"></a><span class="tm">20:57:32</span><span class="nk"> &lt;BlueMatt&gt;</span> I actually have a hard-out in 5 tho, holiday here and with extended family and all that
+<a name="l-292"></a><span class="tm">20:58:02</span><span class="nk"> &lt;t-bast&gt;</span> Let's do a round of onion messages, and we'll see where it takes us
+<a name="l-293"></a><span class="tm">20:58:06</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Onion Messages</span>
+<a name="l-294"></a><span class="tm">20:58:30</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/759</span>
+<a name="l-295"></a><span class="tm">20:59:04</span><span class="nk"> &lt;BlueMatt&gt;</span> aside from the rebase error, concept ack https://github.com/lightningnetwork/lightning-rfc/pull/759/files#diff-c3e160eeb369e80b50a24ceee86928786ae3b67a0687a7aea80e8cefac0145daR43
+<a name="l-296"></a><span class="tm">21:00:21</span><span class="nk"> &lt;BlueMatt&gt;</span> unimplemented ack from me :)
+<a name="l-297"></a><span class="tm">21:00:27</span><span class="nk"> &lt;t-bast&gt;</span> Can you summarize the arguments for or against dropping the `reply_path` rusty? If we drop it, we don't depend on route blinding anymore here, do we?
+<a name="l-298"></a><span class="tm">21:00:38</span><span class="nk"> &lt;roasbeef&gt;</span> how does this deal w/ rate limiting and DoS? at least w/ an HTLC you need to commit funds
+<a name="l-299"></a><span class="tm">21:00:45</span><span class="nk"> &lt;rusty&gt;</span> So I'd really like this to get implemented.  I renumbered the feature bit (since it was from before we just did the assign-in-title thing)
+<a name="l-300"></a><span class="tm">21:00:52</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> you can just....not forward?
+<a name="l-301"></a><span class="tm">21:01:25</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> MAY ratelimit.  I thought about adding a pushback (you tell upstream to stop sending, it can similarly pushback on next msg etc) but it seemed premature.
+<a name="l-302"></a><span class="tm">21:01:40</span><span class="nk"> &lt;rusty&gt;</span> It's trivial to implement, BTW.
+<a name="l-303"></a><span class="tm">21:01:42</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> "MAY rate-limit messages by dropping them" ? though feel free to not accept them if you don't have opened channels with sender?
+<a name="l-304"></a><span class="tm">21:01:53</span><span class="nk"> &lt;ariard&gt;</span> like sounds more an implementation/node policy question
+<a name="l-305"></a><span class="tm">21:02:04</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> before w/ HTLCs you have an actual cost to send a message (the HTLC size and opportunity cost of the worst case CLTV), here there's no cost at all
+<a name="l-306"></a><span class="tm">21:02:09</span><span class="nk"> &lt;BlueMatt&gt;</span> imo dont accept messages unless you have (or have recently had) a channel with the sender
+<a name="l-307"></a><span class="tm">21:02:18</span><span class="nk"> &lt;roasbeef&gt;</span> (and also the future fee you may need to spend when going on chain)
+<a name="l-308"></a><span class="tm">21:02:22</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, that's why it says you can rate-limt :)
+<a name="l-309"></a><span class="tm">21:02:31</span><span class="nk"> &lt;BlueMatt&gt;</span> so, ratelimit :)
+<a name="l-310"></a><span class="tm">21:02:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> afaict, this is meant to be used for messaging generally e2e across the network
+<a name="l-311"></a><span class="tm">21:02:32</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> so, reply-path in onion is good if the contents are unparsable.  But all the contents so far which required a reply could also encode their own reply path anyway.
+<a name="l-312"></a><span class="tm">21:03:03</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, but OTOH these create far less cost on the intermediates, so...
+<a name="l-313"></a><span class="tm">21:03:18</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> Q is how does that info get back to the sender, do they get a reject or it just goes out into the ether?
+<a name="l-314"></a><span class="tm">21:03:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> same CPU cost afaict, but no longer any storage?
+<a name="l-315"></a><span class="tm">21:03:56</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, and you don't use up an HTLC slot or do a round-trip too.
+<a name="l-316"></a><span class="tm">21:04:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the cpu cost of an htlc is ~0, its the io commit and funds commit thats an actual cost
+<a name="l-317"></a><span class="tm">21:04:06</span><span class="nk"> &lt;rusty&gt;</span> (and ofc don't hit the db)
+<a name="l-318"></a><span class="tm">21:04:41</span><span class="nk"> &lt;rusty&gt;</span> It's about as minimal as I could make it.
+<a name="l-319"></a><span class="tm">21:04:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> and, yea, a NAK would be cool, but then you have the same cost to send a NAK as a forward, which is obviously not practical? I dont really see a solution but I agree it'd be nice
+<a name="l-320"></a><span class="tm">21:05:15</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> if we re-use the sphinx single-use-reply-blocks you kinda get the reply path for free (and you still hide the sender)
+<a name="l-321"></a><span class="tm">21:05:24</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> ok, this does have a dependency on route blinding then (unless you're directly connected to the recipient), right? I'm asking because that means I really need to spend time on route blinding again and ensuring it gets enough reviews
+<a name="l-322"></a><span class="tm">21:05:49</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yes, it does assume that :)
+<a name="l-323"></a><span class="tm">21:05:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> main diff I'm trying to get at is that this is "costless" compared to sending an HTLC
+<a name="l-324"></a><span class="tm">21:06:05</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> that's interesting, do you have a link to that sphinx feature?
+<a name="l-325"></a><span class="tm">21:06:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, good! messaging like this shouldn't have cost! I dont see why that isn't just trivially a great thing
+<a name="l-326"></a><span class="tm">21:06:17</span><span class="nk"> &lt;roasbeef&gt;</span> sounds like a good place to make a C&amp;C
+<a name="l-327"></a><span class="tm">21:06:38</span><span class="nk"> &lt;BlueMatt&gt;</span> dont forward if you dont have a channel
+<a name="l-328"></a><span class="tm">21:06:40</span><span class="nk"> &lt;BlueMatt&gt;</span> problem solved :)
+<a name="l-329"></a><span class="tm">21:06:41</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> the costs here are distributed across the network of ppl that're moving these around w/ no offset
+<a name="l-330"></a><span class="tm">21:06:53</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> I think that neuters the proposed use case
+<a name="l-331"></a><span class="tm">21:07:10</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> well you're free to pour a cost on it, like requiring a chan or good-counterparty reputation in your auto-pilot?
+<a name="l-332"></a><span class="tm">21:07:24</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> non paper link: https://katzenpost.mixnetworks.org/docs/specs/sphinx.html#single-use-reply-block-surb-creation
+<a name="l-333"></a><span class="tm">21:07:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I dont see why you think that's a bad thing? Are you claiming that this will somehow have enough cost to forward a message that people will, like, not want to? or that it'll be "enough" cost that it'll ever show up?
+<a name="l-334"></a><span class="tm">21:07:37</span><span class="nk"> &lt;rusty&gt;</span> The problem is that ppl will do this anyway, they're just using HTLCs.  Blech!
+<a name="l-335"></a><span class="tm">21:07:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> honestly this sounds like the old "bitcoin will never work because you dont incentivize full nodes to relay transactions" argument
+<a name="l-336"></a><span class="tm">21:07:46</span><span class="nk"> &lt;BlueMatt&gt;</span> also what rusty said
+<a name="l-337"></a><span class="tm">21:08:02</span><span class="nk"> &lt;roasbeef&gt;</span> just seems super prone to abuse, and at least rn you have a cost w/ something trying to use the feature: "botnets will LOVE this little protocol feature" kek
+<a name="l-338"></a><span class="tm">21:08:16</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> thanks, that's interesting, that could mean we don't need to reinvent the wheel with route blinding if Sphinx already offers this feature, I'll dive into it
+<a name="l-339"></a><span class="tm">21:08:18</span><span class="nk"> &lt;BlueMatt&gt;</span> require a channel and then you dont have to worry
+<a name="l-340"></a><span class="tm">21:08:33</span><span class="nk"> &lt;BlueMatt&gt;</span> also if the cost ever shows up at more than 2% of your cpu or bandwidth, stop relaying and rate-limit
+<a name="l-341"></a><span class="tm">21:08:35</span><span class="nk"> &lt;BlueMatt&gt;</span> problem solved
+<a name="l-342"></a><span class="tm">21:08:38</span><span class="nk"> &lt;BlueMatt&gt;</span> like, very, very, solved.
+<a name="l-343"></a><span class="tm">21:08:49</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> we might have compensation mechanisms cheaper than HTLC lock-in but costlier than zero?
+<a name="l-344"></a><span class="tm">21:08:51</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yep, proposed them in the past, since they give you return traffic and fit into the existing scheme
+<a name="l-345"></a><span class="tm">21:09:04</span><span class="nk"> &lt;BlueMatt&gt;</span> It *is* maybe worth discussing backwards-path, but it sounds like rusty is just saying we can add that later?
+<a name="l-346"></a><span class="tm">21:09:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> please no. the cost on a forwarding node here is exactly zero. we dont need to charge when the cost is zero
+<a name="l-347"></a><span class="tm">21:09:37</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> again, this sounds like the old "bitcoin will never work because you dont incentivize full nodes to relay transactions" argument
+<a name="l-348"></a><span class="tm">21:09:51</span><span class="nk"> &lt;roasbeef&gt;</span> transaction relay doesn't allow generalized messaging
+<a name="l-349"></a><span class="tm">21:09:54</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> well you might have a set of watchtowers on your back consuming credits :) ?
+<a name="l-350"></a><span class="tm">21:09:57</span><span class="nk"> &lt;roasbeef&gt;</span> no one makes a botnet that communicates using transaction relay
+<a name="l-351"></a><span class="tm">21:09:59</span><span class="nk"> &lt;BlueMatt&gt;</span> people certainly use it for that :)
+<a name="l-352"></a><span class="tm">21:10:04</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> can revisit: I didn't use SURBs because this is simpler (we already have the pieces).
+<a name="l-353"></a><span class="tm">21:10:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> please stop mentioning botnet, I've said 10 times require a channel.
+<a name="l-354"></a><span class="tm">21:10:28</span><span class="nk"> &lt;roasbeef&gt;</span> botnet
+<a name="l-355"></a><span class="tm">21:11:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> I'll investigate this SURB thing to see if it's similar to route blinding, if it helps make it better or if it replaces it with something more standard
+<a name="l-356"></a><span class="tm">21:11:20</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> you can't do that, at least today, since you want to be able to connect directly if you can't find an onionmsg path.
+<a name="l-357"></a><span class="tm">21:11:40</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> no, it isn't.  It allows a reply, but we still need route blinding.
+<a name="l-358"></a><span class="tm">21:11:49</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> heh, ok, so limit to channel-or-directly-for-me
+<a name="l-359"></a><span class="tm">21:11:56</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> or "channel for relay" not "channel for accept" :)
+<a name="l-360"></a><span class="tm">21:11:58</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> ok
+<a name="l-361"></a><span class="tm">21:12:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> I think route blinding is used for the rendezvous stuff? the SURB is prepared by the sender, but it increases the size of the packet
+<a name="l-362"></a><span class="tm">21:12:22</span><span class="nk"> &lt;roasbeef&gt;</span> in the OG protocol, it occupies the e2e message space we removed
+<a name="l-363"></a><span class="tm">21:12:23</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> SURB basically mean you include a cookie which can be used to send a reply.
+<a name="l-364"></a><span class="tm">21:13:30</span><span class="nk"> &lt;rusty&gt;</span> You encode a secret, the prevhop, and a timeout in there so you know what to do when you get a reply with it, and the timeout means you won't allow replies forever.
+<a name="l-365"></a><span class="tm">21:13:35</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> route blinding is simpler than rendezvous, it's basically just tweaks on node_ids, but to be honest I'm hazy on the details (even though I wrote it and implemented it...)
+<a name="l-366"></a><span class="tm">21:14:03</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> you basically decrypt the blob and use it instead of the normal TLV values.
+<a name="l-367"></a><span class="tm">21:14:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> did we decide concretely that there's no way to allow anonymous-senders + replies + no intermediate state?
+<a name="l-368"></a><span class="tm">21:14:38</span><span class="nk"> &lt;BlueMatt&gt;</span> i kinda thought there was a way to do it, but maybe it was decided there isn't?
+<a name="l-369"></a><span class="tm">21:14:47</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> no, SURBs + blinding gives us that.
+<a name="l-370"></a><span class="tm">21:15:03</span><span class="nk"> &lt;BlueMatt&gt;</span> ah, ok, i misunderstood your above comment, then.
+<a name="l-371"></a><span class="tm">21:15:07</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> but, so does the "give blinded route in payload" so I just did that.
+<a name="l-372"></a><span class="tm">21:15:45</span><span class="nk"> &lt;t-bast&gt;</span> thanks, that's clearer
+<a name="l-373"></a><span class="tm">21:16:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> ah, ok, i misread that a tiny bit, but, yea, ok, I mean I think this pr is great, aside from not having implemented it!
+<a name="l-374"></a><span class="tm">21:16:18</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> IIRC, SURBs don't give an intermediary a way to reply though, which is the real problem with "I ratelimited you"
+<a name="l-375"></a><span class="tm">21:18:04</span><span class="nk"> &lt;rusty&gt;</span> So for ratelimiting, I think we end up ratelimiting in incoming, then sending a "stop sending pls for 10 seconds" msg.  The next time the sender wants to send it sends a "stop sending pls for 10 seconds" to where the to-be-dropped msg came from, etc.  It should stop naive flooding attacks, at least.
+<a name="l-376"></a><span class="tm">21:18:19</span><span class="nk"> &lt;rusty&gt;</span> (But someone needs to actually model this and think about it...)
+<a name="l-377"></a><span class="tm">21:19:08</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> yeh it's only for the destination
+<a name="l-378"></a><span class="tm">21:19:18</span><span class="nk"> &lt;roasbeef&gt;</span> unless you add one for each hop, which blows up the message size
+<a name="l-379"></a><span class="tm">21:19:55</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, which is why I just stuck a blinded reply path in there (which in theory allows a diff reply path, but probably would never be done)
+<a name="l-380"></a><span class="tm">21:20:36</span><span class="nk"> &lt;t-bast&gt;</span> Ok I skimmed through the link about SURB, I think route blinding offers a cheaper way to provide a reply path without intermediate storage - it does take up space in the message, but not that much
+<a name="l-381"></a><span class="tm">21:22:51</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> hmmmm the "stop sending pls for 10 seconds" aren't sent by congestioned hop ? like it's the sender doing it
+<a name="l-382"></a><span class="tm">21:23:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> yeah, congested hop I was thinking?
+<a name="l-383"></a><span class="tm">21:23:41</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> yeah was unclear from "The next time the sender wants to send it sends a..."
+<a name="l-384"></a><span class="tm">21:24:09 </span><span class="nka">* BlueMatt</span> <span class="ac">-&gt; family time</span>
+<a name="l-385"></a><span class="tm">21:24:13</span><span class="nk"> &lt;BlueMatt&gt;</span> anything else before we call time?
+<a name="l-386"></a><span class="tm">21:24:40</span><span class="nk"> &lt;rusty&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/847 seems to have interop success?
+<a name="l-387"></a><span class="tm">21:25:19</span><span class="nk"> &lt;t-bast&gt;</span> Yes, IIRC roasbeef wanted to take a stab at implementing https://github.com/lightningnetwork/lightning-rfc/pull/847 in lnd?
+<a name="l-388"></a><span class="tm">21:25:20</span><span class="nk"> &lt;rusty&gt;</span> I know roasbeef has been wanting to kill close fee negotiation since forever, and this does that.  Seems to work?
+<a name="l-389"></a><span class="tm">21:25:41</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> did you notice I remove the `MAY disconnect` part in favor of sending a warning?
+<a name="l-390"></a><span class="tm">21:25:44</span><span class="nk"> &lt;roasbeef&gt;</span> yeh still need to carve out some time for an impl, looks pretty straight forward though
+<a name="l-391"></a><span class="tm">21:26:06</span><span class="nk"> &lt;ariard&gt;</span> let's start next meeting with 847?
+<a name="l-392"></a><span class="tm">21:26:12</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, was easy.  Be nice to make compulsory and rip out the old stuff.
+<a name="l-393"></a><span class="tm">21:26:47</span><span class="nk"> &lt;t-bast&gt;</span> ACK, let's discuss #847 next time, it makes the negotiation code much simpler and more predictable, I really like it.
+<a name="l-394"></a><span class="tm">21:27:17</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">(Eventually:</span> I am thinking proposing bits 62/63 as "Modern Implementation" which implies lower bits and can let us recycle them in future...)
+<a name="l-395"></a><span class="tm">21:27:26</span><span class="nk"> &lt;rusty&gt;</span> Great!  Thanks everyone!
+<a name="l-396"></a><span class="tm">21:27:30</span><span class="nk"> &lt;t-bast&gt;</span> Enjoy your 4th of July murica people ;)
+<a name="l-397"></a><span class="tm">21:28:01</span><span class="nk"> &lt;t-bast&gt;</span> Thanks everyone for the discussions, I'm happy we got some progress on channel types!
+<a name="l-398"></a><span class="tm">21:28:09</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>
