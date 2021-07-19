@@ -413,3 +413,10 @@
 21:29:51 <rusty> BlueMatt: in theory, in practice most users have a single channel.
 21:30:00 <BlueMatt> huh?
 21:30:08 <t-bast> rusty: do you expect that people will want the safe-ish turbo? Instead of just doing full turbo-yolo when they do turbo? I'm not sure trying to half-protect the funds in case the channel is double-spent is really worth it
+21:30:18 <ariard> to me, the problem seems to be "how do i signal to my counterparty forward-only-after-conf?"
+21:30:27 <BlueMatt> ariard: I dont think we need to?
+21:30:45 <t-bast> BlueMatt: yes, we forward happily and the phoenix user trusts that we won't double-spend the channel
+21:30:54 <ariard> BlueMatt: that might the forwarding policy you wish, like being both a merchant and routing node
+21:30:55 <BlueMatt> alright, lets discuss more on an issue, it seems like the big question is "Do We need to Tell our Counterparty that you wont forward, or do we just reject the htlcs"
+21:31:03 <roasbeef> one other thing w/ the custom ID, is: once the channle is confirmed, do you use the actual scid or keep using the custom one?
+21:31:08 <BlueMatt> rusty: you wanna open an issue?
