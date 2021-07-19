@@ -194,3 +194,7 @@
 20:47:25 <BlueMatt> crypt-iq: isn't that just....the htlc in-flight total value limit?
 20:47:54 <crypt-iq> Well this dusted amount is stealable, htlc-in-flight applies to non-dust as well
 20:47:55 <roasbeef> re compat of the co-op close fee thing: that'll end up borking a lot of channels in the wild, if you send one above the range, lnd won't like it and you'll have to force close the channels
+20:48:18 <BlueMatt> crypt-iq: you mean it burns to fee? thats been part of the lightning security model forever :)
+20:48:23 <roasbeef> why not tie it to a feature bit, if the negotiation logic is already gonna change?
+20:48:23 <crypt-iq> Bumping antoine's ML post: https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-May/002714.html
+20:49:04 <BlueMatt> roasbeef: yes, we're aware it was a concern, did you read the scrollback from the beginning of the meeting for the rationale proposed?
