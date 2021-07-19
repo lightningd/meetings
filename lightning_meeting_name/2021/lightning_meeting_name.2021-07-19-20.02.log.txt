@@ -169,3 +169,10 @@
 20:43:25 <t-bast> we don't want these dust htlc to be included in that limit, right?
 20:43:28 <BlueMatt> t-bast: no, not in-flight limit, but the htlc-count limit
 20:43:45 <niftynei_> the comments from last time i suggested a 'max_fee_from_dust" limit
+20:43:53 <t-bast> right, but it's only an msat value, so it's probably a huge amount of dust htlcs, isn't it?
+20:44:08 <BlueMatt> t-bast: right, the objection last time was that this could turn into a DoS issue
+20:44:13 <crypt-iq> You don't need a max_fee_from_dust parameter I found out
+20:44:17 <niftynei_> so putting a sats limit on the amount of extra fee you'd allow for "htlc escrow that's too small for its own htlc output"
+20:44:17 <rusty> Yeah, I really don't want you to add 1M dust htlcs, though at 1msat that's only 1000sats in fees.
+20:44:23 <BlueMatt> but you dont send signatures for them, so, really, I dont see why
+20:44:51 <cdecker[m]> Still needs storage and memory though
