@@ -390,3 +390,13 @@
 21:26:56 <BlueMatt> t-bast: yea.
 21:27:00 <roasbeef> BlueMatt: yeh that's it, ppl want to recv and send insta
 21:27:01 <rusty> BlueMatt: if you open an unconf channel with me and send me some sats, I can send them through you out to anyone.
+21:27:13 <BlueMatt> roasbeef: yea, ok
+21:27:15 <rusty> There's no *routing* here, importantly.
+21:27:22 <rusty> s/routing/forwarding/
+21:27:24 <BlueMatt> rusty: but, like you wont *accept* the original payment
+21:27:26 <BlueMatt> you may accept the htlc
+21:27:28 <roasbeef> so you either need a way to crafta a custom short channel ID, or you use pubkey based routing in the onion (since that's already in the invoice)
+21:27:34 <BlueMatt> but from an api/ux perspective, you'll market it as "pending"
+21:27:44 <roasbeef> iirc rn breez uses a scid mapping of heights below the segwit activation height
+21:27:46 <BlueMatt> *unless* you're trusting the counterparty, at which point you'll also route
+21:28:04 <BlueMatt> roasbeef: I think lets just create a way to create a custom scid, cause we want to do that anyway imo :)
