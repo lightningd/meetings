@@ -260,3 +260,9 @@
 20:59:53 <BlueMatt> that just seems like an issue where y'all can not set the feature bit until you add the relevant code?
 21:00:04 <BlueMatt> or are you *also* making a security argument?
 21:00:29 <crypt-iq> Well another problem is that we have in-memory buffers so we want to limit that exposure as well and these HTLCs all get stored with their blobs
+21:00:43 <cdecker[m]> Wouldn't that require there to be more than `u16max-buffer` in a single commitment?
+21:00:59 <crypt-iq> cdecker: right, which I don't see as likely except in an attack scenario
+21:01:02 <BlueMatt> yes, do you have a specific limit in mind for that? that seems like something that could be a general spec-enforced limit
+21:01:09 <BlueMatt> cause, like, the number can just be almost arbitrarily high
+21:01:16 <BlueMatt> we use 64K for lots of things, lets just say that? :)
+21:01:18 <ariard> you can limit the dusted balance implementation-wise, though at risk of silent force-close if it overrides negotiated `dust_limit_satoshis`
