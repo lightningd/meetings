@@ -332,3 +332,6 @@
 21:13:50 <BlueMatt> cdecker[m]: only if you're the direct counterparty, otherwise you get paid either way :)
 21:13:54 <t-bast> roasbeef: yeah, maybe we should do the same, I'm not sure though, I like having the two distinct mechanisms (and it's really a tiny amount of work to support)
 21:13:59 <BlueMatt> cdecker[m]: but, yea, thats basically a node-level api issue, no?
+21:14:23 <cdecker[m]> Yep, but we may need to bubble that up to the user so they can decide
+21:14:33 <t-bast> BlueMatt: of course, if it's tedious to do, I can definitely live with the try-and-see approach, but if it's really just including a tiny informative tlv it could be worth it
+21:14:57 <rusty> Yeah, easier to add a warning msg than to extend error msg, tbh.
