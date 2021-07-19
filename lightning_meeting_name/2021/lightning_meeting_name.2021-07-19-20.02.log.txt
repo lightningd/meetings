@@ -291,3 +291,7 @@
 21:05:03 <cdecker[m]> Sgtm
 21:05:03 <BlueMatt> rusty has the floor
 21:05:10 <BlueMatt> and about 10 minutes until we call time
+21:05:55 <t-bast> Do we need to include turbo in channel_type?
+21:06:21 <rusty> t-bast: hmm, good q!
+21:06:24 <t-bast> Or do we just react to `min_depth` being `0` in `accept_channel`?
+21:06:41 <t-bast> Because what's a bit weird here is that open_channel doens't have a way to specify min_depth
