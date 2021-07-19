@@ -327,3 +327,8 @@
 21:12:29 <rusty> IOW, all channels are turbo channels.  I think our analysis shows that (as long as you refuse to fwd) it's "why not, your funeral"?
 21:12:39 <roasbeef> t-bast: fwiw we never close when we receive errors, always seemed like an uncessary way to make users angry (by auto force closing), but it's possible to re-use the error message as is, using the all zero connection ID flag, then using a TLV field to pin point a channel and/or action
 21:12:54 <t-bast> BlueMatt: that's true, but it's still something we could easily avoid by being explicit, can't we?
+21:13:15 <cdecker[m]> Well even if you're the final recipient you should maybe not act on it until it's confirmed (ship the paid goods)
+21:13:39 <BlueMatt> t-bast: yea, I guess its a question of protocol complexity
+21:13:50 <BlueMatt> cdecker[m]: only if you're the direct counterparty, otherwise you get paid either way :)
+21:13:54 <t-bast> roasbeef: yeah, maybe we should do the same, I'm not sure though, I like having the two distinct mechanisms (and it's really a tiny amount of work to support)
+21:13:59 <BlueMatt> cdecker[m]: but, yea, thats basically a node-level api issue, no?
