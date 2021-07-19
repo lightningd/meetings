@@ -266,3 +266,7 @@
 21:01:09 <BlueMatt> cause, like, the number can just be almost arbitrarily high
 21:01:16 <BlueMatt> we use 64K for lots of things, lets just say that? :)
 21:01:18 <ariard> you can limit the dusted balance implementation-wise, though at risk of silent force-close if it overrides negotiated `dust_limit_satoshis`
+21:01:46 <crypt-iq> I was thinking 10000, but if we upgrade our database I don't see a reason to not have 64k
+21:01:48 <BlueMatt> ariard: that's a largely-separate issue, though, thats the channel negotiation at creation?
+21:02:03 <rusty> 32k!  And bike shed BLUE dammit BLUE
+21:02:22 <crypt-iq> ariard: how can it lead to a silent force close error?
