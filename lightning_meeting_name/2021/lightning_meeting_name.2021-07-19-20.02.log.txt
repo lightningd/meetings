@@ -190,3 +190,7 @@
 20:46:26 <crypt-iq> Yeah but it's a database upgrade, which we'd want to avoid. Could be something revisited though
 20:46:52 <niftynei_> is there a network related reason for the 10k limit?
 20:46:58 <crypt-iq> So when receiving an incoming HTLC, if either you or your counterparty's commitment has too much dust on it (defined by your dust threshold) you can just fail back
+20:47:01 <crypt-iq> There's no network related reason no
+20:47:25 <BlueMatt> crypt-iq: isn't that just....the htlc in-flight total value limit?
+20:47:54 <crypt-iq> Well this dusted amount is stealable, htlc-in-flight applies to non-dust as well
+20:47:55 <roasbeef> re compat of the co-op close fee thing: that'll end up borking a lot of channels in the wild, if you send one above the range, lnd won't like it and you'll have to force close the channels
