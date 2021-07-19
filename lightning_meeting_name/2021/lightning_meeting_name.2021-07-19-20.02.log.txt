@@ -321,3 +321,9 @@
 21:11:37 <roasbeef> BlueMatt: had something come up in meat space, was going thru the scrollback to reply where tagged
 21:11:41 <rusty> So really, you only need to know "are you gonna get upset at me trying?" which is a feature negotiation.  I don't even think it needs to be a channel?
 21:11:48 <rusty> ... type
+21:12:02 <cdecker[m]> Right
+21:12:08 <t-bast> Yeah I'm not sure either it needs to be a channel_type
+21:12:19 <BlueMatt> t-bast: I mean you shouldnt hit a stuck payment in this case, hopefully, and its not like you have to wait for several hops of commitment_signed dances.
+21:12:29 <rusty> IOW, all channels are turbo channels.  I think our analysis shows that (as long as you refuse to fwd) it's "why not, your funeral"?
+21:12:39 <roasbeef> t-bast: fwiw we never close when we receive errors, always seemed like an uncessary way to make users angry (by auto force closing), but it's possible to re-use the error message as is, using the all zero connection ID flag, then using a TLV field to pin point a channel and/or action
+21:12:54 <t-bast> BlueMatt: that's true, but it's still something we could easily avoid by being explicit, can't we?
