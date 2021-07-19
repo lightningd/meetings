@@ -206,3 +206,8 @@
 20:49:50 <roasbeef> t-bast: version w/ the echo of the type? yeah we have a PR we need to clean up, but we can all prob start doing interop on testnet pretty soon
 20:49:51 <t-bast> roasbeef: I really think a feature bit would be wasted here, in practice no-one sends higher fees (we would all send an update_fee before that) so it shouldn't happen, and won't be a concern for anchor outputs channels where we have to remove that requirement anyway
 20:49:58 <ariard> niftynei: if you're miner with any chance to mine a block during the HTLC timelock it's quite a high-success attack
+20:50:31 <crypt-iq> BlueMatt: you're not vulnerable to this because it's subtracted from the incoming's balance, you're vulnerable when you forward. I can expand on the cases in the issue itself
+20:50:33 <t-bast> roasbeef: cool for the channel_type!
+20:50:55 <BlueMatt> crypt-iq: ah, I see your point, ok.
+20:50:56 <crypt-iq> niftynei: it is the same as max fees from dust but it doesn't have to be negotiated and can be deployed selectively by impl's right now
+20:51:01 <rusty> I think our roasbeef is laggy; maybe we should reboot him? :)
