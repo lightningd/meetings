@@ -1,0 +1,455 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:02:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">Lightning Meeting Name</span>
+<a name="l-2"></a><span class="tm">20:02:02</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Jul 19 20:02:02 2021 UTC and is due to finish in 60 minutes.  The chair is BlueMatt. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:02:02</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:02:02</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'lightning_meeting_name'
+<a name="l-5"></a><span class="tm">20:02:21</span><span class="nk"> &lt;BlueMatt&gt;</span> ok, first up https://github.com/lightningnetwork/lightning-rfc/pull/847
+<a name="l-6"></a><span class="tm">20:02:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/847</span>
+<a name="l-7"></a><span class="tm">20:02:39</span><span class="nk"> &lt;BlueMatt&gt;</span> mostly, probably, the discussion ending here: https://github.com/lightningnetwork/lightning-rfc/pull/847#discussion_r671873899
+<a name="l-8"></a><span class="tm">20:03:38</span><span class="nk"> &lt;BlueMatt&gt;</span> where I argued, and likely rusty will disagree, that we should simply drop the requirement for suggested fee being below channel feerate_per_kw for *both* anchor and non-anchor
+<a name="l-9"></a><span class="tm">20:03:43</span><span class="nk"> &lt;t-bast&gt;</span> BlueMatt IIUC you've started implementing this on the RL side?
+<a name="l-10"></a><span class="tm">20:04:11</span><span class="nk"> &lt;BlueMatt&gt;</span> yes
+<a name="l-11"></a><span class="tm">20:04:20</span><span class="nk"> &lt;t-bast&gt;</span> neat
+<a name="l-12"></a><span class="tm">20:04:30</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, I could buy that.  Let me check if we enforce that on recv though....
+<a name="l-13"></a><span class="tm">20:04:31</span><span class="nk"> &lt;BlueMatt&gt;</span> the proposal is technically an incompatibility with existing nodes, but at worst it causes force-closure when we intended to close the channel anyway
+<a name="l-14"></a><span class="tm">20:05:04</span><span class="nk"> &lt;BlueMatt&gt;</span> as an alternative, we could suggest dropping on the receive-side check, and then say something generic like "on jan 1 2022 you can stop caring when you send it"
+<a name="l-15"></a><span class="tm">20:05:05</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> it's not an incompatibility if we make it so for the new-style quick close though.
+<a name="l-16"></a><span class="tm">20:05:20</span><span class="nk"> &lt;t-bast&gt;</span> and if you breach that by sending a fee higher than the commit feerate, it's probably okay-ish to force-close (barring the csv delays)
+<a name="l-17"></a><span class="tm">20:05:27</span><span class="nk"> &lt;BlueMatt&gt;</span> you dont know if its new-style or not if you're the channel funder and speak first
+<a name="l-18"></a><span class="tm">20:05:54</span><span class="nk"> &lt;t-bast&gt;</span> (in terms of fees paid)
+<a name="l-19"></a><span class="tm">20:06:41</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> true.
+<a name="l-20"></a><span class="tm">20:07:22</span><span class="nk"> &lt;rusty&gt;</span> I know we didn't want to burn a feature bit here, but it would have been easier in transition.  Oh well.
+<a name="l-21"></a><span class="tm">20:07:50</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, we could....yuck tho
+<a name="l-22"></a><span class="tm">20:08:08</span><span class="nk"> &lt;t-bast&gt;</span> agreed, yuck, I don't think we need a feature bit for that
+<a name="l-23"></a><span class="tm">20:08:16</span><span class="nk"> &lt;t-bast&gt;</span> I
+<a name="l-24"></a><span class="tm">20:08:25</span><span class="nk"> &lt;BlueMatt&gt;</span> at least personally I'm basically fine with some accidental force-closes during shutdown while nodes upgrade
+<a name="l-25"></a><span class="tm">20:08:31</span><span class="nk"> &lt;BlueMatt&gt;</span> like, you were already gonna shut down....eh
+<a name="l-26"></a><span class="tm">20:09:07</span><span class="nk"> &lt;niftynei_&gt;</span> but at what cost?
+<a name="l-27"></a><span class="tm">20:09:21</span><span class="nk"> &lt;t-bast&gt;</span> in that case the fees would be the same (force-closer would even be cheaper)
+<a name="l-28"></a><span class="tm">20:09:29</span><span class="nk"> &lt;t-bast&gt;</span> it's just an additional csv delay
+<a name="l-29"></a><span class="tm">20:09:33</span><span class="nk"> &lt;BlueMatt&gt;</span> right, you'd *save* on fees, but pay the csv delay.
+<a name="l-30"></a><span class="tm">20:09:50</span><span class="nk"> &lt;BlueMatt&gt;</span> of course given you wanted to use a higher fee, you're probably pretty sad about the csv delay
+<a name="l-31"></a><span class="tm">20:10:00</span><span class="nk"> &lt;BlueMatt&gt;</span> cause you probably wanted to pay a higher fee *because* you didnt want to wait
+<a name="l-32"></a><span class="tm">20:10:10</span><span class="nk"> &lt;t-bast&gt;</span> but you're not the one waiting for the delay though
+<a name="l-33"></a><span class="tm">20:10:14</span><span class="nk"> &lt;BlueMatt&gt;</span> but, still, that's a risk the sender takes, the spec doesnt need to care about that
+<a name="l-34"></a><span class="tm">20:10:18</span><span class="nk"> &lt;t-bast&gt;</span> because it's your peer that will force-close on you
+<a name="l-35"></a><span class="tm">20:10:29</span><span class="nk"> &lt;t-bast&gt;</span> so no delay on your side
+<a name="l-36"></a><span class="tm">20:10:35</span><span class="nk"> &lt;BlueMatt&gt;</span> sure, but you still dont get to pay the higher fee that you wanted to pay, presumably to get into the Next Block
+<a name="l-37"></a><span class="tm">20:10:39</span><span class="nk"> &lt;t-bast&gt;</span> unless they just send an error and wait
+<a name="l-38"></a><span class="tm">20:10:45</span><span class="nk"> &lt;t-bast&gt;</span> true
+<a name="l-39"></a><span class="tm">20:10:47</span><span class="nk"> &lt;BlueMatt&gt;</span> (which nodes do do...)
+<a name="l-40"></a><span class="tm">20:11:01</span><span class="nk"> &lt;BlueMatt&gt;</span> but, in any case, votes in favor/against just saying the incompatibility is ok?
+<a name="l-41"></a><span class="tm">20:11:16</span><span class="nk"> &lt;t-bast&gt;</span> I won't be very helpful, I'm fine with both xD
+<a name="l-42"></a><span class="tm">20:11:39</span><span class="nk"> &lt;rusty&gt;</span> Hmm, seems like our enforcement is lax here, but the logic is a bit gnarly and I'll have to actually test.
+<a name="l-43"></a><span class="tm">20:12:01</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> I'm happy to remove the requirement; I expect it won't happen very often in practice.
+<a name="l-44"></a><span class="tm">20:12:02</span><span class="nk"> &lt;BlueMatt&gt;</span> are you staunchly against spec change even if you enforce it, rusty?
+<a name="l-45"></a><span class="tm">20:12:09</span><span class="nk"> &lt;BlueMatt&gt;</span> right, that's my other thinking
+<a name="l-46"></a><span class="tm">20:12:23</span><span class="nk"> &lt;BlueMatt&gt;</span> not many nodes are going to by default send a higher fee than the channel fee, cause otherwise they would have increased the channel fee
+<a name="l-47"></a><span class="tm">20:13:03</span><span class="nk"> &lt;t-bast&gt;</span> yes, in the case of eclair, we would have done an update_fee beforehand, so we shouldn't be in this case except for anchor outputs where we keep the commit feerate low
+<a name="l-48"></a><span class="tm">20:13:42</span><span class="nk"> &lt;rusty&gt;</span> OK, let's simply remove that requirement?
+<a name="l-49"></a><span class="tm">20:13:50</span><span class="nk"> &lt;BlueMatt&gt;</span> alright, sounds like maybe rough agreement. lets do it.
+<a name="l-50"></a><span class="tm">20:13:55</span><span class="nk"> &lt;BlueMatt&gt;</span> next topic...
+<a name="l-51"></a><span class="tm">20:13:56</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#https://github.com/lightningnetwork/lightning-rfc/pull/880</span><span class="cmdline"></span>
+<a name="l-52"></a><span class="tm">20:13:59</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/880</span>
+<a name="l-53"></a><span class="tm">20:14:09</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> has the floor
+<a name="l-54"></a><span class="tm">20:14:26</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to remove cap-at-unilateral from 847 for all channel types</span>
+<a name="l-55"></a><span class="tm">20:14:30</span><span class="nk"> &lt;rusty&gt;</span> (Needed for minutes)
+<a name="l-56"></a><span class="tm">20:15:00</span><span class="nk"> &lt;t-bast&gt;</span> ack
+<a name="l-57"></a><span class="tm">20:15:02</span><span class="nk"> &lt;rusty&gt;</span> OK, this is implemented in a PR.
+<a name="l-58"></a><span class="tm">20:15:10</span><span class="nk"> &lt;roasbeef&gt;</span> this is dropping the requirement that co-op close fee is below the commit fee rate?
+<a name="l-59"></a><span class="tm">20:15:16</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yes.
+<a name="l-60"></a><span class="tm">20:15:19</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, for any type.
+<a name="l-61"></a><span class="tm">20:16:15</span><span class="nk"> &lt;BlueMatt&gt;</span> so whats the status of channel types agreement/disagreement? rusty?
+<a name="l-62"></a><span class="tm">20:16:19</span><span class="nk"> &lt;rusty&gt;</span> Node MUST play audio of Hey Big Spender when close fee proposal is above commitment fee rate.
+<a name="l-63"></a><span class="tm">20:16:38</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> so it's now a simple "take it or leave it" proposal by opener.
+<a name="l-64"></a><span class="tm">20:16:42</span><span class="nk"> &lt;BlueMatt&gt;</span> echo "Hey Big Spender" &gt; /dev/audio
+<a name="l-65"></a><span class="tm">20:17:01</span><span class="nk"> &lt;jkczyz&gt;</span> &gt; /dev/null
+<a name="l-66"></a><span class="tm">20:17:09</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> for all commits, or just anchors?
+<a name="l-67"></a><span class="tm">20:17:22</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> for all commits
+<a name="l-68"></a><span class="tm">20:17:34</span><span class="nk"> &lt;roasbeef&gt;</span> but would only apply for this new feature bit?
+<a name="l-69"></a><span class="tm">20:17:36</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> what's the purpose of sending back the `channel_type` in accept_channel, if you don't like the channel_type just stay silent?
+<a name="l-70"></a><span class="tm">20:17:52</span><span class="nk"> &lt;t-bast&gt;</span> I have the latest version of channel_type implemented in a PR in eclair as well, I can test cross-compat if you want with the c-lightning version rusty
+<a name="l-71"></a><span class="tm">20:17:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> just to echo I guess?
+<a name="l-72"></a><span class="tm">20:18:06</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> cool. whats the status of error codes to indicate "no, try another channel type"?
+<a name="l-73"></a><span class="tm">20:18:07</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> it's important
+<a name="l-74"></a><span class="tm">20:18:10</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> yeah, I thought about that, but it's also nice that it's caught immediately, not later when they try to add an HTLC
+<a name="l-75"></a><span class="tm">20:18:21</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> no new feature bit.
+<a name="l-76"></a><span class="tm">20:18:27</span><span class="nk"> &lt;t-bast&gt;</span> it shows you selected it, if you don't mention it and it's different from the implicit one, the opener cannot know what you expect
+<a name="l-77"></a><span class="tm">20:18:41</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> that discussion is ongoing, let me check ml
+<a name="l-78"></a><span class="tm">20:18:48</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> well they won't try to add a HTLC if receiver never send back sigs for initial commitment
+<a name="l-79"></a><span class="tm">20:19:15</span><span class="nk"> &lt;ariard&gt;</span> echo sounds good, just a small bandwidth waste, and could be catched with error messages if we had ones
+<a name="l-80"></a><span class="tm">20:19:17</span><span class="nk"> &lt;t-bast&gt;</span> oh I misunderstood, you mean in the case where you disagree and don't want that channel?
+<a name="l-81"></a><span class="tm">20:19:27</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> that breaks compat...
+<a name="l-82"></a><span class="tm">20:19:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yes, that was the above discussion....
+<a name="l-83"></a><span class="tm">20:19:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> it was discussed in the scrollback :)
+<a name="l-84"></a><span class="tm">20:19:59</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> it's take it or leave it, so opener have to figure out by itself what you expect?
+<a name="l-85"></a><span class="tm">20:20:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> ah, yes, you need echo to know they understood.
+<a name="l-86"></a><span class="tm">20:20:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast/rusty:</span> wait, then how do your current implementations decide when to suggest the next channel type in a new open_channel message?
+<a name="l-87"></a><span class="tm">20:20:21</span><span class="nk"> &lt;BlueMatt&gt;</span> or is it just "on any error with the same channel id"?
+<a name="l-88"></a><span class="tm">20:20:40</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> mine just sets the default (except there's an lnprototest which tries everything possible from the feature bits)
+<a name="l-89"></a><span class="tm">20:20:56</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> today, it's "meh, some error happened, me try again!"
+<a name="l-90"></a><span class="tm">20:21:01</span><span class="nk"> &lt;BlueMatt&gt;</span> ah, ok.
+<a name="l-91"></a><span class="tm">20:21:03</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, makes sense.
+<a name="l-92"></a><span class="tm">20:21:04</span><span class="nk"> &lt;t-bast&gt;</span> the flow in eclair is that the node operator explicitly chooses what channel_type to try, and either the flow completes or they receive an `error`, and are free to analyze it and decide whether to try a different channel type or not
+<a name="l-93"></a><span class="tm">20:21:04</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> ah okay, in case of talking with non-upgraded `channel_type` nodes, silently acking a channel type they don't understand at all
+<a name="l-94"></a><span class="tm">20:21:37</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> yeah.
+<a name="l-95"></a><span class="tm">20:22:43</span><span class="nk"> &lt;BlueMatt&gt;</span> alright, I mean sounds cool. glad its getting cross-node impl. will implement it when we get there at least from our end, but may not be immediately.
+<a name="l-96"></a><span class="tm">20:22:49</span><span class="nk"> &lt;BlueMatt&gt;</span> any further discussion that should happen live in it?
+<a name="l-97"></a><span class="tm">20:22:55</span><span class="nk"> &lt;rusty&gt;</span> But a side comment: this explicit use of channel types is a kind of latent concept which made our code nicer when we actually called it out (kudos, roasbeef); the spec could use a similar sweep to refer to channel types rather than "if option_static_remotekey applies to the channel...." lang.
+<a name="l-98"></a><span class="tm">20:23:28</span><span class="nk"> &lt;rusty&gt;</span> I think if t-bast and I interop, we're good to apply?  Should we approve that now, or wait for another meeting?
+<a name="l-99"></a><span class="tm">20:23:49</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> you mean should we pin the channel types board in bolt9 or somewhere else and reuse it across the spec?
+<a name="l-100"></a><span class="tm">20:23:52</span><span class="nk"> &lt;BlueMatt&gt;</span> I think that's fine, at least in concept. I'll read it over but yea go for it.
+<a name="l-101"></a><span class="tm">20:23:53</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> ACK on my side, I can test interop this week
+<a name="l-102"></a><span class="tm">20:24:15</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> great, thanks!
+<a name="l-103"></a><span class="tm">20:24:17</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast test channel_type interop with c-lightning</span>
+<a name="l-104"></a><span class="tm">20:24:40</span><span class="nk"> &lt;t-bast&gt;</span> roasbeef, are you fine with that version of the proposal?
+<a name="l-105"></a><span class="tm">20:25:14</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> more that we can now refer to "channel type" everywhere and know what we mean ("if channel type includes option_static_remotekey" for example).  But I'll have to see what it looks like when I actually sweep the spec.
+<a name="l-106"></a><span class="tm">20:25:26</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> nice!
+<a name="l-107"></a><span class="tm">20:25:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to start spec cleanup to refer to channel type throughout.</span>
+<a name="l-108"></a><span class="tm">20:25:55</span><span class="nk"> &lt;BlueMatt&gt;</span> ok, no news from roasbeef is good news :) next topic.
+<a name="l-109"></a><span class="tm">20:25:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/834</span>
+<a name="l-110"></a><span class="tm">20:26:01</span><span class="nk"> &lt;BlueMatt&gt;</span> warning messages
+<a name="l-111"></a><span class="tm">20:26:13</span><span class="nk"> &lt;BlueMatt&gt;</span> another rusty special. anything you want to get feedback on it live, rusty?
+<a name="l-112"></a><span class="tm">20:26:35</span><span class="nk"> &lt;BlueMatt&gt;</span> looks like the pr itself needs rebase, but t-bast ack'd
+<a name="l-113"></a><span class="tm">20:26:47</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> it Just Works.... though it'd be nice for debugging if other impls printed it out rather than unknown msg.
+<a name="l-114"></a><span class="tm">20:27:01</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, we can do that pretty easy
+<a name="l-115"></a><span class="tm">20:27:08</span><span class="nk"> &lt;rusty&gt;</span> Weakening the error semantics is just recognizing reality, it's long overdue.
+<a name="l-116"></a><span class="tm">20:27:12</span><span class="nk"> &lt;t-bast&gt;</span> yes I've found warnings very useful, and I've got a concrete use-case related for #847 that I think is worth sharing
+<a name="l-117"></a><span class="tm">20:27:19</span><span class="nk"> &lt;BlueMatt&gt;</span> yep, cool!
+<a name="l-118"></a><span class="tm">20:27:33</span><span class="nk"> &lt;t-bast&gt;</span> in some cases our only current choice is "disconnect", but it's actually putting us in a deadlock in some situations
+<a name="l-119"></a><span class="tm">20:28:05</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to rebase 834</span>
+<a name="l-120"></a><span class="tm">20:28:08</span><span class="nk"> &lt;t-bast&gt;</span> in the closing fee_range negotiation, if your peer sends a fee_range you completely disagree with, disconnecting isn't helpful because at reconnection they must re-send the closing_signed
+<a name="l-121"></a><span class="tm">20:28:13</span><span class="nk"> &lt;t-bast&gt;</span> and you will still disagree
+<a name="l-122"></a><span class="tm">20:28:25</span><span class="nk"> &lt;t-bast&gt;</span> sending a warning and then staying silent is much better
+<a name="l-123"></a><span class="tm">20:28:38</span><span class="nk"> &lt;BlueMatt&gt;</span> wait, shouldnt you force-close if the fee rate suggested for close is insane?
+<a name="l-124"></a><span class="tm">20:28:44</span><span class="nk"> &lt;t-bast&gt;</span> the node operator can pick that up and send a different closing_signed with a fee_range you'd like, or force-close
+<a name="l-125"></a><span class="tm">20:29:05</span><span class="nk"> &lt;t-bast&gt;</span> you could, but there's no real reason to if you don't need the funds immediately
+<a name="l-126"></a><span class="tm">20:29:13</span><span class="nk"> &lt;t-bast&gt;</span> you can send a warning first
+<a name="l-127"></a><span class="tm">20:29:26</span><span class="nk"> &lt;BlueMatt&gt;</span> sure there is - the channel is useless, and most node operators dont sit there and read the logs carefully
+<a name="l-128"></a><span class="tm">20:29:28</span><span class="nk"> &lt;rusty&gt;</span> (Note there's a proposal on the ml to add some concrete semantics to errors, which could apply to warnings too, but Carla hasn't responded)
+<a name="l-129"></a><span class="tm">20:29:57</span><span class="nk"> &lt;t-bast&gt;</span> when they see that the node they sent shutdown is stuck, they will likely look at their logs though
+<a name="l-130"></a><span class="tm">20:30:19</span><span class="nk"> &lt;t-bast&gt;</span> and then they can decide to either force-close or try different fee_range
+<a name="l-131"></a><span class="tm">20:30:24</span><span class="nk"> &lt;BlueMatt&gt;</span> sure, but the non-shutdown-initiator is unlikely to read the logs, so that ndoe should just force-close.
+<a name="l-132"></a><span class="tm">20:30:51</span><span class="nk"> &lt;rusty&gt;</span> BlueMatt, t-bast: this is true in general, that there should be some "we haven't made progress in X days, let's force close".
+<a name="l-133"></a><span class="tm">20:31:13</span><span class="nk"> &lt;BlueMatt&gt;</span> anyway, this is a node policy issue, which doesn't seem super relevant, we all agree we want warnings anyway :)
+<a name="l-134"></a><span class="tm">20:31:23</span><span class="nk"> &lt;BlueMatt&gt;</span> next topic!
+<a name="l-135"></a><span class="tm">20:31:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/issues/745</span>
+<a name="l-136"></a><span class="tm">20:31:29</span><span class="nk"> &lt;t-bast&gt;</span> ACK!
+<a name="l-137"></a><span class="tm">20:31:51</span><span class="nk"> &lt;rusty&gt;</span> I think we all agreed on this one, want me to draft a clarification?
+<a name="l-138"></a><span class="tm">20:32:11</span><span class="nk"> &lt;BlueMatt&gt;</span> sounds good. I admit I didnt read it, but ariard thinks we do the thing everyone else does, so I'm happy ;)
+<a name="l-139"></a><span class="tm">20:32:15</span><span class="nk"> &lt;lnd-bot&gt;</span> [13lightning-rfc] 15t-bast pushed 2 commits to 06relax-closing-fee-requirement: 02https://github.com/lightningnetwork/lightning-rfc/compare/f02916485c49...c99002013e6a
+<a name="l-140"></a><span class="tm">20:32:15</span><span class="nk"> &lt;lnd-bot&gt;</span> 13lightning-rfc/06relax-closing-fee-requirement 148683525 15t-bast: Use warning instead of disconnecting
+<a name="l-141"></a><span class="tm">20:32:15</span><span class="nk"> &lt;lnd-bot&gt;</span> 13lightning-rfc/06relax-closing-fee-requirement 14c990020 15t-bast: Remove fee below commit fee requirement
+<a name="l-142"></a><span class="tm">20:32:36</span><span class="nk"> &lt;BlueMatt&gt;</span> hmm, can we not use lightning-rfc branches for PRs? that seems a bit weird imo
+<a name="l-143"></a><span class="tm">20:33:58</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, it's weird (I usually use my personal copy) but I don't really mind.
+<a name="l-144"></a><span class="tm">20:35:09</span><span class="nk"> &lt;t-bast&gt;</span> I agree with the way rusty reframed the requirement at the end of the discussion: it's clear and concise
+<a name="l-145"></a><span class="tm">20:35:57</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, agreed
+<a name="l-146"></a><span class="tm">20:36:12</span><span class="nk"> &lt;BlueMatt&gt;</span> note that implementing it in not-this-way would actually be really quite annoying for us.
+<a name="l-147"></a><span class="tm">20:36:37</span><span class="nk"> &lt;rusty&gt;</span> Yeah, just added another comment.
+<a name="l-148"></a><span class="tm">20:37:10</span><span class="nk"> &lt;BlueMatt&gt;</span> correct, I agree with you rusty (and thats the way our code works, if I'm reading it correctly)
+<a name="l-149"></a><span class="tm">20:37:13</span><span class="nk"> &lt;BlueMatt&gt;</span> we would reject that add
+<a name="l-150"></a><span class="tm">20:38:07</span><span class="nk"> &lt;BlueMatt&gt;</span> any further discussion?
+<a name="l-151"></a><span class="tm">20:38:10</span><span class="nk"> &lt;ariard&gt;</span> yeah what i'm trying to understand is what lnd is doing on this behavior, crypt-iq comment is a bit unclear
+<a name="l-152"></a><span class="tm">20:38:16</span><span class="nk"> &lt;t-bast&gt;</span> I'd need to write that as a test to be 100% sure whether eclair would reject it or not...it's a simple test to write though I'll try that
+<a name="l-153"></a><span class="tm">20:38:17</span><span class="nk"> &lt;BlueMatt&gt;</span> It seems we're all in agreement, maybe t-bast wants to comment on the latest issue from the reporter
+<a name="l-154"></a><span class="tm">20:39:14</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> which comment was unclear?
+<a name="l-155"></a><span class="tm">20:39:18</span><span class="nk"> &lt;BlueMatt&gt;</span> I think I understood it
+<a name="l-156"></a><span class="tm">20:39:23</span><span class="nk"> &lt;t-bast&gt;</span> I'll need to write that test, I think eclair is quite conservative here and wouldn't "risk" sending that last add, but I'll need to verify
+<a name="l-157"></a><span class="tm">20:39:47</span><span class="nk"> &lt;BlueMatt&gt;</span> for the sake of time, lets move on and leave further discussion on the issue. in the mean time, rusty graciously offered to write up a spec clarification :)
+<a name="l-158"></a><span class="tm">20:39:55</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to clarify spec to resolve #745</span>
+<a name="l-159"></a><span class="tm">20:40:06</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/issues/873</span>
+<a name="l-160"></a><span class="tm">20:40:24</span><span class="nk"> &lt;BlueMatt&gt;</span> rusty had proposed some wording in the issue
+<a name="l-161"></a><span class="tm">20:40:56</span><span class="nk"> &lt;BlueMatt&gt;</span> there was some concern over DoS in the previous meeting on may 24
+<a name="l-162"></a><span class="tm">20:42:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> had suggested there that he'd have crypt-iq write up a patch to test for cpu dos
+<a name="l-163"></a><span class="tm">20:42:28</span><span class="nk"> &lt;BlueMatt&gt;</span> did that happen?
+<a name="l-164"></a><span class="tm">20:42:30</span><span class="nk"> &lt;t-bast&gt;</span> Probably worth exchanging some kind of `max_accepted_dust_htlc` to limit that?
+<a name="l-165"></a><span class="tm">20:42:42</span><span class="nk"> &lt;ariard&gt;</span> i think we sould introduce a new limit for dust htlc count and not let them unbounded
+<a name="l-166"></a><span class="tm">20:42:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> you already have a max total htlc in-flight limit
+<a name="l-167"></a><span class="tm">20:42:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> y tho
+<a name="l-168"></a><span class="tm">20:43:13</span><span class="nk"> &lt;t-bast&gt;</span> but that's what we want to override...?
+<a name="l-169"></a><span class="tm">20:43:25</span><span class="nk"> &lt;t-bast&gt;</span> we don't want these dust htlc to be included in that limit, right?
+<a name="l-170"></a><span class="tm">20:43:28</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> no, not in-flight limit, but the htlc-count limit
+<a name="l-171"></a><span class="tm">20:43:45</span><span class="nk"> &lt;niftynei_&gt;</span> the comments from last time i suggested a 'max_fee_from_dust" limit
+<a name="l-172"></a><span class="tm">20:43:53</span><span class="nk"> &lt;t-bast&gt;</span> right, but it's only an msat value, so it's probably a huge amount of dust htlcs, isn't it?
+<a name="l-173"></a><span class="tm">20:44:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> right, the objection last time was that this could turn into a DoS issue
+<a name="l-174"></a><span class="tm">20:44:13</span><span class="nk"> &lt;crypt-iq&gt;</span> You don't need a max_fee_from_dust parameter I found out
+<a name="l-175"></a><span class="tm">20:44:17</span><span class="nk"> &lt;niftynei_&gt;</span> so putting a sats limit on the amount of extra fee you'd allow for "htlc escrow that's too small for its own htlc output"
+<a name="l-176"></a><span class="tm">20:44:17</span><span class="nk"> &lt;rusty&gt;</span> Yeah, I really don't want you to add 1M dust htlcs, though at 1msat that's only 1000sats in fees.
+<a name="l-177"></a><span class="tm">20:44:23</span><span class="nk"> &lt;BlueMatt&gt;</span> but you dont send signatures for them, so, really, I dont see why
+<a name="l-178"></a><span class="tm">20:44:51</span><span class="nk"> &lt;cdecker[m]&gt;</span> Still needs storage and memory though
+<a name="l-179"></a><span class="tm">20:44:59</span><span class="nk"> &lt;crypt-iq&gt;</span> With the network today, you can limit your exposure to dust htlcs by refusing to forward them if your inbound channel is dusted or if your outbound channel will be dusted
+<a name="l-180"></a><span class="tm">20:45:02</span><span class="nk"> &lt;BlueMatt&gt;</span> I mean, its a computer, if you dont send a signature, the cpu cost of like 100M little HTLCs should be pretty akin to 1 normal htlc
+<a name="l-181"></a><span class="tm">20:45:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> define "dusted"
+<a name="l-182"></a><span class="tm">20:45:14</span><span class="nk"> &lt;crypt-iq&gt;</span> lnd will probably only handle ~10k htlc's
+<a name="l-183"></a><span class="tm">20:45:31</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> good point, it's true that without the sig it's quite inexpensive, it's worth testing
+<a name="l-184"></a><span class="tm">20:45:33</span><span class="nk"> &lt;crypt-iq&gt;</span> As a safe limit int his case
+<a name="l-185"></a><span class="tm">20:45:39</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> why?
+<a name="l-186"></a><span class="tm">20:45:52</span><span class="nk"> &lt;crypt-iq&gt;</span> We have a uint16 for forwarding htlc's and we don't want an overflow
+<a name="l-187"></a><span class="tm">20:45:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> which cost are you optimizing for limiting?
+<a name="l-188"></a><span class="tm">20:46:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> so swap it for a u32?
+<a name="l-189"></a><span class="tm">20:46:22</span><span class="nk"> &lt;BlueMatt&gt;</span> or a uint64, cause thats the same speed on most x86_64 processors :)
+<a name="l-190"></a><span class="tm">20:46:26</span><span class="nk"> &lt;crypt-iq&gt;</span> Yeah but it's a database upgrade, which we'd want to avoid. Could be something revisited though
+<a name="l-191"></a><span class="tm">20:46:52</span><span class="nk"> &lt;niftynei_&gt;</span> is there a network related reason for the 10k limit?
+<a name="l-192"></a><span class="tm">20:46:58</span><span class="nk"> &lt;crypt-iq&gt;</span> So when receiving an incoming HTLC, if either you or your counterparty's commitment has too much dust on it (defined by your dust threshold) you can just fail back
+<a name="l-193"></a><span class="tm">20:47:01</span><span class="nk"> &lt;crypt-iq&gt;</span> There's no network related reason no
+<a name="l-194"></a><span class="tm">20:47:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> isn't that just....the htlc in-flight total value limit?
+<a name="l-195"></a><span class="tm">20:47:54</span><span class="nk"> &lt;crypt-iq&gt;</span> Well this dusted amount is stealable, htlc-in-flight applies to non-dust as well
+<a name="l-196"></a><span class="tm">20:47:55</span><span class="nk"> &lt;roasbeef&gt;</span> re compat of the co-op close fee thing: that'll end up borking a lot of channels in the wild, if you send one above the range, lnd won't like it and you'll have to force close the channels
+<a name="l-197"></a><span class="tm">20:48:18</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> you mean it burns to fee? thats been part of the lightning security model forever :)
+<a name="l-198"></a><span class="tm">20:48:23</span><span class="nk"> &lt;roasbeef&gt;</span> why not tie it to a feature bit, if the negotiation logic is already gonna change?
+<a name="l-199"></a><span class="tm">20:48:23</span><span class="nk"> &lt;crypt-iq&gt;</span> Bumping antoine's ML post: https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-May/002714.html
+<a name="l-200"></a><span class="tm">20:49:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yes, we're aware it was a concern, did you read the scrollback from the beginning of the meeting for the rationale proposed?
+<a name="l-201"></a><span class="tm">20:49:07</span><span class="nk"> &lt;niftynei_&gt;</span> <span class="hi">crypt-iq:</span> i think by 'stealable' you mean "gets paid to the miner"?
+<a name="l-202"></a><span class="tm">20:49:13</span><span class="nk"> &lt;crypt-iq&gt;</span> Right it's burned to fee, but you can limit this amount per-channel without having to negotiate any parameters. So it allows you to not have the max_dust_htlc_fee option in the option_dusty_htlcs proposal
+<a name="l-203"></a><span class="tm">20:49:23</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> +1 re the chan types making certain sections of code nicer, this is what I was getting at w/ the like "mega switch statement for feature bits thing"
+<a name="l-204"></a><span class="tm">20:49:36</span><span class="nk"> &lt;niftynei_&gt;</span> but isn't that the "max fees from dust" limit ?
+<a name="l-205"></a><span class="tm">20:49:44</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> no you cant, someone can add a ton and then create a new commitment transaction and then broadcast that. just because you fail the htlc back in the next commitment doesnt change this.
+<a name="l-206"></a><span class="tm">20:49:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> version w/ the echo of the type? yeah we have a PR we need to clean up, but we can all prob start doing interop on testnet pretty soon
+<a name="l-207"></a><span class="tm">20:49:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> I really think a feature bit would be wasted here, in practice no-one sends higher fees (we would all send an update_fee before that) so it shouldn't happen, and won't be a concern for anchor outputs channels where we have to remove that requirement anyway
+<a name="l-208"></a><span class="tm">20:49:58</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> if you're miner with any chance to mine a block during the HTLC timelock it's quite a high-success attack
+<a name="l-209"></a><span class="tm">20:50:31</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">BlueMatt:</span> you're not vulnerable to this because it's subtracted from the incoming's balance, you're vulnerable when you forward. I can expand on the cases in the issue itself
+<a name="l-210"></a><span class="tm">20:50:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> cool for the channel_type!
+<a name="l-211"></a><span class="tm">20:50:55</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> ah, I see your point, ok.
+<a name="l-212"></a><span class="tm">20:50:56</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">niftynei:</span> it is the same as max fees from dust but it doesn't have to be negotiated and can be deployed selectively by impl's right now
+<a name="l-213"></a><span class="tm">20:51:01</span><span class="nk"> &lt;rusty&gt;</span> I think our roasbeef is laggy; maybe we should reboot him? :)
+<a name="l-214"></a><span class="tm">20:51:17</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">crypt-iq:</span> good point as well, it's worth highlighting that in the issue
+<a name="l-215"></a><span class="tm">20:51:38</span><span class="nk"> &lt;roasbeef&gt;</span> re the error msg stuff, don't see why to introduce a new message vs just re-using out existing once since that'll bridge compat, it also makes things simpler in that all nodes have one error path way, and older nodes just ignore what they don't understand
+<a name="l-216"></a><span class="tm">20:51:46</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">crypt-iq:</span> (the fact that as long as you don't forward, it doesn't open attack vectors)
+<a name="l-217"></a><span class="tm">20:52:08</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">t-bast:</span> right, there are 4 cases to tackle and probably better to lay them out in the issue and not on irc
+<a name="l-218"></a><span class="tm">20:52:33</span><span class="nk"> &lt;roasbeef&gt;</span> I also think enumerating the initially defined set of error codes/pathways as Carla did in her proposal is important, otherwise it's just another blob that hasn't really been that useful in practice outside of trying to diagnose force close scenarios
+<a name="l-219"></a><span class="tm">20:52:33</span><span class="nk"> &lt;cdecker[m]&gt;</span> Sounds good to me
+<a name="l-220"></a><span class="tm">20:52:47</span><span class="nk"> &lt;niftynei_&gt;</span> <span class="hi">crypt-iq:</span> right i just wanted to point out that you're talking about the thing that i mentioned last time, that they're the same thing in terms of how to handle the issue lol
+<a name="l-221"></a><span class="tm">20:53:11</span><span class="nk"> &lt;roasbeef&gt;</span> coudl be used for the "i'm shutting down now" message we've talked about in the past, I've been trying to debug some p2p connectivity issues w/ pure tor nodes in the wild lately, but at times context is lacking beyond "EOF"
+<a name="l-222"></a><span class="tm">20:53:25</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">niftynei:</span> gotcha
+<a name="l-223"></a><span class="tm">20:53:29</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> if you're gonna respond to something a half hour ago maybe just put it on the issue?
+<a name="l-224"></a><span class="tm">20:53:31</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> I find that warnings are more useful than errors, they act as a "nudge" that doesn't get your channels closed
+<a name="l-225"></a><span class="tm">20:53:38</span><span class="nk"> &lt;BlueMatt&gt;</span> we can't rehash the whole meeting a half hour late.
+<a name="l-226"></a><span class="tm">20:53:44</span><span class="nk"> &lt;BlueMatt&gt;</span> that would be a waste of everyone's time
+<a name="l-227"></a><span class="tm">20:54:34</span><span class="nk"> &lt;rusty&gt;</span> BTW, I'd like to discuss Turbo channels; it's not on agenda since there's not PR yet, but that can be fixed...
+<a name="l-228"></a><span class="tm">20:55:07</span><span class="nk"> &lt;BlueMatt&gt;</span> whats the concrete next-steps for dusty htlcs uncounted?
+<a name="l-229"></a><span class="tm">20:55:10</span><span class="nk"> &lt;t-bast&gt;</span> Sure, we can discuss turbo even without a PR
+<a name="l-230"></a><span class="tm">20:55:58</span><span class="nk"> &lt;t-bast&gt;</span> What about a proposal PR for dusty htlcs uncounted? If crypt-iq you think you've experimented and gathered enough feedback?
+<a name="l-231"></a><span class="tm">20:56:07</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> next steps: on issue, debate if we actually need a limit, and what it looks like if so.  crypt-iq to lead?
+<a name="l-232"></a><span class="tm">20:56:16</span><span class="nk"> &lt;rusty&gt;</span> (Or, if not, why not)
+<a name="l-233"></a><span class="tm">20:56:21</span><span class="nk"> &lt;BlueMatt&gt;</span> it sounds like maybe it can go ahead as-is, but with callouts of the ability to burn your own balance to fees and that nodes should limit their relaying of dust htlcs to limit their own total exposure
+<a name="l-234"></a><span class="tm">20:56:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> i believe I agree with crypt-iq that no in-spec limit is required/relevant
+<a name="l-235"></a><span class="tm">20:56:41</span><span class="nk"> &lt;BlueMatt&gt;</span> but instead at-forwarding-time limits apply
+<a name="l-236"></a><span class="tm">20:56:48</span><span class="nk"> &lt;niftynei_&gt;</span> ack
+<a name="l-237"></a><span class="tm">20:57:03</span><span class="nk"> &lt;crypt-iq&gt;</span> what limits are we talking about here? sum of dust limits?
+<a name="l-238"></a><span class="tm">20:57:17</span><span class="nk"> &lt;crypt-iq&gt;</span> I think a max_dust_htlcs that you can offer outstanding is necessary, no?
+<a name="l-239"></a><span class="tm">20:57:17</span><span class="nk"> &lt;t-bast&gt;</span> it would be up to each node's policy I guess
+<a name="l-240"></a><span class="tm">20:57:18</span><span class="nk"> &lt;BlueMatt&gt;</span> sum of outbound dust htlcs
+<a name="l-241"></a><span class="tm">20:57:21</span><span class="nk"> &lt;BlueMatt&gt;</span> but its not spec
+<a name="l-242"></a><span class="tm">20:57:29</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> why?
+<a name="l-243"></a><span class="tm">20:57:34</span><span class="nk"> &lt;cdecker[m]&gt;</span> Both number and sum id guess
+<a name="l-244"></a><span class="tm">20:57:34</span><span class="nk"> &lt;crypt-iq&gt;</span> where max_dust_htlcs is the literal number
+<a name="l-245"></a><span class="tm">20:57:38</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> didnt you just argue we *dont* need an in-spec limit?
+<a name="l-246"></a><span class="tm">20:57:52</span><span class="nk"> &lt;crypt-iq&gt;</span> I argued that we don't need a sum of dust limits
+<a name="l-247"></a><span class="tm">20:58:04</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yeah, just fail forwarding it if it's above your internal limit I'd guess
+<a name="l-248"></a><span class="tm">20:58:08</span><span class="nk"> &lt;BlueMatt&gt;</span> because we can do it at forward-time (its the node *sending* the htlc that takes the risk)
+<a name="l-249"></a><span class="tm">20:58:24</span><span class="nk"> &lt;BlueMatt&gt;</span> and if its at forward-time it doesnt appear in the spec outside of rationale sections
+<a name="l-250"></a><span class="tm">20:58:29</span><span class="nk"> &lt;crypt-iq&gt;</span> Well the problem here is that it will be locked into a commitment transaction before we can fail back
+<a name="l-251"></a><span class="tm">20:58:32</span><span class="nk"> &lt;niftynei_&gt;</span> i mean it sounds like there's two things you could decide to limit it on, and that's up to your node/impl to decide which to apply
+<a name="l-252"></a><span class="tm">20:58:34</span><span class="nk"> &lt;crypt-iq&gt;</span> And lnd has a uint16
+<a name="l-253"></a><span class="tm">20:59:08</span><span class="nk"> &lt;crypt-iq&gt;</span> So we want to communicate that our max so that limit isn't reached
+<a name="l-254"></a><span class="tm">20:59:14</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> no? because its outbound
+<a name="l-255"></a><span class="tm">20:59:16</span><span class="nk"> &lt;BlueMatt&gt;</span> you just...dont send it?
+<a name="l-256"></a><span class="tm">20:59:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> but you're still committed to it until you fail it.
+<a name="l-257"></a><span class="tm">20:59:30</span><span class="nk"> &lt;cdecker[m]&gt;</span> That's ok, the sender is out of pocket and lnd can apply &lt;&lt;u16 to avoid getting to &gt;u16
+<a name="l-258"></a><span class="tm">20:59:39</span><span class="nk"> &lt;BlueMatt&gt;</span> oh, you mean that lnd will be unable to upgrade to *accept* new htlcs due to a coding issue?
+<a name="l-259"></a><span class="tm">20:59:42</span><span class="nk"> &lt;rusty&gt;</span> (This is the reason we *have* incoming limits).
+<a name="l-260"></a><span class="tm">20:59:53</span><span class="nk"> &lt;BlueMatt&gt;</span> that just seems like an issue where y'all can not set the feature bit until you add the relevant code?
+<a name="l-261"></a><span class="tm">21:00:04</span><span class="nk"> &lt;BlueMatt&gt;</span> or are you *also* making a security argument?
+<a name="l-262"></a><span class="tm">21:00:29</span><span class="nk"> &lt;crypt-iq&gt;</span> Well another problem is that we have in-memory buffers so we want to limit that exposure as well and these HTLCs all get stored with their blobs
+<a name="l-263"></a><span class="tm">21:00:43</span><span class="nk"> &lt;cdecker[m]&gt;</span> Wouldn't that require there to be more than `u16max-buffer` in a single commitment?
+<a name="l-264"></a><span class="tm">21:00:59</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">cdecker:</span> right, which I don't see as likely except in an attack scenario
+<a name="l-265"></a><span class="tm">21:01:02</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, do you have a specific limit in mind for that? that seems like something that could be a general spec-enforced limit
+<a name="l-266"></a><span class="tm">21:01:09</span><span class="nk"> &lt;BlueMatt&gt;</span> cause, like, the number can just be almost arbitrarily high
+<a name="l-267"></a><span class="tm">21:01:16</span><span class="nk"> &lt;BlueMatt&gt;</span> we use 64K for lots of things, lets just say that? :)
+<a name="l-268"></a><span class="tm">21:01:18</span><span class="nk"> &lt;ariard&gt;</span> you can limit the dusted balance implementation-wise, though at risk of silent force-close if it overrides negotiated `dust_limit_satoshis`
+<a name="l-269"></a><span class="tm">21:01:46</span><span class="nk"> &lt;crypt-iq&gt;</span> I was thinking 10000, but if we upgrade our database I don't see a reason to not have 64k
+<a name="l-270"></a><span class="tm">21:01:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> that's a largely-separate issue, though, thats the channel negotiation at creation?
+<a name="l-271"></a><span class="tm">21:02:03</span><span class="nk"> &lt;rusty&gt;</span> 32k!  And bike shed BLUE dammit BLUE
+<a name="l-272"></a><span class="tm">21:02:22</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">ariard:</span> how can it lead to a silent force close error?
+<a name="l-273"></a><span class="tm">21:02:51</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">crypt-iq:</span> we don't have upper bound of the dust_limit_satoshi for now, at least not negotiated in the spec
+<a name="l-274"></a><span class="tm">21:02:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> ok! 32k it is :)
+<a name="l-275"></a><span class="tm">21:03:00</span><span class="nk"> &lt;cdecker[m]&gt;</span> It just has to be low enough so that a single commitment round doesn't risk going above the limit. Then we can reject the ones over the limit on the next commitment
+<a name="l-276"></a><span class="tm">21:03:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker:</span> what limit?
+<a name="l-277"></a><span class="tm">21:03:19</span><span class="nk"> &lt;ariard&gt;</span> if you start to enforce one on already-existent channel, your counterparty might have a stale view of what's a dust HTLC for you
+<a name="l-278"></a><span class="tm">21:03:28</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> cause the only relevant security concern, as I understand it, is how much *outbound* dust HTLC you have sent
+<a name="l-279"></a><span class="tm">21:03:29</span><span class="nk"> &lt;cdecker[m]&gt;</span> Whatever your node choses to enforce
+<a name="l-280"></a><span class="tm">21:03:32</span><span class="nk"> &lt;BlueMatt&gt;</span> which you can just...limit?
+<a name="l-281"></a><span class="tm">21:03:42</span><span class="nk"> &lt;BlueMatt&gt;</span> there's no in-channel force-close risk relevant here whatsoever
+<a name="l-282"></a><span class="tm">21:04:00</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yep, can't see the force close risk here either
+<a name="l-283"></a><span class="tm">21:04:02</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">ariard:</span> dust_limit_satoshis is negotiated and static, not sure I follow
+<a name="l-284"></a><span class="tm">21:04:41</span><span class="nk"> &lt;niftynei_&gt;</span> i think we have some next steps outlined here, i'd love to spend a few minutes chatting about turbos
+<a name="l-285"></a><span class="tm">21:04:46</span><span class="nk"> &lt;BlueMatt&gt;</span> sgtm
+<a name="l-286"></a><span class="tm">21:04:49</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">crypt-iq:</span> let's defer discussion to the issue? we might lack context here
+<a name="l-287"></a><span class="tm">21:04:51</span><span class="nk"> &lt;BlueMatt&gt;</span> last call for questions here.
+<a name="l-288"></a><span class="tm">21:04:51</span><span class="nk"> &lt;niftynei_&gt;</span> i know we're already over time a bit
+<a name="l-289"></a><span class="tm">21:04:55</span><span class="nk"> &lt;BlueMatt&gt;</span> alright
+<a name="l-290"></a><span class="tm">21:05:00</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="topic">#topic </span><span class="topicline">turbossssssssssssssssssss</span>
+<a name="l-291"></a><span class="tm">21:05:03</span><span class="nk"> &lt;cdecker[m]&gt;</span> Sgtm
+<a name="l-292"></a><span class="tm">21:05:03</span><span class="nk"> &lt;BlueMatt&gt;</span> rusty has the floor
+<a name="l-293"></a><span class="tm">21:05:10</span><span class="nk"> &lt;BlueMatt&gt;</span> and about 10 minutes until we call time
+<a name="l-294"></a><span class="tm">21:05:55</span><span class="nk"> &lt;t-bast&gt;</span> Do we need to include turbo in channel_type?
+<a name="l-295"></a><span class="tm">21:06:21</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> hmm, good q!
+<a name="l-296"></a><span class="tm">21:06:24</span><span class="nk"> &lt;t-bast&gt;</span> Or do we just react to `min_depth` being `0` in `accept_channel`?
+<a name="l-297"></a><span class="tm">21:06:41</span><span class="nk"> &lt;t-bast&gt;</span> Because what's a bit weird here is that open_channel doens't have a way to specify min_depth
+<a name="l-298"></a><span class="tm">21:06:57</span><span class="nk"> &lt;t-bast&gt;</span> Unless we add it as a tlv?
+<a name="l-299"></a><span class="tm">21:07:22</span><span class="nk"> &lt;BlueMatt&gt;</span> if we're adding stuff anyway should it include a "will accept payments at 0conf" field on both ends so you know whether you can *also* send or just receive?
+<a name="l-300"></a><span class="tm">21:07:31</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> min_depth is totally advisory: you can always delay sending as long as you want.
+<a name="l-301"></a><span class="tm">21:08:03</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> true, but you wouldn't understand why the opener delays, it would be better to be explicit?
+<a name="l-302"></a><span class="tm">21:08:09</span><span class="nk"> &lt;roasbeef&gt;</span> re #873, missing the context here related to CPU DoS? in that if you have more dust HTLCs things are harder to process for certain implementations?
+<a name="l-303"></a><span class="tm">21:08:12</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> that could be reasonable, yes
+<a name="l-304"></a><span class="tm">21:08:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> channel type would cover that?
+<a name="l-305"></a><span class="tm">21:08:37</span><span class="nk"> &lt;BlueMatt&gt;</span> presumably could, yes.
+<a name="l-306"></a><span class="tm">21:08:52</span><span class="nk"> &lt;roasbeef&gt;</span> seems you really need to clamp both the count, and total value
+<a name="l-307"></a><span class="tm">21:08:54</span><span class="nk"> &lt;roasbeef&gt;</span> for dust
+<a name="l-308"></a><span class="tm">21:09:13</span><span class="nk"> &lt;rusty&gt;</span> The difference is not send vs recv, it's "I will route for you even though your open is unconfirmed".
+<a name="l-309"></a><span class="tm">21:09:35</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeah I read it, I don't agree w/ the rationale, it's gonna cause a lot of force closes in the wild
+<a name="l-310"></a><span class="tm">21:09:35</span><span class="nk"> &lt;rusty&gt;</span> Which, I'm tempted to say "try it and see"?
+<a name="l-311"></a><span class="tm">21:09:38</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well but that's just local policy again isn't it?
+<a name="l-312"></a><span class="tm">21:09:59</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> disagree that we need to worry about wasting feature bits, people are using feature bits in teh 1000s ranges already today, there's a lot of room from 20 or so where we are rn to there
+<a name="l-313"></a><span class="tm">21:10:04</span><span class="nk"> &lt;cdecker[m]&gt;</span> Accept the HTLC, if it's forwarded and you don't want to just fail it immediately again
+<a name="l-314"></a><span class="tm">21:10:08</span><span class="nk"> &lt;roasbeef&gt;</span> and we'd already have a feature bit for the new fee stuff right?
+<a name="l-315"></a><span class="tm">21:10:22</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> again, its pretty rude to dig up a topic from an hour ago. wait till after the meeting.
+<a name="l-316"></a><span class="tm">21:11:06</span><span class="nk"> &lt;rusty&gt;</span> Yeah, roasbeef, comment on issue please.
+<a name="l-317"></a><span class="tm">21:11:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> hmmm, so I guess you'd just try to route, see if fail, and retry payment over another route if possible
+<a name="l-318"></a><span class="tm">21:11:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> I think so.
+<a name="l-319"></a><span class="tm">21:11:21</span><span class="nk"> &lt;BlueMatt&gt;</span> I guess that works, as long as you know your peer will accept the htlc to begin with
+<a name="l-320"></a><span class="tm">21:11:36</span><span class="nk"> &lt;t-bast&gt;</span> It's quite harmless, but why not be explicit to avoid a failed round-trip?
+<a name="l-321"></a><span class="tm">21:11:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> had something come up in meat space, was going thru the scrollback to reply where tagged
+<a name="l-322"></a><span class="tm">21:11:41</span><span class="nk"> &lt;rusty&gt;</span> So really, you only need to know "are you gonna get upset at me trying?" which is a feature negotiation.  I don't even think it needs to be a channel?
+<a name="l-323"></a><span class="tm">21:11:48</span><span class="nk"> &lt;rusty&gt;</span> ... type
+<a name="l-324"></a><span class="tm">21:12:02</span><span class="nk"> &lt;cdecker[m]&gt;</span> Right
+<a name="l-325"></a><span class="tm">21:12:08</span><span class="nk"> &lt;t-bast&gt;</span> Yeah I'm not sure either it needs to be a channel_type
+<a name="l-326"></a><span class="tm">21:12:19</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> I mean you shouldnt hit a stuck payment in this case, hopefully, and its not like you have to wait for several hops of commitment_signed dances.
+<a name="l-327"></a><span class="tm">21:12:29</span><span class="nk"> &lt;rusty&gt;</span> IOW, all channels are turbo channels.  I think our analysis shows that (as long as you refuse to fwd) it's "why not, your funeral"?
+<a name="l-328"></a><span class="tm">21:12:39</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> fwiw we never close when we receive errors, always seemed like an uncessary way to make users angry (by auto force closing), but it's possible to re-use the error message as is, using the all zero connection ID flag, then using a TLV field to pin point a channel and/or action
+<a name="l-329"></a><span class="tm">21:12:54</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> that's true, but it's still something we could easily avoid by being explicit, can't we?
+<a name="l-330"></a><span class="tm">21:13:15</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well even if you're the final recipient you should maybe not act on it until it's confirmed (ship the paid goods)
+<a name="l-331"></a><span class="tm">21:13:39</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> yea, I guess its a question of protocol complexity
+<a name="l-332"></a><span class="tm">21:13:50</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> only if you're the direct counterparty, otherwise you get paid either way :)
+<a name="l-333"></a><span class="tm">21:13:54</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yeah, maybe we should do the same, I'm not sure though, I like having the two distinct mechanisms (and it's really a tiny amount of work to support)
+<a name="l-334"></a><span class="tm">21:13:59</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> but, yea, thats basically a node-level api issue, no?
+<a name="l-335"></a><span class="tm">21:14:23</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yep, but we may need to bubble that up to the user so they can decide
+<a name="l-336"></a><span class="tm">21:14:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> of course, if it's tedious to do, I can definitely live with the try-and-see approach, but if it's really just including a tiny informative tlv it could be worth it
+<a name="l-337"></a><span class="tm">21:14:57</span><span class="nk"> &lt;rusty&gt;</span> Yeah, easier to add a warning msg than to extend error msg, tbh.
+<a name="l-338"></a><span class="tm">21:16:14</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> I was kinda assuming we would have some command for user to say "I trust this nodeid!".  That might happen after channel open though?
+<a name="l-339"></a><span class="tm">21:17:21</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> hmm, we could use funding_locked to indicate "I'm ready to fwd"?
+<a name="l-340"></a><span class="tm">21:17:23</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> ppl are free to read messages or not, this is async chat
+<a name="l-341"></a><span class="tm">21:17:23</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> we have per-node configuration overrides, it has been quite handy for that kind of things - you can declare in `eclair.conf` that you override some specific limits or features for specific node_ids
+<a name="l-342"></a><span class="tm">21:17:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> eh, I'll implement it either way. I kinda like not having it, but I dont feel *that* strongly
+<a name="l-343"></a><span class="tm">21:17:49</span><span class="nk"> &lt;niftynei_&gt;</span> failure case on turbos seems kinda complex, no? like value has been exchanged but the accounting for it fell apart?
+<a name="l-344"></a><span class="tm">21:17:57</span><span class="nk"> &lt;rusty&gt;</span> ... ah, no you need that to send anh HTLCs, ignore.
+<a name="l-345"></a><span class="tm">21:18:20</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei_:</span> yeah, you got money, but oh no not really.
+<a name="l-346"></a><span class="tm">21:18:44</span><span class="nk"> &lt;niftynei_&gt;</span> isn't turbo basically "send funding_locked at successful broadcast"?
+<a name="l-347"></a><span class="tm">21:18:46</span><span class="nk"> &lt;t-bast&gt;</span> when the channel completely disappears from under the feet, it's nasty
+<a name="l-348"></a><span class="tm">21:19:07</span><span class="nk"> &lt;BlueMatt&gt;</span> I mean some folks will want to do this, I dont think we should say no?
+<a name="l-349"></a><span class="tm">21:19:20 </span><span class="nka">* niftynei_</span> <span class="ac">does not want to be on that accounting team</span>
+<a name="l-350"></a><span class="tm">21:19:27</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> that's the way we've currently implemented it for Phoenix, yes
+<a name="l-351"></a><span class="tm">21:19:27</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> oh yeah, we should totally do it.  I think it's just *how*.
+<a name="l-352"></a><span class="tm">21:19:33</span><span class="nk"> &lt;BlueMatt&gt;</span> like, you trust your counterparty, great, software still has to handle the accounting, but the user shot themselves in the face
+<a name="l-353"></a><span class="tm">21:19:37</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, fair
+<a name="l-354"></a><span class="tm">21:20:23</span><span class="nk"> &lt;niftynei_&gt;</span> i definitely see the use case for channels btw mobile units and their 'service provider' so to speak
+<a name="l-355"></a><span class="tm">21:20:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> hmm, ok, so where does the "I am prepared to fwd for you" msg go?
+<a name="l-356"></a><span class="tm">21:20:33</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> is it though? we have a blob that has no structure atm, can either repurpose it or add the other field
+<a name="l-357"></a><span class="tm">21:21:09</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> we assume it by default, but that's also because in the Phoenix case we're always funders so we know we're not going to double-spend ourselves
+<a name="l-358"></a><span class="tm">21:21:12</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yes, yes it is.  It's backwards compatible.
+<a name="l-359"></a><span class="tm">21:21:26</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> so we have a simpler case than the general turbo channels mechanism
+<a name="l-360"></a><span class="tm">21:21:43</span><span class="nk"> &lt;roasbeef&gt;</span> re turbos, breez has a protocol they're using in the wild, and have revived a PR of it for lnd, it doesn't make a distinction w.r.t being able to route HTLCs or not, for them the whole point is they can route HTLCs to let users insta recv
+<a name="l-361"></a><span class="tm">21:21:45</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> hmm, so we could have a "... but be warned I'm not gonna fwd" tlv?
+<a name="l-362"></a><span class="tm">21:21:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> but in the phoenix case the "just set the 'i will accept payment pre-lock-in' bit on both sides" just works as you expect
+<a name="l-363"></a><span class="tm">21:22:19</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> cause, presumably, phoenix router will forward pre-lock-in?
+<a name="l-364"></a><span class="tm">21:22:28</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> yes we could, I guess
+<a name="l-365"></a><span class="tm">21:22:29</span><span class="nk"> &lt;BlueMatt&gt;</span> cause you wont double spend, but users wont forward at all, cause its private channels.
+<a name="l-366"></a><span class="tm">21:22:42</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> don't know if it's worth the complexity.
+<a name="l-367"></a><span class="tm">21:23:02</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> yes exactly, we only open turbo channels to end nodes that won't forward, and we accept forwarding for them because we know we won't double-spend ourselves
+<a name="l-368"></a><span class="tm">21:23:11</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> the trust is on the wallet user side
+<a name="l-369"></a><span class="tm">21:23:21</span><span class="nk"> &lt;t-bast&gt;</span> But for the general case, we probably need more configuration hooks?
+<a name="l-370"></a><span class="tm">21:23:43</span><span class="nk"> &lt;cdecker[m]&gt;</span> If someone receives an HTLC on a 0conf channel they're the recipient, since nobody else knows about that channel (6 conf broadcast limit)
+<a name="l-371"></a><span class="tm">21:24:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> hop hints?
+<a name="l-372"></a><span class="tm">21:24:03</span><span class="nk"> &lt;t-bast&gt;</span> TBH I haven't thought it through yet, since our use-case is a simpler case
+<a name="l-373"></a><span class="tm">21:24:05</span><span class="nk"> &lt;BlueMatt&gt;</span> I guess I'm trying to understand the concrete use-case for "I'll accept payment, but not forward". because the ux is gonna need to display the same "payment pending" status to the user until lock-in either way, I dont see a ton of value in it
+<a name="l-374"></a><span class="tm">21:24:09</span><span class="nk"> &lt;cdecker[m]&gt;</span> Unless you do weirdnstuff with routehints
+<a name="l-375"></a><span class="tm">21:24:27</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> but you can send it out again instantly, via same channel?
+<a name="l-376"></a><span class="tm">21:24:28</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker[m]:</span> it could be in routing hints though
+<a name="l-377"></a><span class="tm">21:24:34</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> yeah afaik, ppl like breez always use hop hints, and have a scheme to generate a scid that works in the onion and the invoice
+<a name="l-378"></a><span class="tm">21:24:56</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> I think you're right here, ppl that do this in the wild always care about the forward aspect, since that's what improves UX
+<a name="l-379"></a><span class="tm">21:25:06</span><span class="nk"> &lt;BlueMatt&gt;</span> we need random scids/pubkeys in hop hints *anyway*, but that seems unrelated
+<a name="l-380"></a><span class="tm">21:25:12</span><span class="nk"> &lt;BlueMatt&gt;</span> or, can be unrelated
+<a name="l-381"></a><span class="tm">21:25:17</span><span class="nk"> &lt;cdecker[m]&gt;</span> If anything i think we need to say that a 0conf channel won't hold the pending HTLC until the forward depth is reached, otherwise I don't see how failing it can cause trouble
+<a name="l-382"></a><span class="tm">21:25:22</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> hmm, I dont quite get that?
+<a name="l-383"></a><span class="tm">21:25:34</span><span class="nk"> &lt;roasbeef&gt;</span> it's related since you need to identify a channel still, tho there's also the pubkey routing thing -- so put the pubkey in the onion instead of the scid
+<a name="l-384"></a><span class="tm">21:25:49</span><span class="nk"> &lt;roasbeef&gt;</span> since the mapping only needs to be known by the last two hops in the route
+<a name="l-385"></a><span class="tm">21:26:08</span><span class="nk"> &lt;t-bast&gt;</span> Maybe the simplest scheme is indeed "if we go turbo, let's go turbo all the way and just forward each other's htlc"?
+<a name="l-386"></a><span class="tm">21:26:25</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> turbo or bust
+<a name="l-387"></a><span class="tm">21:26:26</span><span class="nk"> &lt;t-bast&gt;</span> and note that this is the turbo trade-off?
+<a name="l-388"></a><span class="tm">21:26:33</span><span class="nk"> &lt;roasbeef&gt;</span> since that's what all the ppl in the wild that use it already do
+<a name="l-389"></a><span class="tm">21:26:42</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I dont see how its related aside from "its kinda required for accepting 0conf payments"
+<a name="l-390"></a><span class="tm">21:26:56</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> yea.
+<a name="l-391"></a><span class="tm">21:27:00</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeh that's it, ppl want to recv and send insta
+<a name="l-392"></a><span class="tm">21:27:01</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> if you open an unconf channel with me and send me some sats, I can send them through you out to anyone.
+<a name="l-393"></a><span class="tm">21:27:13</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yea, ok
+<a name="l-394"></a><span class="tm">21:27:15</span><span class="nk"> &lt;rusty&gt;</span> There's no *routing* here, importantly.
+<a name="l-395"></a><span class="tm">21:27:22</span><span class="nk"> &lt;rusty&gt;</span> s/routing/forwarding/
+<a name="l-396"></a><span class="tm">21:27:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> but, like you wont *accept* the original payment
+<a name="l-397"></a><span class="tm">21:27:26</span><span class="nk"> &lt;BlueMatt&gt;</span> you may accept the htlc
+<a name="l-398"></a><span class="tm">21:27:28</span><span class="nk"> &lt;roasbeef&gt;</span> so you either need a way to crafta a custom short channel ID, or you use pubkey based routing in the onion (since that's already in the invoice)
+<a name="l-399"></a><span class="tm">21:27:34</span><span class="nk"> &lt;BlueMatt&gt;</span> but from an api/ux perspective, you'll market it as "pending"
+<a name="l-400"></a><span class="tm">21:27:44</span><span class="nk"> &lt;roasbeef&gt;</span> iirc rn breez uses a scid mapping of heights below the segwit activation height
+<a name="l-401"></a><span class="tm">21:27:46</span><span class="nk"> &lt;BlueMatt&gt;</span> *unless* you're trusting the counterparty, at which point you'll also route
+<a name="l-402"></a><span class="tm">21:28:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I think lets just create a way to create a custom scid, cause we want to do that anyway imo :)
+<a name="l-403"></a><span class="tm">21:28:17</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> that's naive UX though.  You can still use the funds, just not out any other channel.
+<a name="l-404"></a><span class="tm">21:28:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> I guess I dont get why you'd display to the user "received a payment on 0conf channel" instead of just "payment pending waiting for sender to send"
+<a name="l-405"></a><span class="tm">21:28:51</span><span class="nk"> &lt;BlueMatt&gt;</span> like, that seems like a vaguely useless ux distinction
+<a name="l-406"></a><span class="tm">21:28:56</span><span class="nk"> &lt;BlueMatt&gt;</span> but, ok, if you want to do that, go for it :)
+<a name="l-407"></a><span class="tm">21:28:56</span><span class="nk"> &lt;roasbeef&gt;</span> sure, I mention this since ppl already have their own schemes in the wild, and will likely continue to use those still, but maybe they'll write them up in a bLIP or something if people want to interop (usually it's their software interacting w/ their software, so interop matters less in the wild)
+<a name="l-408"></a><span class="tm">21:29:05</span><span class="nk"> &lt;BlueMatt&gt;</span> in either case, it seems like not gonna be the most common use-case :)
+<a name="l-409"></a><span class="tm">21:29:26</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> AFAICT that's *exactly* what Phoenix does today?
+<a name="l-410"></a><span class="tm">21:29:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> that seems like something that could just be a bolt, no?
+<a name="l-411"></a><span class="tm">21:29:34</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> no, I believe they forward happily?
+<a name="l-412"></a><span class="tm">21:29:50</span><span class="nk"> &lt;BlueMatt&gt;</span> according to what t-bast seemed to say above? or am I wrong?
+<a name="l-413"></a><span class="tm">21:29:51</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> in theory, in practice most users have a single channel.
+<a name="l-414"></a><span class="tm">21:30:00</span><span class="nk"> &lt;BlueMatt&gt;</span> huh?
+<a name="l-415"></a><span class="tm">21:30:08</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> do you expect that people will want the safe-ish turbo? Instead of just doing full turbo-yolo when they do turbo? I'm not sure trying to half-protect the funds in case the channel is double-spent is really worth it
+<a name="l-416"></a><span class="tm">21:30:18</span><span class="nk"> &lt;ariard&gt;</span> to me, the problem seems to be "how do i signal to my counterparty forward-only-after-conf?"
+<a name="l-417"></a><span class="tm">21:30:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> I dont think we need to?
+<a name="l-418"></a><span class="tm">21:30:45</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> yes, we forward happily and the phoenix user trusts that we won't double-spend the channel
+<a name="l-419"></a><span class="tm">21:30:54</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> that might the forwarding policy you wish, like being both a merchant and routing node
+<a name="l-420"></a><span class="tm">21:30:55</span><span class="nk"> &lt;BlueMatt&gt;</span> alright, lets discuss more on an issue, it seems like the big question is "Do We need to Tell our Counterparty that you wont forward, or do we just reject the htlcs"
+<a name="l-421"></a><span class="tm">21:31:03</span><span class="nk"> &lt;roasbeef&gt;</span> one other thing w/ the custom ID, is: once the channle is confirmed, do you use the actual scid or keep using the custom one?
+<a name="l-422"></a><span class="tm">21:31:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> you wanna open an issue?
+<a name="l-423"></a><span class="tm">21:31:22</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> the only issue I can see is that invoices will get marked paid, even though they're not really.  That's hard!
+<a name="l-424"></a><span class="tm">21:31:23</span><span class="nk"> &lt;roasbeef&gt;</span> iirc rn, breez switches over to the real once after things are confirmed
+<a name="l-425"></a><span class="tm">21:31:26</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> i was thinking custom scid for privacy of private nodes, so you'd want it later.
+<a name="l-426"></a><span class="tm">21:31:45</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to open an issue to discuss further.</span>
+<a name="l-427"></a><span class="tm">21:31:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> *plus* custom fake pubkeys
+<a name="l-428"></a><span class="tm">21:31:53</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>

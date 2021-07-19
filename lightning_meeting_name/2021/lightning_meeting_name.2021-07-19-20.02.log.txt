@@ -420,3 +420,9 @@
 21:30:55 <BlueMatt> alright, lets discuss more on an issue, it seems like the big question is "Do We need to Tell our Counterparty that you wont forward, or do we just reject the htlcs"
 21:31:03 <roasbeef> one other thing w/ the custom ID, is: once the channle is confirmed, do you use the actual scid or keep using the custom one?
 21:31:08 <BlueMatt> rusty: you wanna open an issue?
+21:31:22 <rusty> t-bast: the only issue I can see is that invoices will get marked paid, even though they're not really.  That's hard!
+21:31:23 <roasbeef> iirc rn, breez switches over to the real once after things are confirmed
+21:31:26 <BlueMatt> roasbeef: i was thinking custom scid for privacy of private nodes, so you'd want it later.
+21:31:45 <rusty> #action rusty to open an issue to discuss further.
+21:31:48 <BlueMatt> roasbeef: *plus* custom fake pubkeys
+21:31:53 <BlueMatt> #endmeeting
