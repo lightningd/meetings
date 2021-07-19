@@ -198,3 +198,11 @@
 20:48:23 <roasbeef> why not tie it to a feature bit, if the negotiation logic is already gonna change?
 20:48:23 <crypt-iq> Bumping antoine's ML post: https://lists.linuxfoundation.org/pipermail/lightning-dev/2020-May/002714.html
 20:49:04 <BlueMatt> roasbeef: yes, we're aware it was a concern, did you read the scrollback from the beginning of the meeting for the rationale proposed?
+20:49:07 <niftynei_> crypt-iq: i think by 'stealable' you mean "gets paid to the miner"?
+20:49:13 <crypt-iq> Right it's burned to fee, but you can limit this amount per-channel without having to negotiate any parameters. So it allows you to not have the max_dust_htlc_fee option in the option_dusty_htlcs proposal
+20:49:23 <roasbeef> rusty: +1 re the chan types making certain sections of code nicer, this is what I was getting at w/ the like "mega switch statement for feature bits thing"
+20:49:36 <niftynei_> but isn't that the "max fees from dust" limit ?
+20:49:44 <BlueMatt> crypt-iq: no you cant, someone can add a ton and then create a new commitment transaction and then broadcast that. just because you fail the htlc back in the next commitment doesnt change this.
+20:49:50 <roasbeef> t-bast: version w/ the echo of the type? yeah we have a PR we need to clean up, but we can all prob start doing interop on testnet pretty soon
+20:49:51 <t-bast> roasbeef: I really think a feature bit would be wasted here, in practice no-one sends higher fees (we would all send an update_fee before that) so it shouldn't happen, and won't be a concern for anchor outputs channels where we have to remove that requirement anyway
+20:49:58 <ariard> niftynei: if you're miner with any chance to mine a block during the HTLC timelock it's quite a high-success attack
