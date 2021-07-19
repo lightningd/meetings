@@ -215,3 +215,7 @@
 20:51:38 <roasbeef> re the error msg stuff, don't see why to introduce a new message vs just re-using out existing once since that'll bridge compat, it also makes things simpler in that all nodes have one error path way, and older nodes just ignore what they don't understand
 20:51:46 <t-bast> crypt-iq: (the fact that as long as you don't forward, it doesn't open attack vectors)
 20:52:08 <crypt-iq> t-bast: right, there are 4 cases to tackle and probably better to lay them out in the issue and not on irc
+20:52:33 <roasbeef> I also think enumerating the initially defined set of error codes/pathways as Carla did in her proposal is important, otherwise it's just another blob that hasn't really been that useful in practice outside of trying to diagnose force close scenarios
+20:52:33 <cdecker[m]> Sounds good to me
+20:52:47 <niftynei_> crypt-iq: right i just wanted to point out that you're talking about the thing that i mentioned last time, that they're the same thing in terms of how to handle the issue lol
+20:53:11 <roasbeef> coudl be used for the "i'm shutting down now" message we've talked about in the past, I've been trying to debug some p2p connectivity issues w/ pure tor nodes in the wild lately, but at times context is lacking beyond "EOF"
