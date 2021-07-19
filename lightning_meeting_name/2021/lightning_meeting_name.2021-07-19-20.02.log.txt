@@ -282,3 +282,12 @@
 21:04:00 <cdecker[m]> Yep, can't see the force close risk here either
 21:04:02 <crypt-iq> ariard: dust_limit_satoshis is negotiated and static, not sure I follow
 21:04:41 <niftynei_> i think we have some next steps outlined here, i'd love to spend a few minutes chatting about turbos
+21:04:46 <BlueMatt> sgtm
+21:04:49 <ariard> crypt-iq: let's defer discussion to the issue? we might lack context here
+21:04:51 <BlueMatt> last call for questions here.
+21:04:51 <niftynei_> i know we're already over time a bit
+21:04:55 <BlueMatt> alright
+21:05:00 <BlueMatt> #topic turbossssssssssssssssssss
+21:05:03 <cdecker[m]> Sgtm
+21:05:03 <BlueMatt> rusty has the floor
+21:05:10 <BlueMatt> and about 10 minutes until we call time
