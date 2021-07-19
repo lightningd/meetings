@@ -335,3 +335,51 @@
 21:14:23 <cdecker[m]> Yep, but we may need to bubble that up to the user so they can decide
 21:14:33 <t-bast> BlueMatt: of course, if it's tedious to do, I can definitely live with the try-and-see approach, but if it's really just including a tiny informative tlv it could be worth it
 21:14:57 <rusty> Yeah, easier to add a warning msg than to extend error msg, tbh.
+21:16:14 <rusty> t-bast: I was kinda assuming we would have some command for user to say "I trust this nodeid!".  That might happen after channel open though?
+21:17:21 <rusty> t-bast: hmm, we could use funding_locked to indicate "I'm ready to fwd"?
+21:17:23 <roasbeef> BlueMatt: ppl are free to read messages or not, this is async chat
+21:17:23 <t-bast> rusty: we have per-node configuration overrides, it has been quite handy for that kind of things - you can declare in `eclair.conf` that you override some specific limits or features for specific node_ids
+21:17:24 <BlueMatt> t-bast: eh, I'll implement it either way. I kinda like not having it, but I dont feel *that* strongly
+21:17:49 <niftynei_> failure case on turbos seems kinda complex, no? like value has been exchanged but the accounting for it fell apart?
+21:17:57 <rusty> ... ah, no you need that to send anh HTLCs, ignore.
+21:18:20 <rusty> niftynei_: yeah, you got money, but oh no not really.
+21:18:44 <niftynei_> isn't turbo basically "send funding_locked at successful broadcast"?
+21:18:46 <t-bast> when the channel completely disappears from under the feet, it's nasty
+21:19:07 <BlueMatt> I mean some folks will want to do this, I dont think we should say no?
+21:19:20 * niftynei_ does not want to be on that accounting team
+21:19:27 <t-bast> niftynei: that's the way we've currently implemented it for Phoenix, yes
+21:19:27 <rusty> BlueMatt: oh yeah, we should totally do it.  I think it's just *how*.
+21:19:33 <BlueMatt> like, you trust your counterparty, great, software still has to handle the accounting, but the user shot themselves in the face
+21:19:37 <BlueMatt> yea, fair
+21:20:23 <niftynei_> i definitely see the use case for channels btw mobile units and their 'service provider' so to speak
+21:20:29 <rusty> t-bast: hmm, ok, so where does the "I am prepared to fwd for you" msg go?
+21:20:33 <roasbeef> rusty: is it though? we have a blob that has no structure atm, can either repurpose it or add the other field
+21:21:09 <t-bast> rusty: we assume it by default, but that's also because in the Phoenix case we're always funders so we know we're not going to double-spend ourselves
+21:21:12 <rusty> roasbeef: yes, yes it is.  It's backwards compatible.
+21:21:26 <t-bast> rusty: so we have a simpler case than the general turbo channels mechanism
+21:21:43 <roasbeef> re turbos, breez has a protocol they're using in the wild, and have revived a PR of it for lnd, it doesn't make a distinction w.r.t being able to route HTLCs or not, for them the whole point is they can route HTLCs to let users insta recv
+21:21:45 <rusty> t-bast: hmm, so we could have a "... but be warned I'm not gonna fwd" tlv?
+21:21:57 <BlueMatt> t-bast: but in the phoenix case the "just set the 'i will accept payment pre-lock-in' bit on both sides" just works as you expect
+21:22:19 <BlueMatt> t-bast: cause, presumably, phoenix router will forward pre-lock-in?
+21:22:28 <t-bast> rusty: yes we could, I guess
+21:22:29 <BlueMatt> cause you wont double spend, but users wont forward at all, cause its private channels.
+21:22:42 <rusty> t-bast: don't know if it's worth the complexity.
+21:23:02 <t-bast> BlueMatt: yes exactly, we only open turbo channels to end nodes that won't forward, and we accept forwarding for them because we know we won't double-spend ourselves
+21:23:11 <t-bast> BlueMatt: the trust is on the wallet user side
+21:23:21 <t-bast> But for the general case, we probably need more configuration hooks?
+21:23:43 <cdecker[m]> If someone receives an HTLC on a 0conf channel they're the recipient, since nobody else knows about that channel (6 conf broadcast limit)
+21:24:01 <roasbeef> cdecker[m]: hop hints?
+21:24:03 <t-bast> TBH I haven't thought it through yet, since our use-case is a simpler case
+21:24:05 <BlueMatt> I guess I'm trying to understand the concrete use-case for "I'll accept payment, but not forward". because the ux is gonna need to display the same "payment pending" status to the user until lock-in either way, I dont see a ton of value in it
+21:24:09 <cdecker[m]> Unless you do weirdnstuff with routehints
+21:24:27 <rusty> BlueMatt: but you can send it out again instantly, via same channel?
+21:24:28 <t-bast> cdecker[m]: it could be in routing hints though
+21:24:34 <roasbeef> cdecker[m]: yeah afaik, ppl like breez always use hop hints, and have a scheme to generate a scid that works in the onion and the invoice
+21:24:56 <roasbeef> BlueMatt: I think you're right here, ppl that do this in the wild always care about the forward aspect, since that's what improves UX
+21:25:06 <BlueMatt> we need random scids/pubkeys in hop hints *anyway*, but that seems unrelated
+21:25:12 <BlueMatt> or, can be unrelated
+21:25:17 <cdecker[m]> If anything i think we need to say that a 0conf channel won't hold the pending HTLC until the forward depth is reached, otherwise I don't see how failing it can cause trouble
+21:25:22 <BlueMatt> rusty: hmm, I dont quite get that?
+21:25:34 <roasbeef> it's related since you need to identify a channel still, tho there's also the pubkey routing thing -- so put the pubkey in the onion instead of the scid
+21:25:49 <roasbeef> since the mapping only needs to be known by the last two hops in the route
+21:26:08 <t-bast> Maybe the simplest scheme is indeed "if we go turbo, let's go turbo all the way and just forward each other's htlc"?
