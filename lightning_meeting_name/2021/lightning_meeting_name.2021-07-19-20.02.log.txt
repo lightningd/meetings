@@ -400,3 +400,9 @@
 21:27:44 <roasbeef> iirc rn breez uses a scid mapping of heights below the segwit activation height
 21:27:46 <BlueMatt> *unless* you're trusting the counterparty, at which point you'll also route
 21:28:04 <BlueMatt> roasbeef: I think lets just create a way to create a custom scid, cause we want to do that anyway imo :)
+21:28:17 <rusty> BlueMatt: that's naive UX though.  You can still use the funds, just not out any other channel.
+21:28:43 <BlueMatt> rusty: I guess I dont get why you'd display to the user "received a payment on 0conf channel" instead of just "payment pending waiting for sender to send"
+21:28:51 <BlueMatt> like, that seems like a vaguely useless ux distinction
+21:28:56 <BlueMatt> but, ok, if you want to do that, go for it :)
+21:28:56 <roasbeef> sure, I mention this since ppl already have their own schemes in the wild, and will likely continue to use those still, but maybe they'll write them up in a bLIP or something if people want to interop (usually it's their software interacting w/ their software, so interop matters less in the wild)
+21:29:05 <BlueMatt> in either case, it seems like not gonna be the most common use-case :)
