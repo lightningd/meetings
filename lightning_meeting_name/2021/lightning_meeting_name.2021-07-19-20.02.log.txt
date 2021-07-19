@@ -254,3 +254,9 @@
 20:59:14 <BlueMatt> crypt-iq: no? because its outbound
 20:59:16 <BlueMatt> you just...dont send it?
 20:59:29 <rusty> BlueMatt: but you're still committed to it until you fail it.
+20:59:30 <cdecker[m]> That's ok, the sender is out of pocket and lnd can apply <<u16 to avoid getting to >u16
+20:59:39 <BlueMatt> oh, you mean that lnd will be unable to upgrade to *accept* new htlcs due to a coding issue?
+20:59:42 <rusty> (This is the reason we *have* incoming limits).
+20:59:53 <BlueMatt> that just seems like an issue where y'all can not set the feature bit until you add the relevant code?
+21:00:04 <BlueMatt> or are you *also* making a security argument?
+21:00:29 <crypt-iq> Well another problem is that we have in-memory buffers so we want to limit that exposure as well and these HTLCs all get stored with their blobs
