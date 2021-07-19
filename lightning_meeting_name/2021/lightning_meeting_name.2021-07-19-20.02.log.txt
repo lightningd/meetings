@@ -1,0 +1,114 @@
+20:02:02 <BlueMatt> #startmeeting Lightning Meeting Name
+20:02:02 <lndev-bot> Meeting started Mon Jul 19 20:02:02 2021 UTC and is due to finish in 60 minutes.  The chair is BlueMatt. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:02:02 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:02:02 <lndev-bot> The meeting name has been set to 'lightning_meeting_name'
+20:02:21 <BlueMatt> ok, first up https://github.com/lightningnetwork/lightning-rfc/pull/847
+20:02:25 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/pull/847
+20:02:39 <BlueMatt> mostly, probably, the discussion ending here: https://github.com/lightningnetwork/lightning-rfc/pull/847#discussion_r671873899
+20:03:38 <BlueMatt> where I argued, and likely rusty will disagree, that we should simply drop the requirement for suggested fee being below channel feerate_per_kw for *both* anchor and non-anchor
+20:03:43 <t-bast> BlueMatt IIUC you've started implementing this on the RL side?
+20:04:11 <BlueMatt> yes
+20:04:20 <t-bast> neat
+20:04:30 <rusty> BlueMatt: yeah, I could buy that.  Let me check if we enforce that on recv though....
+20:04:31 <BlueMatt> the proposal is technically an incompatibility with existing nodes, but at worst it causes force-closure when we intended to close the channel anyway
+20:05:04 <BlueMatt> as an alternative, we could suggest dropping on the receive-side check, and then say something generic like "on jan 1 2022 you can stop caring when you send it"
+20:05:05 <rusty> BlueMatt: it's not an incompatibility if we make it so for the new-style quick close though.
+20:05:20 <t-bast> and if you breach that by sending a fee higher than the commit feerate, it's probably okay-ish to force-close (barring the csv delays)
+20:05:27 <BlueMatt> you dont know if its new-style or not if you're the channel funder and speak first
+20:05:54 <t-bast> (in terms of fees paid)
+20:06:41 <rusty> BlueMatt: true.
+20:07:22 <rusty> I know we didn't want to burn a feature bit here, but it would have been easier in transition.  Oh well.
+20:07:50 <BlueMatt> yea, we could....yuck tho
+20:08:08 <t-bast> agreed, yuck, I don't think we need a feature bit for that
+20:08:16 <t-bast> I
+20:08:25 <BlueMatt> at least personally I'm basically fine with some accidental force-closes during shutdown while nodes upgrade
+20:08:31 <BlueMatt> like, you were already gonna shut down....eh
+20:09:07 <niftynei_> but at what cost?
+20:09:21 <t-bast> in that case the fees would be the same (force-closer would even be cheaper)
+20:09:29 <t-bast> it's just an additional csv delay
+20:09:33 <BlueMatt> right, you'd *save* on fees, but pay the csv delay.
+20:09:50 <BlueMatt> of course given you wanted to use a higher fee, you're probably pretty sad about the csv delay
+20:10:00 <BlueMatt> cause you probably wanted to pay a higher fee *because* you didnt want to wait
+20:10:10 <t-bast> but you're not the one waiting for the delay though
+20:10:14 <BlueMatt> but, still, that's a risk the sender takes, the spec doesnt need to care about that
+20:10:18 <t-bast> because it's your peer that will force-close on you
+20:10:29 <t-bast> so no delay on your side
+20:10:35 <BlueMatt> sure, but you still dont get to pay the higher fee that you wanted to pay, presumably to get into the Next Block
+20:10:39 <t-bast> unless they just send an error and wait
+20:10:45 <t-bast> true
+20:10:47 <BlueMatt> (which nodes do do...)
+20:11:01 <BlueMatt> but, in any case, votes in favor/against just saying the incompatibility is ok?
+20:11:16 <t-bast> I won't be very helpful, I'm fine with both xD
+20:11:39 <rusty> Hmm, seems like our enforcement is lax here, but the logic is a bit gnarly and I'll have to actually test.
+20:12:01 <rusty> BlueMatt: I'm happy to remove the requirement; I expect it won't happen very often in practice.
+20:12:02 <BlueMatt> are you staunchly against spec change even if you enforce it, rusty?
+20:12:09 <BlueMatt> right, that's my other thinking
+20:12:23 <BlueMatt> not many nodes are going to by default send a higher fee than the channel fee, cause otherwise they would have increased the channel fee
+20:13:03 <t-bast> yes, in the case of eclair, we would have done an update_fee beforehand, so we shouldn't be in this case except for anchor outputs where we keep the commit feerate low
+20:13:42 <rusty> OK, let's simply remove that requirement?
+20:13:50 <BlueMatt> alright, sounds like maybe rough agreement. lets do it.
+20:13:55 <BlueMatt> next topic...
+20:13:56 <BlueMatt> #https://github.com/lightningnetwork/lightning-rfc/pull/880
+20:13:59 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/pull/880
+20:14:09 <BlueMatt> rusty: has the floor
+20:14:26 <rusty> #action t-bast to remove cap-at-unilateral from 847 for all channel types
+20:14:30 <rusty> (Needed for minutes)
+20:15:00 <t-bast> ack
+20:15:02 <rusty> OK, this is implemented in a PR.
+20:15:10 <roasbeef> this is dropping the requirement that co-op close fee is below the commit fee rate?
+20:15:16 <BlueMatt> roasbeef: yes.
+20:15:19 <rusty> roasbeef: yeah, for any type.
+20:16:15 <BlueMatt> so whats the status of channel types agreement/disagreement? rusty?
+20:16:19 <rusty> Node MUST play audio of Hey Big Spender when close fee proposal is above commitment fee rate.
+20:16:38 <rusty> BlueMatt: so it's now a simple "take it or leave it" proposal by opener.
+20:16:42 <BlueMatt> echo "Hey Big Spender" > /dev/audio
+20:17:01 <jkczyz> > /dev/null
+20:17:09 <roasbeef> rusty: for all commits, or just anchors?
+20:17:22 <t-bast> roasbeef: for all commits
+20:17:34 <roasbeef> but would only apply for this new feature bit?
+20:17:36 <ariard> rusty: what's the purpose of sending back the `channel_type` in accept_channel, if you don't like the channel_type just stay silent?
+20:17:52 <t-bast> I have the latest version of channel_type implemented in a PR in eclair as well, I can test cross-compat if you want with the c-lightning version rusty
+20:17:54 <roasbeef> ariard: just to echo I guess?
+20:18:06 <BlueMatt> rusty: cool. whats the status of error codes to indicate "no, try another channel type"?
+20:18:07 <t-bast> ariard: it's important
+20:18:10 <rusty> ariard: yeah, I thought about that, but it's also nice that it's caught immediately, not later when they try to add an HTLC
+20:18:21 <BlueMatt> roasbeef: no new feature bit.
+20:18:27 <t-bast> it shows you selected it, if you don't mention it and it's different from the implicit one, the opener cannot know what you expect
+20:18:41 <rusty> BlueMatt: that discussion is ongoing, let me check ml
+20:18:48 <ariard> rusty: well they won't try to add a HTLC if receiver never send back sigs for initial commitment
+20:19:15 <ariard> echo sounds good, just a small bandwidth waste, and could be catched with error messages if we had ones
+20:19:17 <t-bast> oh I misunderstood, you mean in the case where you disagree and don't want that channel?
+20:19:27 <roasbeef> BlueMatt: that breaks compat...
+20:19:35 <BlueMatt> roasbeef: yes, that was the above discussion....
+20:19:48 <BlueMatt> roasbeef: it was discussed in the scrollback :)
+20:19:59 <ariard> t-bast: it's take it or leave it, so opener have to figure out by itself what you expect?
+20:20:09 <rusty> ariard: ah, yes, you need echo to know they understood.
+20:20:12 <BlueMatt> t-bast/rusty: wait, then how do your current implementations decide when to suggest the next channel type in a new open_channel message?
+20:20:21 <BlueMatt> or is it just "on any error with the same channel id"?
+20:20:40 <rusty> BlueMatt: mine just sets the default (except there's an lnprototest which tries everything possible from the feature bits)
+20:20:56 <rusty> BlueMatt: today, it's "meh, some error happened, me try again!"
+20:21:01 <BlueMatt> ah, ok.
+20:21:03 <BlueMatt> yes, makes sense.
+20:21:04 <t-bast> the flow in eclair is that the node operator explicitly chooses what channel_type to try, and either the flow completes or they receive an `error`, and are free to analyze it and decide whether to try a different channel type or not
+20:21:04 <ariard> rusty: ah okay, in case of talking with non-upgraded `channel_type` nodes, silently acking a channel type they don't understand at all
+20:21:37 <rusty> ariard: yeah.
+20:22:43 <BlueMatt> alright, I mean sounds cool. glad its getting cross-node impl. will implement it when we get there at least from our end, but may not be immediately.
+20:22:49 <BlueMatt> any further discussion that should happen live in it?
+20:22:55 <rusty> But a side comment: this explicit use of channel types is a kind of latent concept which made our code nicer when we actually called it out (kudos, roasbeef); the spec could use a similar sweep to refer to channel types rather than "if option_static_remotekey applies to the channel...." lang.
+20:23:28 <rusty> I think if t-bast and I interop, we're good to apply?  Should we approve that now, or wait for another meeting?
+20:23:49 <ariard> rusty: you mean should we pin the channel types board in bolt9 or somewhere else and reuse it across the spec?
+20:23:52 <BlueMatt> I think that's fine, at least in concept. I'll read it over but yea go for it.
+20:23:53 <t-bast> rusty: ACK on my side, I can test interop this week
+20:24:15 <rusty> t-bast: great, thanks!
+20:24:17 <t-bast> #action t-bast test channel_type interop with c-lightning
+20:24:40 <t-bast> roasbeef, are you fine with that version of the proposal?
+20:25:14 <rusty> ariard: more that we can now refer to "channel type" everywhere and know what we mean ("if channel type includes option_static_remotekey" for example).  But I'll have to see what it looks like when I actually sweep the spec.
+20:25:26 <BlueMatt> rusty: nice!
+20:25:28 <rusty> #action rusty to start spec cleanup to refer to channel type throughout.
+20:25:55 <BlueMatt> ok, no news from roasbeef is good news :) next topic.
+20:25:57 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/pull/834
+20:26:01 <BlueMatt> warning messages
+20:26:13 <BlueMatt> another rusty special. anything you want to get feedback on it live, rusty?
+20:26:35 <BlueMatt> looks like the pr itself needs rebase, but t-bast ack'd
+20:26:47 <rusty> BlueMatt: it Just Works.... though it'd be nice for debugging if other impls printed it out rather than unknown msg.
+20:27:01 <BlueMatt> yea, we can do that pretty easy
