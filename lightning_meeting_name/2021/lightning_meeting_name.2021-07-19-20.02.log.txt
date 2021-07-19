@@ -309,3 +309,7 @@
 21:09:35 <roasbeef> BlueMatt: yeah I read it, I don't agree w/ the rationale, it's gonna cause a lot of force closes in the wild
 21:09:35 <rusty> Which, I'm tempted to say "try it and see"?
 21:09:38 <cdecker[m]> Well but that's just local policy again isn't it?
+21:09:59 <roasbeef> t-bast: disagree that we need to worry about wasting feature bits, people are using feature bits in teh 1000s ranges already today, there's a lot of room from 20 or so where we are rn to there
+21:10:04 <cdecker[m]> Accept the HTLC, if it's forwarded and you don't want to just fail it immediately again
+21:10:08 <roasbeef> and we'd already have a feature bit for the new fee stuff right?
+21:10:22 <BlueMatt> roasbeef: again, its pretty rude to dig up a topic from an hour ago. wait till after the meeting.
