@@ -383,3 +383,10 @@
 21:25:34 <roasbeef> it's related since you need to identify a channel still, tho there's also the pubkey routing thing -- so put the pubkey in the onion instead of the scid
 21:25:49 <roasbeef> since the mapping only needs to be known by the last two hops in the route
 21:26:08 <t-bast> Maybe the simplest scheme is indeed "if we go turbo, let's go turbo all the way and just forward each other's htlc"?
+21:26:25 <roasbeef> t-bast: turbo or bust
+21:26:26 <t-bast> and note that this is the turbo trade-off?
+21:26:33 <roasbeef> since that's what all the ppl in the wild that use it already do
+21:26:42 <BlueMatt> roasbeef: I dont see how its related aside from "its kinda required for accepting 0conf payments"
+21:26:56 <BlueMatt> t-bast: yea.
+21:27:00 <roasbeef> BlueMatt: yeh that's it, ppl want to recv and send insta
+21:27:01 <rusty> BlueMatt: if you open an unconf channel with me and send me some sats, I can send them through you out to anyone.
