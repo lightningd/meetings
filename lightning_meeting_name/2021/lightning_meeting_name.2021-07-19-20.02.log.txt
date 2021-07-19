@@ -406,3 +406,10 @@
 21:28:56 <BlueMatt> but, ok, if you want to do that, go for it :)
 21:28:56 <roasbeef> sure, I mention this since ppl already have their own schemes in the wild, and will likely continue to use those still, but maybe they'll write them up in a bLIP or something if people want to interop (usually it's their software interacting w/ their software, so interop matters less in the wild)
 21:29:05 <BlueMatt> in either case, it seems like not gonna be the most common use-case :)
+21:29:26 <rusty> BlueMatt: AFAICT that's *exactly* what Phoenix does today?
+21:29:27 <BlueMatt> roasbeef: that seems like something that could just be a bolt, no?
+21:29:34 <BlueMatt> rusty: no, I believe they forward happily?
+21:29:50 <BlueMatt> according to what t-bast seemed to say above? or am I wrong?
+21:29:51 <rusty> BlueMatt: in theory, in practice most users have a single channel.
+21:30:00 <BlueMatt> huh?
+21:30:08 <t-bast> rusty: do you expect that people will want the safe-ish turbo? Instead of just doing full turbo-yolo when they do turbo? I'm not sure trying to half-protect the funds in case the channel is double-spent is really worth it
