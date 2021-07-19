@@ -185,3 +185,8 @@
 20:45:39 <BlueMatt> crypt-iq: why?
 20:45:52 <crypt-iq> We have a uint16 for forwarding htlc's and we don't want an overflow
 20:45:54 <BlueMatt> crypt-iq: which cost are you optimizing for limiting?
+20:46:03 <BlueMatt> crypt-iq: so swap it for a u32?
+20:46:22 <BlueMatt> or a uint64, cause thats the same speed on most x86_64 processors :)
+20:46:26 <crypt-iq> Yeah but it's a database upgrade, which we'd want to avoid. Could be something revisited though
+20:46:52 <niftynei_> is there a network related reason for the 10k limit?
+20:46:58 <crypt-iq> So when receiving an incoming HTLC, if either you or your counterparty's commitment has too much dust on it (defined by your dust threshold) you can just fail back
