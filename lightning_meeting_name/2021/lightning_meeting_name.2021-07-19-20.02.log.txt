@@ -147,3 +147,7 @@
 20:36:37 <rusty> Yeah, just added another comment.
 20:37:10 <BlueMatt> correct, I agree with you rusty (and thats the way our code works, if I'm reading it correctly)
 20:37:13 <BlueMatt> we would reject that add
+20:38:07 <BlueMatt> any further discussion?
+20:38:10 <ariard> yeah what i'm trying to understand is what lnd is doing on this behavior, crypt-iq comment is a bit unclear
+20:38:16 <t-bast> I'd need to write that as a test to be 100% sure whether eclair would reject it or not...it's a simple test to write though I'll try that
+20:38:17 <BlueMatt> It seems we're all in agreement, maybe t-bast wants to comment on the latest issue from the reporter
