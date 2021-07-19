@@ -219,3 +219,8 @@
 20:52:33 <cdecker[m]> Sounds good to me
 20:52:47 <niftynei_> crypt-iq: right i just wanted to point out that you're talking about the thing that i mentioned last time, that they're the same thing in terms of how to handle the issue lol
 20:53:11 <roasbeef> coudl be used for the "i'm shutting down now" message we've talked about in the past, I've been trying to debug some p2p connectivity issues w/ pure tor nodes in the wild lately, but at times context is lacking beyond "EOF"
+20:53:25 <crypt-iq> niftynei: gotcha
+20:53:29 <BlueMatt> roasbeef: if you're gonna respond to something a half hour ago maybe just put it on the issue?
+20:53:31 <t-bast> roasbeef: I find that warnings are more useful than errors, they act as a "nudge" that doesn't get your channels closed
+20:53:38 <BlueMatt> we can't rehash the whole meeting a half hour late.
+20:53:44 <BlueMatt> that would be a waste of everyone's time
