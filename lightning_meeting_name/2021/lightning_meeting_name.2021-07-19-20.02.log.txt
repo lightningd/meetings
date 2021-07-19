@@ -154,3 +154,7 @@
 20:39:14 <BlueMatt> ariard: which comment was unclear?
 20:39:18 <BlueMatt> I think I understood it
 20:39:23 <t-bast> I'll need to write that test, I think eclair is quite conservative here and wouldn't "risk" sending that last add, but I'll need to verify
+20:39:47 <BlueMatt> for the sake of time, lets move on and leave further discussion on the issue. in the mean time, rusty graciously offered to write up a spec clarification :)
+20:39:55 <BlueMatt> #action rusty to clarify spec to resolve #745
+20:40:06 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/issues/873
+20:40:24 <BlueMatt> rusty had proposed some wording in the issue
