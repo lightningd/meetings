@@ -270,3 +270,11 @@
 21:01:48 <BlueMatt> ariard: that's a largely-separate issue, though, thats the channel negotiation at creation?
 21:02:03 <rusty> 32k!  And bike shed BLUE dammit BLUE
 21:02:22 <crypt-iq> ariard: how can it lead to a silent force close error?
+21:02:51 <ariard> crypt-iq: we don't have upper bound of the dust_limit_satoshi for now, at least not negotiated in the spec
+21:02:54 <BlueMatt> rusty: ok! 32k it is :)
+21:03:00 <cdecker[m]> It just has to be low enough so that a single commitment round doesn't risk going above the limit. Then we can reject the ones over the limit on the next commitment
+21:03:12 <BlueMatt> cdecker: what limit?
+21:03:19 <ariard> if you start to enforce one on already-existent channel, your counterparty might have a stale view of what's a dust HTLC for you
+21:03:28 <BlueMatt> cdecker[m]: cause the only relevant security concern, as I understand it, is how much *outbound* dust HTLC you have sent
+21:03:29 <cdecker[m]> Whatever your node choses to enforce
+21:03:32 <BlueMatt> which you can just...limit?
