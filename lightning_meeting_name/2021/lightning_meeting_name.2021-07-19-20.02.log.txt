@@ -159,3 +159,8 @@
 20:40:06 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/issues/873
 20:40:24 <BlueMatt> rusty had proposed some wording in the issue
 20:40:56 <BlueMatt> there was some concern over DoS in the previous meeting on may 24
+20:42:24 <BlueMatt> roasbeef: had suggested there that he'd have crypt-iq write up a patch to test for cpu dos
+20:42:28 <BlueMatt> did that happen?
+20:42:30 <t-bast> Probably worth exchanging some kind of `max_accepted_dust_htlc` to limit that?
+20:42:42 <ariard> i think we sould introduce a new limit for dust htlc count and not let them unbounded
+20:42:47 <BlueMatt> t-bast: you already have a max total htlc in-flight limit
