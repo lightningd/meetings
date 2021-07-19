@@ -112,3 +112,25 @@
 20:26:35 <BlueMatt> looks like the pr itself needs rebase, but t-bast ack'd
 20:26:47 <rusty> BlueMatt: it Just Works.... though it'd be nice for debugging if other impls printed it out rather than unknown msg.
 20:27:01 <BlueMatt> yea, we can do that pretty easy
+20:27:08 <rusty> Weakening the error semantics is just recognizing reality, it's long overdue.
+20:27:12 <t-bast> yes I've found warnings very useful, and I've got a concrete use-case related for #847 that I think is worth sharing
+20:27:19 <BlueMatt> yep, cool!
+20:27:33 <t-bast> in some cases our only current choice is "disconnect", but it's actually putting us in a deadlock in some situations
+20:28:05 <rusty> #action rusty to rebase 834
+20:28:08 <t-bast> in the closing fee_range negotiation, if your peer sends a fee_range you completely disagree with, disconnecting isn't helpful because at reconnection they must re-send the closing_signed
+20:28:13 <t-bast> and you will still disagree
+20:28:25 <t-bast> sending a warning and then staying silent is much better
+20:28:38 <BlueMatt> wait, shouldnt you force-close if the fee rate suggested for close is insane?
+20:28:44 <t-bast> the node operator can pick that up and send a different closing_signed with a fee_range you'd like, or force-close
+20:29:05 <t-bast> you could, but there's no real reason to if you don't need the funds immediately
+20:29:13 <t-bast> you can send a warning first
+20:29:26 <BlueMatt> sure there is - the channel is useless, and most node operators dont sit there and read the logs carefully
+20:29:28 <rusty> (Note there's a proposal on the ml to add some concrete semantics to errors, which could apply to warnings too, but Carla hasn't responded)
+20:29:57 <t-bast> when they see that the node they sent shutdown is stuck, they will likely look at their logs though
+20:30:19 <t-bast> and then they can decide to either force-close or try different fee_range
+20:30:24 <BlueMatt> sure, but the non-shutdown-initiator is unlikely to read the logs, so that ndoe should just force-close.
+20:30:51 <rusty> BlueMatt, t-bast: this is true in general, that there should be some "we haven't made progress in X days, let's force close".
+20:31:13 <BlueMatt> anyway, this is a node policy issue, which doesn't seem super relevant, we all agree we want warnings anyway :)
+20:31:23 <BlueMatt> next topic!
+20:31:25 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/issues/745
+20:31:29 <t-bast> ACK!
