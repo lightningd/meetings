@@ -295,3 +295,6 @@
 21:06:21 <rusty> t-bast: hmm, good q!
 21:06:24 <t-bast> Or do we just react to `min_depth` being `0` in `accept_channel`?
 21:06:41 <t-bast> Because what's a bit weird here is that open_channel doens't have a way to specify min_depth
+21:06:57 <t-bast> Unless we add it as a tlv?
+21:07:22 <BlueMatt> if we're adding stuff anyway should it include a "will accept payments at 0conf" field on both ends so you know whether you can *also* send or just receive?
+21:07:31 <rusty> t-bast: min_depth is totally advisory: you can always delay sending as long as you want.
