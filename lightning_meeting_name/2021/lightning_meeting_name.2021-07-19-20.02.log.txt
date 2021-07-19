@@ -227,3 +227,7 @@
 20:54:34 <rusty> BTW, I'd like to discuss Turbo channels; it's not on agenda since there's not PR yet, but that can be fixed...
 20:55:07 <BlueMatt> whats the concrete next-steps for dusty htlcs uncounted?
 20:55:10 <t-bast> Sure, we can discuss turbo even without a PR
+20:55:58 <t-bast> What about a proposal PR for dusty htlcs uncounted? If crypt-iq you think you've experimented and gathered enough feedback?
+20:56:07 <rusty> BlueMatt: next steps: on issue, debate if we actually need a limit, and what it looks like if so.  crypt-iq to lead?
+20:56:16 <rusty> (Or, if not, why not)
+20:56:21 <BlueMatt> it sounds like maybe it can go ahead as-is, but with callouts of the ability to burn your own balance to fees and that nodes should limit their relaying of dust htlcs to limit their own total exposure
