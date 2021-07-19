@@ -140,3 +140,4 @@
 20:32:15 <lnd-bot> 13lightning-rfc/06relax-closing-fee-requirement 148683525 15t-bast: Use warning instead of disconnecting
 20:32:15 <lnd-bot> 13lightning-rfc/06relax-closing-fee-requirement 14c990020 15t-bast: Remove fee below commit fee requirement
 20:32:36 <BlueMatt> hmm, can we not use lightning-rfc branches for PRs? that seems a bit weird imo
+20:33:58 <rusty> BlueMatt: yeah, it's weird (I usually use my personal copy) but I don't really mind.
