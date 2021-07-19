@@ -164,3 +164,8 @@
 20:42:30 <t-bast> Probably worth exchanging some kind of `max_accepted_dust_htlc` to limit that?
 20:42:42 <ariard> i think we sould introduce a new limit for dust htlc count and not let them unbounded
 20:42:47 <BlueMatt> t-bast: you already have a max total htlc in-flight limit
+20:42:54 <BlueMatt> ariard: y tho
+20:43:13 <t-bast> but that's what we want to override...?
+20:43:25 <t-bast> we don't want these dust htlc to be included in that limit, right?
+20:43:28 <BlueMatt> t-bast: no, not in-flight limit, but the htlc-count limit
+20:43:45 <niftynei_> the comments from last time i suggested a 'max_fee_from_dust" limit
