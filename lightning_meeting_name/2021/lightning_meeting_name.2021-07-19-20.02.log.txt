@@ -231,3 +231,11 @@
 20:56:07 <rusty> BlueMatt: next steps: on issue, debate if we actually need a limit, and what it looks like if so.  crypt-iq to lead?
 20:56:16 <rusty> (Or, if not, why not)
 20:56:21 <BlueMatt> it sounds like maybe it can go ahead as-is, but with callouts of the ability to burn your own balance to fees and that nodes should limit their relaying of dust htlcs to limit their own total exposure
+20:56:35 <BlueMatt> rusty: i believe I agree with crypt-iq that no in-spec limit is required/relevant
+20:56:41 <BlueMatt> but instead at-forwarding-time limits apply
+20:56:48 <niftynei_> ack
+20:57:03 <crypt-iq> what limits are we talking about here? sum of dust limits?
+20:57:17 <crypt-iq> I think a max_dust_htlcs that you can offer outstanding is necessary, no?
+20:57:17 <t-bast> it would be up to each node's policy I guess
+20:57:18 <BlueMatt> sum of outbound dust htlcs
+20:57:21 <BlueMatt> but its not spec
