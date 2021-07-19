@@ -151,3 +151,6 @@
 20:38:10 <ariard> yeah what i'm trying to understand is what lnd is doing on this behavior, crypt-iq comment is a bit unclear
 20:38:16 <t-bast> I'd need to write that as a test to be 100% sure whether eclair would reject it or not...it's a simple test to write though I'll try that
 20:38:17 <BlueMatt> It seems we're all in agreement, maybe t-bast wants to comment on the latest issue from the reporter
+20:39:14 <BlueMatt> ariard: which comment was unclear?
+20:39:18 <BlueMatt> I think I understood it
+20:39:23 <t-bast> I'll need to write that test, I think eclair is quite conservative here and wouldn't "risk" sending that last add, but I'll need to verify
