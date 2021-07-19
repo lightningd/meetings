@@ -144,3 +144,6 @@
 20:35:09 <t-bast> I agree with the way rusty reframed the requirement at the end of the discussion: it's clear and concise
 20:35:57 <BlueMatt> yes, agreed
 20:36:12 <BlueMatt> note that implementing it in not-this-way would actually be really quite annoying for us.
+20:36:37 <rusty> Yeah, just added another comment.
+20:37:10 <BlueMatt> correct, I agree with you rusty (and thats the way our code works, if I'm reading it correctly)
+20:37:13 <BlueMatt> we would reject that add
