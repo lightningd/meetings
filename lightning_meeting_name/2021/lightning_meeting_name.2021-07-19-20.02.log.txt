@@ -278,3 +278,7 @@
 21:03:28 <BlueMatt> cdecker[m]: cause the only relevant security concern, as I understand it, is how much *outbound* dust HTLC you have sent
 21:03:29 <cdecker[m]> Whatever your node choses to enforce
 21:03:32 <BlueMatt> which you can just...limit?
+21:03:42 <BlueMatt> there's no in-channel force-close risk relevant here whatsoever
+21:04:00 <cdecker[m]> Yep, can't see the force close risk here either
+21:04:02 <crypt-iq> ariard: dust_limit_satoshis is negotiated and static, not sure I follow
+21:04:41 <niftynei_> i think we have some next steps outlined here, i'd love to spend a few minutes chatting about turbos
