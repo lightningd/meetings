@@ -239,3 +239,11 @@
 20:57:17 <t-bast> it would be up to each node's policy I guess
 20:57:18 <BlueMatt> sum of outbound dust htlcs
 20:57:21 <BlueMatt> but its not spec
+20:57:29 <BlueMatt> crypt-iq: why?
+20:57:34 <cdecker[m]> Both number and sum id guess
+20:57:34 <crypt-iq> where max_dust_htlcs is the literal number
+20:57:38 <BlueMatt> crypt-iq: didnt you just argue we *dont* need an in-spec limit?
+20:57:52 <crypt-iq> I argued that we don't need a sum of dust limits
+20:58:04 <cdecker[m]> Yeah, just fail forwarding it if it's above your internal limit I'd guess
+20:58:08 <BlueMatt> because we can do it at forward-time (its the node *sending* the htlc that takes the risk)
+20:58:24 <BlueMatt> and if its at forward-time it doesnt appear in the spec outside of rationale sections
