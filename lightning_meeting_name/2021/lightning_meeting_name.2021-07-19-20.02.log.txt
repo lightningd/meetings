@@ -313,3 +313,11 @@
 21:10:04 <cdecker[m]> Accept the HTLC, if it's forwarded and you don't want to just fail it immediately again
 21:10:08 <roasbeef> and we'd already have a feature bit for the new fee stuff right?
 21:10:22 <BlueMatt> roasbeef: again, its pretty rude to dig up a topic from an hour ago. wait till after the meeting.
+21:11:06 <rusty> Yeah, roasbeef, comment on issue please.
+21:11:08 <BlueMatt> rusty: hmmm, so I guess you'd just try to route, see if fail, and retry payment over another route if possible
+21:11:16 <rusty> BlueMatt: I think so.
+21:11:21 <BlueMatt> I guess that works, as long as you know your peer will accept the htlc to begin with
+21:11:36 <t-bast> It's quite harmless, but why not be explicit to avoid a failed round-trip?
+21:11:37 <roasbeef> BlueMatt: had something come up in meat space, was going thru the scrollback to reply where tagged
+21:11:41 <rusty> So really, you only need to know "are you gonna get upset at me trying?" which is a feature negotiation.  I don't even think it needs to be a channel?
+21:11:48 <rusty> ... type
