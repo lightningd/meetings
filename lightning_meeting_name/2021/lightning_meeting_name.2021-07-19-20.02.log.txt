@@ -176,3 +176,12 @@
 20:44:17 <rusty> Yeah, I really don't want you to add 1M dust htlcs, though at 1msat that's only 1000sats in fees.
 20:44:23 <BlueMatt> but you dont send signatures for them, so, really, I dont see why
 20:44:51 <cdecker[m]> Still needs storage and memory though
+20:44:59 <crypt-iq> With the network today, you can limit your exposure to dust htlcs by refusing to forward them if your inbound channel is dusted or if your outbound channel will be dusted
+20:45:02 <BlueMatt> I mean, its a computer, if you dont send a signature, the cpu cost of like 100M little HTLCs should be pretty akin to 1 normal htlc
+20:45:12 <BlueMatt> crypt-iq: define "dusted"
+20:45:14 <crypt-iq> lnd will probably only handle ~10k htlc's
+20:45:31 <t-bast> BlueMatt: good point, it's true that without the sig it's quite inexpensive, it's worth testing
+20:45:33 <crypt-iq> As a safe limit int his case
+20:45:39 <BlueMatt> crypt-iq: why?
+20:45:52 <crypt-iq> We have a uint16 for forwarding htlc's and we don't want an overflow
+20:45:54 <BlueMatt> crypt-iq: which cost are you optimizing for limiting?
