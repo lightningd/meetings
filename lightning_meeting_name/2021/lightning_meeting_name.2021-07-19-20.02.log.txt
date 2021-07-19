@@ -142,3 +142,5 @@
 20:32:36 <BlueMatt> hmm, can we not use lightning-rfc branches for PRs? that seems a bit weird imo
 20:33:58 <rusty> BlueMatt: yeah, it's weird (I usually use my personal copy) but I don't really mind.
 20:35:09 <t-bast> I agree with the way rusty reframed the requirement at the end of the discussion: it's clear and concise
+20:35:57 <BlueMatt> yes, agreed
+20:36:12 <BlueMatt> note that implementing it in not-this-way would actually be really quite annoying for us.
