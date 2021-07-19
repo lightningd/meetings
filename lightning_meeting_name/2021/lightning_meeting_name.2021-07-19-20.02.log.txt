@@ -224,3 +224,6 @@
 20:53:31 <t-bast> roasbeef: I find that warnings are more useful than errors, they act as a "nudge" that doesn't get your channels closed
 20:53:38 <BlueMatt> we can't rehash the whole meeting a half hour late.
 20:53:44 <BlueMatt> that would be a waste of everyone's time
+20:54:34 <rusty> BTW, I'd like to discuss Turbo channels; it's not on agenda since there's not PR yet, but that can be fixed...
+20:55:07 <BlueMatt> whats the concrete next-steps for dusty htlcs uncounted?
+20:55:10 <t-bast> Sure, we can discuss turbo even without a PR
