@@ -158,3 +158,4 @@
 20:39:55 <BlueMatt> #action rusty to clarify spec to resolve #745
 20:40:06 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/issues/873
 20:40:24 <BlueMatt> rusty had proposed some wording in the issue
+20:40:56 <BlueMatt> there was some concern over DoS in the previous meeting on may 24
