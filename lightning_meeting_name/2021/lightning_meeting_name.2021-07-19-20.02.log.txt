@@ -298,3 +298,9 @@
 21:06:57 <t-bast> Unless we add it as a tlv?
 21:07:22 <BlueMatt> if we're adding stuff anyway should it include a "will accept payments at 0conf" field on both ends so you know whether you can *also* send or just receive?
 21:07:31 <rusty> t-bast: min_depth is totally advisory: you can always delay sending as long as you want.
+21:08:03 <t-bast> rusty: true, but you wouldn't understand why the opener delays, it would be better to be explicit?
+21:08:09 <roasbeef> re #873, missing the context here related to CPU DoS? in that if you have more dust HTLCs things are harder to process for certain implementations?
+21:08:12 <t-bast> BlueMatt: that could be reasonable, yes
+21:08:28 <rusty> BlueMatt: channel type would cover that?
+21:08:37 <BlueMatt> presumably could, yes.
+21:08:52 <roasbeef> seems you really need to clamp both the count, and total value
