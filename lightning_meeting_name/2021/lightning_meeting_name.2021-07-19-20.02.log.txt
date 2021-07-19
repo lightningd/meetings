@@ -247,3 +247,10 @@
 20:58:04 <cdecker[m]> Yeah, just fail forwarding it if it's above your internal limit I'd guess
 20:58:08 <BlueMatt> because we can do it at forward-time (its the node *sending* the htlc that takes the risk)
 20:58:24 <BlueMatt> and if its at forward-time it doesnt appear in the spec outside of rationale sections
+20:58:29 <crypt-iq> Well the problem here is that it will be locked into a commitment transaction before we can fail back
+20:58:32 <niftynei_> i mean it sounds like there's two things you could decide to limit it on, and that's up to your node/impl to decide which to apply
+20:58:34 <crypt-iq> And lnd has a uint16
+20:59:08 <crypt-iq> So we want to communicate that our max so that limit isn't reached
+20:59:14 <BlueMatt> crypt-iq: no? because its outbound
+20:59:16 <BlueMatt> you just...dont send it?
+20:59:29 <rusty> BlueMatt: but you're still committed to it until you fail it.
