@@ -304,3 +304,8 @@
 21:08:28 <rusty> BlueMatt: channel type would cover that?
 21:08:37 <BlueMatt> presumably could, yes.
 21:08:52 <roasbeef> seems you really need to clamp both the count, and total value
+21:08:54 <roasbeef> for dust
+21:09:13 <rusty> The difference is not send vs recv, it's "I will route for you even though your open is unconfirmed".
+21:09:35 <roasbeef> BlueMatt: yeah I read it, I don't agree w/ the rationale, it's gonna cause a lot of force closes in the wild
+21:09:35 <rusty> Which, I'm tempted to say "try it and see"?
+21:09:38 <cdecker[m]> Well but that's just local policy again isn't it?
