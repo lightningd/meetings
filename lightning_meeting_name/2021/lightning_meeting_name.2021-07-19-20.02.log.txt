@@ -134,3 +134,9 @@
 20:31:23 <BlueMatt> next topic!
 20:31:25 <BlueMatt> #topic https://github.com/lightningnetwork/lightning-rfc/issues/745
 20:31:29 <t-bast> ACK!
+20:31:51 <rusty> I think we all agreed on this one, want me to draft a clarification?
+20:32:11 <BlueMatt> sounds good. I admit I didnt read it, but ariard thinks we do the thing everyone else does, so I'm happy ;)
+20:32:15 <lnd-bot> [13lightning-rfc] 15t-bast pushed 2 commits to 06relax-closing-fee-requirement: 02https://github.com/lightningnetwork/lightning-rfc/compare/f02916485c49...c99002013e6a
+20:32:15 <lnd-bot> 13lightning-rfc/06relax-closing-fee-requirement 148683525 15t-bast: Use warning instead of disconnecting
+20:32:15 <lnd-bot> 13lightning-rfc/06relax-closing-fee-requirement 14c990020 15t-bast: Remove fee below commit fee requirement
+20:32:36 <BlueMatt> hmm, can we not use lightning-rfc branches for PRs? that seems a bit weird imo
