@@ -211,3 +211,7 @@
 20:50:55 <BlueMatt> crypt-iq: ah, I see your point, ok.
 20:50:56 <crypt-iq> niftynei: it is the same as max fees from dust but it doesn't have to be negotiated and can be deployed selectively by impl's right now
 20:51:01 <rusty> I think our roasbeef is laggy; maybe we should reboot him? :)
+20:51:17 <t-bast> crypt-iq: good point as well, it's worth highlighting that in the issue
+20:51:38 <roasbeef> re the error msg stuff, don't see why to introduce a new message vs just re-using out existing once since that'll bridge compat, it also makes things simpler in that all nodes have one error path way, and older nodes just ignore what they don't understand
+20:51:46 <t-bast> crypt-iq: (the fact that as long as you don't forward, it doesn't open attack vectors)
+20:52:08 <crypt-iq> t-bast: right, there are 4 cases to tackle and probably better to lay them out in the issue and not on irc
