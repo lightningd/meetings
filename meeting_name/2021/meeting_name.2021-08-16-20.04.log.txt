@@ -69,3 +69,7 @@
 20:15:52 <roasbeef> caused a lot of force closes early on when ppl disgareed on fees
 20:16:28 <roasbeef> BlueMatt: yeh carla is working on that, there's a thread on the ML tracking the latest discussion (either new message or just extend prior w/ TLV data to be parsed)
 20:16:38 <BlueMatt> roasbeef: no again thats separate
+20:16:48 <BlueMatt> adding a tlv to indicate a type is something we can do *on top*
+20:17:07 <niftynei> ariard: not exactly, it's still "string messages that need to be parsed", but you could definitely codify the errors via a TLV in the warnings!
+20:17:34 <BlueMatt> roasbeef: do you have a specific suggestion for the warning message prs aside from "I dont care about this"?
+20:17:43 <BlueMatt> because otherwise I think we can just go forward with it
