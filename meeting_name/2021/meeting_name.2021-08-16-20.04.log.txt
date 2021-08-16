@@ -159,3 +159,13 @@
 20:30:48 <t-bast> roasbeef: yes, it's just unbroadcastable
 20:30:48 <ariard> t-bast: yeah let's fix dust separate from 846
 20:30:52 <ariard> *847
+20:31:03 <rusty> Yes, ack 847.
+20:31:29 <BlueMatt> ok, so no objections to (a) cross-impl testing then merging 847, (b) fixing dust in closing transactions in a new pr.
+20:31:31 <BlueMatt> next topic?
+20:31:34 <t-bast> rusty: BTW on #847 my latest tests against c-lightning were green, nothing weird came out
+20:31:42 <t-bast> BlueMatt: ACK
+20:31:44 <Crypt-iq> so coop closing doesn't take into account output type dust limits roasbeef
+20:31:44 <rusty> t-bast: thans!
+20:31:53 <valwal> #topic BLIPs
+20:31:54 <BlueMatt> t-bast: have y'all done cross-imppl testing? I think in that case we can land now?
+20:31:56 <Crypt-iq> ie spending to a p2pkh < 546, p2sh < 540
