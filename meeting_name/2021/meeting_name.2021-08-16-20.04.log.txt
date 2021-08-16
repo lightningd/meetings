@@ -280,3 +280,10 @@
 20:46:54 <BlueMatt> roasbeef: more importantly, i think, *users* expect it to be universal :p
 20:47:11 <ariard> BlueMatt: so i think the migration path is solving both our concern
 20:47:11 <roasbeef> niftynei: yeh I guess we differ there w.r.t definition, another take is bitcon consensus rules are prescriptive, policy is discriptive -- the set of things all LN implementation need to agree on is smaller in comparison, so there's a lot of free energy to be used for new ideas/concepts
+20:47:25 <niftynei> what if we just let spec authors decide how to propose their stuff and see what happens
+20:47:29 <BlueMatt> ok, so do we have consensus, niftynei what say you? are there other concerns you have?
+20:47:43 <t-bast> ryanthegentry: on the contrary, I'm wary of bLIPs modifying directly bolts, because that will require more review from more people - I'd rather have bLIPs only update other bLIPs to avoid needing more review from people who already spend a lot of time reviewing stuff
+20:47:48 <ariard> BlueMatt: note, i think we won't agree all on what should become universal and the really long-term direction of lighnining, it's an evolutionary process
+20:47:51 <BlueMatt> niftynei: do you have specific objection to, or think its uneccessary, to specify things based on a "universal implementation" heuristic?
+20:48:02 <BlueMatt> ariard: yes, of course, its vague, and we'll disagree, but at least its the heuristic.
+20:48:10 <roasbeef> niftynei: that's teh case rn, now they have another option
