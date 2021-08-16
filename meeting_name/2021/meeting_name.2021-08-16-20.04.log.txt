@@ -57,3 +57,11 @@
 20:14:26 <BlueMatt> cause its actually nice that we have the error messages which close channels imo
 20:14:31 <BlueMatt> or notify counterparties we've closed
 20:14:35 <roasbeef> if there's no new structured data, then how's this imrpove on the other error at all?
+20:14:44 <roasbeef> given you can also use that to send out message, and most impls don't auto force close on it anymore
+20:14:52 <t-bast> I agree with BlueMatt, it's already helpful in practice so let's roll it out, and improve later by adding more structure as we discover what we often need
+20:14:56 <ariard> roasbeef: not force-closing the chan
+20:15:16 <BlueMatt> roasbeef: yep, so we should *start* force closing on errors again :)
+20:15:19 <ariard> which we already do quite liberally in LDK
+20:15:23 <BlueMatt> cause, like, that's what the spec does
+20:15:37 <roasbeef> that was always a dubious requirement imo
+20:15:40 <BlueMatt> roasbeef: if you feel strongly, I suppose we could change the *current* error message message type to "warning" and add a new error message :)
