@@ -300,3 +300,7 @@
 20:50:58 <niftynei> more documentation of how things work is always a good thing, the scope of who else you expect/intend to also adopt them is a function of the level of interoperability you expect the application to have with others, no? and which application that is exactly
 20:51:14 <ariard> i've a doubt on such "universal implementation" heuristic to solve issues with long-term economic consequences for the network, like channel jamming
 20:51:19 <t-bast> ryanthegentry: maybe it's just my personal opinion, but I'd rather have a few common bLIPs that may get updated frequently (e.g. to list feature bits / message types / tlv fields used by all bLIPs) that don't really need to be looked at by all LN devs than updating BOLTs for that
+20:51:30 <cdecker[m]> I guess the slowdown is the cost of maintaining compatibility and avoid a netsplit :-)
+20:51:37 <ariard> the best approach might be just to let different solutions compete and see with time which one is the better
+20:52:01 <ariard> cdecker[m]: note, a netsplit is a security concer for all of us as we all share the same mempool/blockspace :)
+20:52:16 <roasbeef> ok, something something universal, ship it!
