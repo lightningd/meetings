@@ -111,3 +111,9 @@
 20:22:56 <valwal> we can circle back if we finish everything else (lol)
 20:23:01 <roasbeef> BlueMatt: no...open channel as is doesn't have var sized fields as an example
 20:23:41 <t-bast> roasbeef: just send an empty string when you want to put tlvs then, there's nothing complicated here...please le'ts move to other topics, feel free to comment on the PR to elaborate?
+20:23:52 <BlueMatt> where are we on channel_type negotiation, are you happier with where it went, roasbeef?
+20:24:18 <t-bast> I've got channel_type ready in eclair, and found a few issues when testing compatibility with c-lightning
+20:24:24 <roasbeef> t-bast: I think should be continued in that ML thread, will reply there, as there's till more to explore there and even just motivation for adding a new message that's exactly the same as another one w/ no added benefit
+20:24:33 <t-bast> rusty did you have time to check my comments on your c-lightning PR?
+20:24:35 <roasbeef> we have an impl of chan type now, need to do interop testing
+20:24:50 <roasbeef> t-bast: anything you ran into that you think may bleed over to othe rimpls?
