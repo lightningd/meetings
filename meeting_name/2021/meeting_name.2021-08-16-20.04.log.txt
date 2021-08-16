@@ -20,3 +20,6 @@
 20:07:12 * rusty wakes up
 20:07:27 <valwal> oh hey rusty!
 20:07:33 <t-bast> hey rusty!
+20:07:49 <BlueMatt> yea, def concept ack here, iirc lnd even has a pr to implement it
+20:08:07 <rusty> OK, I will respond on PR.  I basically plastered advice over everywhere we said you MUST erorr, wherever it was theoretically psosible to recover, said you MAY send warning.
+20:08:25 <rusty> (You can still send error!  And if you've closed, of course you should)
