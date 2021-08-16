@@ -177,3 +177,8 @@
 20:32:54 <BlueMatt> I think the Real (tm) question about bLIPs is "what is allowed to be a bLIP, and what MUST go in the BOLTs"
 20:32:58 <rusty> t-bast: yep, ack!
 20:33:00 <BlueMatt> t-bast: land it! (imo)
+20:33:07 <BlueMatt> 🎉
+20:33:08 <ariard> t-bast: we do on the LDK-side, like enforcing the holder-side but not checking the counterparty, that's really confusing i admit
+20:33:15 <roasbeef> answer to #1 is basically anything imo
+20:33:32 <roasbeef> #2 is the grey area, prob something that everyone must to do have a working network, like same htlc format
+20:33:54 <ryanthegentry> BlueMatt: one thing that seems low-hanging fruit is Message Types "32768-65535 are set aside for experimental and application-specific messages" per BOLT #1
