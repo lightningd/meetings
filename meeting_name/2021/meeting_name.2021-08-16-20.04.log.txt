@@ -86,3 +86,9 @@
 20:19:29 <roasbeef> so then the same meessage can just be used and we don't need a new one...?
 20:19:35 <BlueMatt> "i want to delay to add more stuff" is generally not a valid objection unless "more stuff" is quick and easy :)
 20:19:46 <BlueMatt> roasbeef: yes, you can always add tlvs at the end of any message
+20:19:48 <BlueMatt> to provide more context
+20:19:48 <niftynei> well, you definitely have errors in the open that are distinct from warnings
+20:20:03 <roasbeef> rather than delay, I don't see the motivation here given error already exists, and this is just that w/ a diff type
+20:20:04 <ariard> roasbeef: yeah i think that's matt proposal to merge the future carla's richer-context-error proposal in the warning message thanks to TLV
+20:20:26 <niftynei> e.g. once the channel commitments have been exchanged, you error to signal you're going to chain
+20:20:46 <BlueMatt> you want more context in errors/warnings, great! lets add warnings and then we can slap the tlv on the end! everyone gets what they want and y'all dont hold up progress for perfection :)
