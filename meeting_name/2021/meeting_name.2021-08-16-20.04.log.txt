@@ -121,3 +121,11 @@
 20:25:24 <t-bast> roasbeef: if you have an lnd branch to share I can test it against eclair tomorrow!
 20:25:25 <rusty> t-bast: sorry, will have to rebase and get back to this.
 20:25:47 <roasbeef> t-bast: it's here: https://github.com/lightningnetwork/lnd/pull/5373
+20:26:11 <t-bast> rusty: no worries, just ping me when it's ready and I'll run my test scripts
+20:26:21 <t-bast> roasbeef: cool thanks, I'll test it
+20:26:33 <BlueMatt> cool
+20:26:39 <BlueMatt> #action t-bast and roasbeef to do cross-impl testing
+20:26:41 <BlueMatt> next topic?
+20:26:43 <roasbeef> the PR let us simplify our integration tests a good bit too, since we can just add the type vs the build tag, etc, etc
+20:26:51 <valwal> #topic Updated closing_signed fee requirements #847
+20:26:54 <BlueMatt> even nicer, roasbeef!
