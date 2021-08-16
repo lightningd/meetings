@@ -330,3 +330,14 @@
 20:55:20 <t-bast> it's very quick
 20:55:20 <roasbeef> I can hang for another 5 mins
 20:55:22 <t-bast> just say ACK
+20:55:29 <roasbeef> +1 to mandatory secrets, we already do it, ACK
+20:55:29 <valwal> #topic mandatory payment secrets
+20:55:34 <cdecker[m]> Got to drop off soon too
+20:55:35 <BlueMatt> t-bast: i already ack'd the pr :p
+20:55:40 <BlueMatt> it has two acks, ship it.
+20:55:46 <t-bast> Great, and c-lightning has verified the test vectors, so merge?
+20:55:55 <BlueMatt> (I havent verified the vectors, tho)
+20:56:01 <t-bast> #action t-bast to merge #887
+20:56:09 <roasbeef> approved, need to add the test vectors, but looks good
+20:56:17 <t-bast> Awesome
+20:56:21 <cdecker[m]> Wow, that was a quick one
