@@ -287,3 +287,9 @@
 20:47:51 <BlueMatt> niftynei: do you have specific objection to, or think its uneccessary, to specify things based on a "universal implementation" heuristic?
 20:48:02 <BlueMatt> ariard: yes, of course, its vague, and we'll disagree, but at least its the heuristic.
 20:48:10 <roasbeef> niftynei: that's teh case rn, now they have another option
+20:48:29 <michaelfolkson> The thing with new acronyms and processes is they seem exciting, glitzy and solve the problems of previous acronym at the beginning. But then after a while they suffer from exact same challenges ;)
+20:48:36 <ariard> roasbeef: and Core's policy is prescriptive for LN :/
+20:48:36 <ryanthegentry> t-bast: touché :)
+20:48:40 <roasbeef> one that's a bit more defined, and may be interpreted to carry less weight
+20:48:57 <BlueMatt> michaelfolkson: I think everyone here agrees that blips solve a specific issue, and have been proposing similar ideas since before it had a time or felt exciting
+20:49:14 <cdecker[m]> Well having things documented is definitely the right thing to do. When combined with a migration to bolt once it becomes central to LN also seems ok
