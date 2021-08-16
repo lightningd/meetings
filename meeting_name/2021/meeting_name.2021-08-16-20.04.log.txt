@@ -212,3 +212,9 @@
 20:37:28 <cdecker[m]> It still touches the state machine and is negotiated during setup
 20:37:34 <ryanthegentry> rusty: sad that they do but agree
 20:38:04 <t-bast> rusty: but they may find a huge collection of bLIP very intimidating as well...
+20:38:07 <BlueMatt> maybe the criteria should be "who implements this"-based?
+20:38:10 <ariard> rusty: yeah we might even run out of review bandwidth for best practices even if they're deepily bolt-oriented fee-bumping, timelocks settings
+20:38:35 <BlueMatt> eg "if you seek broad implementation of this as a core part of lightning, it must be a bolt, if you do not, a bLIP"?
+20:38:45 <BlueMatt> i mean its fuzzy but at least decent guidance?
+20:38:53 <rusty> ariard: true, but if we have an easy entree into the spec, maybe long term we get more qualified reviewers ?
+20:39:01 <roasbeef> ariard: yeh agreed re review bandwidth, there's just so much stuff given the wide design space of LN, something like schnorr integration is BOLT territory since we all need to do it and it already has braod buy in
