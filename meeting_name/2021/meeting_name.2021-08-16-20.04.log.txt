@@ -80,3 +80,9 @@
 20:18:28 <roasbeef> niftynei: yeh see this mail: https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-July/003142.html
 20:18:34 <BlueMatt> roasbeef: if you dont, that's ok, we can still do it and you can just log that the channel is closed and make your users do more work.
 20:18:39 <niftynei> like that's (channel opens) are probably the highest value place to add codified errors
+20:18:46 <roasbeef> why can't the erorr be used for that? particularluy if the channel is closed, then the chan_id isn't really a thing anymore
+20:19:05 <BlueMatt> roasbeef: it can be, it can be added on top if it!
+20:19:19 <BlueMatt> because that error (a) requires more discussion, (b) isn't broadly implemented, (c) isnt even a spec pr
+20:19:29 <roasbeef> so then the same meessage can just be used and we don't need a new one...?
+20:19:35 <BlueMatt> "i want to delay to add more stuff" is generally not a valid objection unless "more stuff" is quick and easy :)
+20:19:46 <BlueMatt> roasbeef: yes, you can always add tlvs at the end of any message
