@@ -23,3 +23,7 @@
 20:07:49 <BlueMatt> yea, def concept ack here, iirc lnd even has a pr to implement it
 20:08:07 <rusty> OK, I will respond on PR.  I basically plastered advice over everywhere we said you MUST erorr, wherever it was theoretically psosible to recover, said you MAY send warning.
 20:08:25 <rusty> (You can still send error!  And if you've closed, of course you should)
+20:08:43 <BlueMatt> yea, the LDK implementation of the warnings message stuff that I pr'd largely ignored half of the error -> warning changes, since I'm not a fan of them and needs discussion on the pr :)
+20:08:55 <niftynei> is it correct to say that "error -> close channel"/ "warning -> disconnect" or is that too broad a generalization
+20:09:16 <BlueMatt> niftynei: no, you shouldnt even disconnect on warning
+20:09:23 <t-bast> niftynei: usually it's even better to send a warning without disconnecting
