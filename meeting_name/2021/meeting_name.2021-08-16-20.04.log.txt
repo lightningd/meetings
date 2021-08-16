@@ -227,3 +227,9 @@
 20:39:49 <BlueMatt> indeed
 20:39:59 <ariard> like the risk of introducing security theater in a ref document
 20:39:59 <BlueMatt> but I think "needs" isnt vague enough :p
+20:40:31 <t-bast> "If it could benefit the whole network it should be a BOLT"?
+20:40:35 <roasbeef> there's a lot of end-to-end behavior stuff that can be bLIP'd, given you just need the sender+receiver to understand it, like ppl adding podcast metadata to TLVs
+20:40:56 <BlueMatt> but eg i think keysend *should* have been a bolt
+20:40:58 <ariard> roasbeef: yeah and please think about the few L2s devs like darosior/me also keeping the pace with mempool changes to be sure the base layer doesn't break us :/
+20:40:59 <roasbeef> also feasible something starts as a bLIP, then gets broad buy in and becomes "prompted" somehow
+20:41:05 <BlueMatt> so it cant just be "if its end-to-end, bLIP"
