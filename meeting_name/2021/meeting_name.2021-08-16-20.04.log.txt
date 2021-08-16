@@ -138,3 +138,7 @@
 20:27:38 <BlueMatt> it seems there's rough agreement on 847, at least no objections on the pr
 20:27:48 <BlueMatt> t-bast: and I need to do cross-impl testing, I think, and then it can land?
 20:27:51 <BlueMatt> any objections?
+20:28:01 <BlueMatt> and/or with c-lightning folks, who've also mayne implemented it?
+20:28:23 <t-bast> I'd love to land this one!
+20:28:38 <roasbeef> t-bast: do you expose the knob to users (picking a chan type in the open chan API)? and if so, is it a type or do you let them flip each of teh bits? just curious from an API perspective as that came up in ours during review
+20:28:42 <BlueMatt> there's also a number of dust concerns related to closing-transactions exposed today, looks like everyone except eclair currently allows nodes to set a dust limit which causes closing tx to be unspendable
