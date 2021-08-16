@@ -182,3 +182,14 @@
 20:33:15 <roasbeef> answer to #1 is basically anything imo
 20:33:32 <roasbeef> #2 is the grey area, prob something that everyone must to do have a working network, like same htlc format
 20:33:54 <ryanthegentry> BlueMatt: one thing that seems low-hanging fruit is Message Types "32768-65535 are set aside for experimental and application-specific messages" per BOLT #1
+20:34:04 <ryanthegentry> but nothing similar exists for feature bits or TLVs
+20:34:08 <ariard> yeah we could still host best practices in the bolt as long as it's not mandatory
+20:34:29 <ryanthegentry> could have a suggested sandbox area for all three, and encourage experimenters to document + ask for review in bLIPs
+20:34:33 <t-bast> ariard: good point, I thought it made sense to check all txs so it seemed obvious to also do it for the closing tx, but in fact it's debatable...worth clarifying!
+20:34:40 <ariard> the ietf do this with a lot of documents, for e.g dnssec best practices : https://www.rfc-editor.org/rfc/rfc6781.html
+20:34:42 <t-bast> #action t-bast to clarify dust limits in closing txs
+20:34:43 <roasbeef> ryanthegentry: what's all 3 here?
+20:34:50 <BlueMatt> I dunno, I feel like if you're just doing random testing, it doesnt need to be a bLIP - it should be constrained to your impl cause its "random testing"
+20:34:54 <ryanthegentry> Feature Bits, Message Types, TLVs
+20:34:56 <roasbeef> ariard: yeh could have a lot of stuff like that re fee bumping, etc
+20:35:02 <BlueMatt> if its something you want to include in eg the state machine, it should be a bolt?
