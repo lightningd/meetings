@@ -314,3 +314,8 @@
 20:53:06 <roasbeef> niftynei: yeh for the every base level of functionality, lots of added stuff you may not need to impl just to get a basic payment working
 20:53:11 <ariard> roasbeef: yeah that
 20:53:13 <roasbeef> the very base*
+20:53:45 <ariard> and for channel jamming we might need a step-by-step process, spread on many standalone documents
+20:53:56 <niftynei> oof i gotta go i'm sorry. i'll catch up on the logs after the fact!
+20:54:11 * t-bast waves goodbye at niftynei
+20:54:18 <niftynei> BlueMatt: "universal implementation" sounds fine?? sure. ship it.
+20:54:19 <valwal> *waves* bye lisa!
