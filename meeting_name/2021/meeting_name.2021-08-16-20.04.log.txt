@@ -273,3 +273,10 @@
 20:45:45 <niftynei> roasbeef: i think you're using prescriptive in a way that i'd disagree with; ideally any spec is descriptive (procedural)
 20:45:54 <ariard> BlueMatt: i think in previous discussions we had the idea that a blip could be promoted to a bolt it's widely adopted by LN implems
 20:46:04 <roasbeef> it's kinda an emergent trait imo, keysend wasn't really in that bucket a year ago, but it's more universal these days as devs view it as a sort of standard feature an impl should have
+20:46:24 <BlueMatt> ariard: yes, if something starts as "we're doing this, and dont really expect others to" and then others do it, users start expecting it, and it becomes something that everyone does/has to do, then it can migrate
+20:46:25 <ariard> BlueMatt: yeah but reality, is that LN universality is and will always be a moving target
+20:46:26 <rusty> michaelfolkson: true, but I think trying an area with a lower barrier to entry may encourage more participation.
+20:46:31 <BlueMatt> ariard: i dont think anyone disagrees that migration is an option?
+20:46:54 <BlueMatt> roasbeef: more importantly, i think, *users* expect it to be universal :p
+20:47:11 <ariard> BlueMatt: so i think the migration path is solving both our concern
+20:47:11 <roasbeef> niftynei: yeh I guess we differ there w.r.t definition, another take is bitcon consensus rules are prescriptive, policy is discriptive -- the set of things all LN implementation need to agree on is smaller in comparison, so there's a lot of free energy to be used for new ideas/concepts
