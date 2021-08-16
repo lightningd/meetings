@@ -27,3 +27,7 @@
 20:08:55 <niftynei> is it correct to say that "error -> close channel"/ "warning -> disconnect" or is that too broad a generalization
 20:09:16 <BlueMatt> niftynei: no, you shouldnt even disconnect on warning
 20:09:23 <t-bast> niftynei: usually it's even better to send a warning without disconnecting
+20:09:42 <t-bast> niftynei: to avoid reconnect loops where your peer resends the same problematic message
+20:09:49 <roasbeef> guess depends on what bleeds over to this new message, imo we should just have a new one that replaces all usage of the prior error message w/ richer context
+20:09:49 <rusty> niftynei: error is "I have closed the channel, you should too", basically.
+20:10:22 <roasbeef> most valuable error I've seen in the wild so far is the error when you get an invalid sig, have used that to find a bunch of state machine divergences within lnd, and most recently that HTLC ordering issue
