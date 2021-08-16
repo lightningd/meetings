@@ -108,3 +108,6 @@
 20:22:36 <BlueMatt> come on man
 20:22:36 <valwal> #topic channel_type negotiation
 20:22:37 <BlueMatt> lets move on
+20:22:56 <valwal> we can circle back if we finish everything else (lol)
+20:23:01 <roasbeef> BlueMatt: no...open channel as is doesn't have var sized fields as an example
+20:23:41 <t-bast> roasbeef: just send an empty string when you want to put tlvs then, there's nothing complicated here...please le'ts move to other topics, feel free to comment on the PR to elaborate?
