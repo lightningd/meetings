@@ -41,3 +41,11 @@
 20:11:43 <BlueMatt> or extending error/warning, as rusty notes
 20:11:48 <niftynei> since "establishing a channel" you can safely restart the negotiation etc, yeah ok seems like a niche rather than a broad rule
 20:12:37 <BlueMatt> rusty: indeed, its maybe a good thing to do, but I do feel like it needs at least a strawman proposal before we have a live discussion, otherwise we go in circles forever :)
+20:12:43 <roasbeef> how useful will this warning message be if there's no new strucutred information? means we just all need to string match again...
+20:13:00 <roasbeef> there's an ML thread where carla and rusty have started to work out a more structutred approach, I thought that was meant to be a part of this?
+20:13:02 <BlueMatt> roasbeef: it allows you to implement error messages properly again :p
+20:13:03 <t-bast> roasbeef: it's really useful in closing negotiation for example
+20:13:16 <BlueMatt> ie, actually close the channel
+20:13:21 <t-bast> roasbeef: and when using channel_type to open a new channel with a non-default type
+20:13:28 <ariard> niftynei: afaict your usage of the warnings in the dual-funding context to rollback your negotiation matches the richer error context intent of roasbeef?
+20:13:29 <roasbeef> t-bast: yeh I can see that being the case, but will it be if ppl send diff error strings vs having structured records? (using TLV)
