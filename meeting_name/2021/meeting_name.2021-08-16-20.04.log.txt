@@ -193,3 +193,9 @@
 20:34:54 <ryanthegentry> Feature Bits, Message Types, TLVs
 20:34:56 <roasbeef> ariard: yeh could have a lot of stuff like that re fee bumping, etc
 20:35:02 <BlueMatt> if its something you want to include in eg the state machine, it should be a bolt?
+20:35:25 <cdecker[m]> Definitely
+20:35:32 <ariard> ryanthegentry: my point was about for the bolt process to formalize first the namespace attribution
+20:35:38 <BlueMatt> tho i guess maybe one example is rusty's turn-based-htlc thing, like, maybe thats only done in c-lightning but still others could implement it so could be a bLIP? I dunno, its all grey areas
+20:35:43 <ariard> to let blip devs reused without any conflicts
+20:35:48 <roasbeef> BlueMatt: yeh sure, re random testing, someone could modify the state machine tho, and add say DLC related stuff, imo that's bLIP territory since eveyrone doens't need to do it as it suger on top of everything else
+20:36:02 <ariard> like message types/tlvs types
