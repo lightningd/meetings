@@ -199,3 +199,9 @@
 20:35:43 <ariard> to let blip devs reused without any conflicts
 20:35:48 <roasbeef> BlueMatt: yeh sure, re random testing, someone could modify the state machine tho, and add say DLC related stuff, imo that's bLIP territory since eveyrone doens't need to do it as it suger on top of everything else
 20:36:02 <ariard> like message types/tlvs types
+20:36:16 <BlueMatt> roasbeef: right, def dont want DLC in BOLTs (tho arguably not even in bLIPs either, but maybe just enough to claim message ids or whatever)
+20:36:19 <roasbeef> ariard: agree they meet re namespacing claims to prevent collisions, etc
+20:36:32 <ryanthegentry> ariard: understood
+20:36:44 <cdecker[m]> The round based protocol should be a bolt imho
+20:36:51 <ariard> BlueMatt: i can say the DLC process is working quite nicely and we would prefer to stay on our own though referrencing blips if they're good :)
+20:37:00 <BlueMatt> cdecker[m]: but what if no one but c-lightning ever implements it?
