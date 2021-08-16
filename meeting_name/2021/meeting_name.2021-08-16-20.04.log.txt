@@ -218,3 +218,12 @@
 20:38:45 <BlueMatt> i mean its fuzzy but at least decent guidance?
 20:38:53 <rusty> ariard: true, but if we have an easy entree into the spec, maybe long term we get more qualified reviewers ?
 20:39:01 <roasbeef> ariard: yeh agreed re review bandwidth, there's just so much stuff given the wide design space of LN, something like schnorr integration is BOLT territory since we all need to do it and it already has braod buy in
+20:39:12 <roasbeef> BlueMatt: I like something along those liens
+20:39:19 <rusty> If everyone needs to implement it, it needs to be a BOLT?
+20:39:30 <BlueMatt> rusty: define "needs"
+20:39:37 <BlueMatt> i think it needs to be a bit broader than "needs"
+20:39:44 <ariard> rusty: yeah i'm willingly to test the experiment though for any safety/operational best practices we're going to fetch the already-under-water same people
+20:39:45 <rusty> BlueMatt: vagueness is sometimes a feature.
+20:39:49 <BlueMatt> indeed
+20:39:59 <ariard> like the risk of introducing security theater in a ref document
+20:39:59 <BlueMatt> but I think "needs" isnt vague enough :p
