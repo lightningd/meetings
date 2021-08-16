@@ -205,3 +205,10 @@
 20:36:44 <cdecker[m]> The round based protocol should be a bolt imho
 20:36:51 <ariard> BlueMatt: i can say the DLC process is working quite nicely and we would prefer to stay on our own though referrencing blips if they're good :)
 20:37:00 <BlueMatt> cdecker[m]: but what if no one but c-lightning ever implements it?
+20:37:09 <rusty> IMHO: best practices, pre-widespread testing, weird ideas are all great as BLiPS.  Some may become BOLTs, sure...
+20:37:15 <BlueMatt> cdecker[m]: we cant get consensus on it in a bolt, should it still be written up as a bLIP?
+20:37:21 <roasbeef> cdecker[m]: could be, one benefit ofr the bLIP style is that it'll be a contained document to provide additional context, etc, etc -- vs being an if statement in a much larger doc
+20:37:21 <rusty> I think ppl find BOLTs intimidating.
+20:37:28 <cdecker[m]> It still touches the state machine and is negotiated during setup
+20:37:34 <ryanthegentry> rusty: sad that they do but agree
+20:38:04 <t-bast> rusty: but they may find a huge collection of bLIP very intimidating as well...
