@@ -38,3 +38,6 @@
 20:11:29 <rusty> BlueMatt: true, but it'd be a nice discussion to have.  Fortunately both warning and error are extensible.
 20:11:32 <t-bast> niftynei: gotcha, disconnecting makes sense in that case, it's probably a case-by-case basis whether you should disconnect after sending a warning or not
 20:11:36 <BlueMatt> roasbeef: if you want rich errors or whatever, we can do that in a new message.
+20:11:43 <BlueMatt> or extending error/warning, as rusty notes
+20:11:48 <niftynei> since "establishing a channel" you can safely restart the negotiation etc, yeah ok seems like a niche rather than a broad rule
+20:12:37 <BlueMatt> rusty: indeed, its maybe a good thing to do, but I do feel like it needs at least a strawman proposal before we have a live discussion, otherwise we go in circles forever :)
