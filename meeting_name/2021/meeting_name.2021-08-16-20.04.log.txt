@@ -117,3 +117,7 @@
 20:24:33 <t-bast> rusty did you have time to check my comments on your c-lightning PR?
 20:24:35 <roasbeef> we have an impl of chan type now, need to do interop testing
 20:24:50 <roasbeef> t-bast: anything you ran into that you think may bleed over to othe rimpls?
+20:25:11 <t-bast> roasbeef: it really looks like simple bugs in the implementation, nothing spec-related AFAICT
+20:25:24 <t-bast> roasbeef: if you have an lnd branch to share I can test it against eclair tomorrow!
+20:25:25 <rusty> t-bast: sorry, will have to rebase and get back to this.
+20:25:47 <roasbeef> t-bast: it's here: https://github.com/lightningnetwork/lnd/pull/5373
