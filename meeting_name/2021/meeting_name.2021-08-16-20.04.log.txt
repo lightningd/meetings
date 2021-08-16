@@ -4,3 +4,9 @@
 20:04:59 <lndev-bot> The meeting name has been set to 'meeting_name'
 20:05:13 <valwal> #topic warnings
 20:05:33 <ariard> t-bast: yeah and i've discussed with other coredev orgas and they're okay to distribute more LN-invits :)
+20:05:43 <BlueMatt> valwal: you gots to startmeeting
+20:05:43 <BlueMatt> with the #s
+20:05:54 <niftynei> she did! lol
+20:06:02 <niftynei> i think we're on topic "warnings"
+20:06:15 <BlueMatt> I left a number of comments on the pr
+20:06:21 <BlueMatt> so waiting on those to be responded to
