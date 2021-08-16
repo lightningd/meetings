@@ -92,3 +92,8 @@
 20:20:04 <ariard> roasbeef: yeah i think that's matt proposal to merge the future carla's richer-context-error proposal in the warning message thanks to TLV
 20:20:26 <niftynei> e.g. once the channel commitments have been exchanged, you error to signal you're going to chain
 20:20:46 <BlueMatt> you want more context in errors/warnings, great! lets add warnings and then we can slap the tlv on the end! everyone gets what they want and y'all dont hold up progress for perfection :)
+20:21:01 <t-bast> TBH the current state sounds really simple to me: errors and warnings are two different things (should be obvious), it's good to have both, currently it's just an unstructured string, later we can add structure in tlv to automate reactions. That's it!
+20:21:01 <niftynei> if you're RBF'ing an extant open attempt, you still want warnings to signal you're failing the re-negotiation, not closing the channel
+20:21:31 <roasbeef> as is, the warning says it should be text based again, so you can't add a TLV there
+20:21:45 <roasbeef> since it inherits the ascii req afaict
+20:21:47 <BlueMatt> yes you can
