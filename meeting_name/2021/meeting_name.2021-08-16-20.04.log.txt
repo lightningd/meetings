@@ -31,3 +31,10 @@
 20:09:49 <roasbeef> guess depends on what bleeds over to this new message, imo we should just have a new one that replaces all usage of the prior error message w/ richer context
 20:09:49 <rusty> niftynei: error is "I have closed the channel, you should too", basically.
 20:10:22 <roasbeef> most valuable error I've seen in the wild so far is the error when you get an invalid sig, have used that to find a bunch of state machine divergences within lnd, and most recently that HTLC ordering issue
+20:10:40 <niftynei> the dual-funding impl in c-lightning uses warnings pretty much entirely; it fails the connection also tho as a sign to restart the negotiation. but that's maybe a niche case
+20:10:54 <t-bast> roasbeef: true, that's the error that helped figure out many real bugs in the wild
+20:11:10 <BlueMatt> roasbeef: that seems like a wholly separate discussion
+20:11:25 <BlueMatt> roasbeef: the current warning pr is all about "how to tell the counterparty that you're *not* closing the channel but something happened
+20:11:29 <rusty> BlueMatt: true, but it'd be a nice discussion to have.  Fortunately both warning and error are extensible.
+20:11:32 <t-bast> niftynei: gotcha, disconnecting makes sense in that case, it's probably a case-by-case basis whether you should disconnect after sending a warning or not
+20:11:36 <BlueMatt> roasbeef: if you want rich errors or whatever, we can do that in a new message.
