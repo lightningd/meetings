@@ -304,3 +304,13 @@
 20:51:37 <ariard> the best approach might be just to let different solutions compete and see with time which one is the better
 20:52:01 <ariard> cdecker[m]: note, a netsplit is a security concer for all of us as we all share the same mempool/blockspace :)
 20:52:16 <roasbeef> ok, something something universal, ship it!
+20:52:28 <BlueMatt> <ariard> i've a doubt on such "universal implementation" heuristic to solve issues with long-term economic consequences for the network, like channel jamming <-- huh?
+20:52:33 <BlueMatt> I'm *really* confused by what this means
+20:52:40 <niftynei> if you're working on a lightning node implementation and want it to talk to other lightning nodes then you'd want to look at the BOLTs, no?
+20:52:47 <ariard> BlueMatt: i mean to survive any issue with economic or lot-of-context
+20:52:47 <roasbeef> I think he means we'd want a network wide solution to stuff like that BlueMatt
+20:52:47 <cdecker[m]> Yeah, was thinking more of incompatible end-to-end things that just get rejected
+20:53:03 <BlueMatt> <niftynei> more documentation of how things work is always a good thing, the scope of who else you expect/intend to also adopt them is a function of the level of interoperability you expect the application to have with others, no? and which application that is exactly <-- I'm *really* confused if you're disagreeing with anything I'm saying or not.
+20:53:06 <roasbeef> niftynei: yeh for the every base level of functionality, lots of added stuff you may not need to impl just to get a basic payment working
+20:53:11 <ariard> roasbeef: yeah that
+20:53:13 <roasbeef> the very base*
