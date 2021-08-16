@@ -251,3 +251,9 @@
 20:43:09 <niftynei> i think i just said the same thing as michaelfolkson
 20:43:10 <BlueMatt> which I think is *precisely* the difference between blip and bolt
 20:43:12 <niftynei> :P
+20:43:20 <ariard> BlueMatt: right and things can become universal by either blip, bolt or bip
+20:43:31 <roasbeef> niftynei: does it introduce more surface area? imo BOLT is prespriptive (you gotta do this), bLIP is descriptive (here's how thing things works and what we use it for)
+20:43:33 <ariard> that's a communication-towards-devs issue
+20:43:41 <michaelfolkson> This discussion will run and run. There will always be grey area with between BOLT and bLIPs. I just find this the least interesting thing to discuss with minimal payoff (but maybe that's just me)
+20:43:47 <BlueMatt> ariard: if they are universal, they can/should migrate from blip to bolt (which is fine!) but if its intended to be, or is universal, it should be a bolt, not remain a blip
+20:44:01 <roasbeef> michaelfolkson: it's progressing pretty well in the spec PR...
