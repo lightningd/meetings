@@ -257,3 +257,15 @@
 20:43:41 <michaelfolkson> This discussion will run and run. There will always be grey area with between BOLT and bLIPs. I just find this the least interesting thing to discuss with minimal payoff (but maybe that's just me)
 20:43:47 <BlueMatt> ariard: if they are universal, they can/should migrate from blip to bolt (which is fine!) but if its intended to be, or is universal, it should be a bolt, not remain a blip
 20:44:01 <roasbeef> michaelfolkson: it's progressing pretty well in the spec PR...
+20:44:18 <ryanthegentry> I really like the concreteness of looking at how valwal adjusted BOLT #9 in her Keysend bLIP
+20:44:20 <ryanthegentry> https://github.com/lightningnetwork/lightning-rfc/blob/2ce13ef01a17de1ccefa615072b4bee8f13e4ca0/09-features.md
+20:44:27 <t-bast> I think bLIPs can be useful because otherwise we're currently either using PRs-that-dont-get-reviewed or unspecified-things-in-implementations for it - at least having things documented centrally is an improvement
+20:44:31 <ariard> BlueMatt: and what if in the future the dlcspec start to implement chan_type?
+20:44:35 <ryanthegentry> with the "bLIP Reserved Feature Bits" and a link to the descriptive doc
+20:44:37 <roasbeef> t-bast: +100
+20:44:37 <BlueMatt> so, i guess, to make it concrete, if we put text in the blip 1 doc that says something like "if its intended to become universal or near universal, it must be a bolt", is that ok?
+20:44:38 <ariard> should it also mo ved as a bolt
+20:44:58 <BlueMatt> ariard: DLC is never intended to be universal? so it can reamian a blip
+20:45:01 <roasbeef> BlueMatt: yeh something like that could work as a quick heuristic
+20:45:11 <BlueMatt> dlc is a specific thing that some people will implement, but certainly isn't required
+20:45:15 <ariard> BlueMatt: what do you mean exactly by "universal" ?
