@@ -65,3 +65,7 @@
 20:15:23 <BlueMatt> cause, like, that's what the spec does
 20:15:37 <roasbeef> that was always a dubious requirement imo
 20:15:40 <BlueMatt> roasbeef: if you feel strongly, I suppose we could change the *current* error message message type to "warning" and add a new error message :)
+20:15:50 <BlueMatt> roasbeef: its more "I've closed the channel, you should too, cause its gone"
+20:15:52 <roasbeef> caused a lot of force closes early on when ppl disgareed on fees
+20:16:28 <roasbeef> BlueMatt: yeh carla is working on that, there's a thread on the ML tracking the latest discussion (either new message or just extend prior w/ TLV data to be parsed)
+20:16:38 <BlueMatt> roasbeef: no again thats separate
