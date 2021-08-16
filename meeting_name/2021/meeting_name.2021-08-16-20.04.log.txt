@@ -233,3 +233,9 @@
 20:40:58 <ariard> roasbeef: yeah and please think about the few L2s devs like darosior/me also keeping the pace with mempool changes to be sure the base layer doesn't break us :/
 20:40:59 <roasbeef> also feasible something starts as a bLIP, then gets broad buy in and becomes "prompted" somehow
 20:41:05 <BlueMatt> so it cant just be "if its end-to-end, bLIP"
+20:41:33 <roasbeef> BlueMatt: maybe the case, the history of keysend is that it started out as a small thing devs were into within the context of lnd (didn't even have a feature bit), then grew beyond that
+20:41:46 <BlueMatt> yes, I'm aware, not criticizing
+20:41:53 <michaelfolkson> Any chance of just using BOLT 100+ for what would be bLIPs and avoiding months/years of discussions on what should be a bLIP and what should be a BOLT? Or has that ship sailed?
+20:41:57 <ariard> BlueMatt: i disagree here and i think keysend is good enough as a blip
+20:41:59 <BlueMatt> just using it as an example of something that I think we'd want to fit into the "this should be a bolt"
+20:42:11 <BlueMatt> michaelfolkson: it has nothing to do with the numbers
