@@ -129,3 +129,12 @@
 20:26:43 <roasbeef> the PR let us simplify our integration tests a good bit too, since we can just add the type vs the build tag, etc, etc
 20:26:51 <valwal> #topic Updated closing_signed fee requirements #847
 20:26:54 <BlueMatt> even nicer, roasbeef!
+20:26:55 <roasbeef> who's driving the bot rn? isn't it tied to a single person?
+20:27:08 <BlueMatt> roasbeef: valwal is, but i thought anyone could action?
+20:27:14 <roasbeef> ah maybe, idk
+20:27:18 <gene> hi
+20:27:19 <roasbeef> guess we'll find out at the end kek
+20:27:29 <cdecker[m]> Valwal is chairing
+20:27:38 <BlueMatt> it seems there's rough agreement on 847, at least no objections on the pr
+20:27:48 <BlueMatt> t-bast: and I need to do cross-impl testing, I think, and then it can land?
+20:27:51 <BlueMatt> any objections?
