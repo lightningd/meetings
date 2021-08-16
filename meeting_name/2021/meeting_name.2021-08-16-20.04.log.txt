@@ -148,3 +148,14 @@
 20:29:31 <roasbeef> BlueMatt: why would it cause to to be unspendable? assuming impls to verification that rejects bad dust values that is
 20:29:54 <BlueMatt> roasbeef: well right now lnd doesn't (as far as I can tell) verify the counterparty-set dust limit at all, despite the spec saying you must :p
 20:29:55 <ariard> BlueMatt: i think we allow p2pkh/p2sh closing outputs on the ldk side, our max dust_limit_satoshis is 660
+20:29:57 <roasbeef> or I guess unbroadcastable? q still stands
+20:29:58 <ariard> sats
+20:29:59 <BlueMatt> roasbeef: but, more broadly, read your email!
+20:30:05 <t-bast> BlueMatt: ACK on fixing these dust issues in a separate PR, to allow #847 to land sooner
+20:30:15 <roasbeef> it does, but it can be improved ;)
+20:30:32 <t-bast> ariard: the issue is not your max dust_limit but rather your min
+20:30:33 <roasbeef> yeh dust is a can of worms
+20:30:44 <BlueMatt> roasbeef: can you point to where? The only thing I found looking for it was checking an upper-bound, not a lower-bound, and eugene appeared to confirm that was the case.
+20:30:48 <t-bast> roasbeef: yes, it's just unbroadcastable
+20:30:48 <ariard> t-bast: yeah let's fix dust separate from 846
+20:30:52 <ariard> *847
