@@ -73,3 +73,10 @@
 20:17:07 <niftynei> ariard: not exactly, it's still "string messages that need to be parsed", but you could definitely codify the errors via a TLV in the warnings!
 20:17:34 <BlueMatt> roasbeef: do you have a specific suggestion for the warning message prs aside from "I dont care about this"?
 20:17:43 <BlueMatt> because otherwise I think we can just go forward with it
+20:17:45 <roasbeef> BlueMatt: agree we can do on top, but don't see what just another error message delivers
+20:17:56 <niftynei> there's probably a nice set of error states in the open to encode too, channel-type being one of them
+20:18:05 <ariard> niftynei: gotcha, it's still seems a in-the-middle solution where you're parsing human-readable destinaed output to have machine-level automatic reactions
+20:18:12 <BlueMatt> roasbeef: other people here seem to think its valuable to be able to communicate that a channel is closed. I tend to agree
+20:18:28 <roasbeef> niftynei: yeh see this mail: https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-July/003142.html
+20:18:34 <BlueMatt> roasbeef: if you dont, that's ok, we can still do it and you can just log that the channel is closed and make your users do more work.
+20:18:39 <niftynei> like that's (channel opens) are probably the highest value place to add codified errors
