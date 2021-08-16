@@ -293,3 +293,7 @@
 20:48:40 <roasbeef> one that's a bit more defined, and may be interpreted to carry less weight
 20:48:57 <BlueMatt> michaelfolkson: I think everyone here agrees that blips solve a specific issue, and have been proposing similar ideas since before it had a time or felt exciting
 20:49:14 <cdecker[m]> Well having things documented is definitely the right thing to do. When combined with a migration to bolt once it becomes central to LN also seems ok
+20:49:29 <niftynei> i feel like we're trying to solve a problem that exists but isn't really the purview of this chat idk
+20:49:36 * michaelfolkson goes back to lurking
+20:49:43 <BlueMatt> niftynei: can you elaborate?
+20:50:18 <ariard> michaelfolkson: that's quite true from xp, the dlcspecs was quite fast at first, then slows down considerably now you have multiple implems
