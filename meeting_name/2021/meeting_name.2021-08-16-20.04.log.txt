@@ -239,3 +239,15 @@
 20:41:57 <ariard> BlueMatt: i disagree here and i think keysend is good enough as a blip
 20:41:59 <BlueMatt> just using it as an example of something that I think we'd want to fit into the "this should be a bolt"
 20:42:11 <BlueMatt> michaelfolkson: it has nothing to do with the numbers
+20:42:12 <ariard> like not risk of channel-closure if you fucked up a keysend implem
+20:42:12 <roasbeef> so bLIPs can be an incubation space of sorts for new things before the get more widely adopted
+20:42:13 <t-bast> michaelfolkson: I think that's orthogonal
+20:42:25 <niftynei> is adding this grey area better than not having a grey area? e.g. is having a set of documents that aren't BOLTS worthwhile if it introduces more surface area for debate?
+20:42:33 <BlueMatt> ariard: i dunno, users expect it to work broadly, there's a lot of real UX issues caused by keysend not being universal
+20:42:43 <BlueMatt> so i think it *def* fits under "this really needs to be universal"
+20:42:49 <roasbeef> even w/ keysend at the time, some ppl wanted to do it a diff way, iirc using the shared secret of the onion instead, view diverged and keysend was just implemented as is in lnd
+20:42:55 <ariard> BlueMatt: sure but solving the UXissuess that's done with a spec document, be it blip or bolt :)
+20:43:03 <BlueMatt> ariard: its solved by things being universal
+20:43:09 <niftynei> i think i just said the same thing as michaelfolkson
+20:43:10 <BlueMatt> which I think is *precisely* the difference between blip and bolt
+20:43:12 <niftynei> :P
