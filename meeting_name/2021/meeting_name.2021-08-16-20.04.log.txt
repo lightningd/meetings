@@ -49,3 +49,11 @@
 20:13:21 <t-bast> roasbeef: and when using channel_type to open a new channel with a non-default type
 20:13:28 <ariard> niftynei: afaict your usage of the warnings in the dual-funding context to rollback your negotiation matches the richer error context intent of roasbeef?
 20:13:29 <roasbeef> t-bast: yeh I can see that being the case, but will it be if ppl send diff error strings vs having structured records? (using TLV)
+20:13:49 <BlueMatt> roasbeef: yep, we can extend these messages with tlvs when there's a spec for it :)
+20:13:52 <roasbeef> and the chan_type case is one that can be programtically handled most of the time
+20:13:57 <t-bast> roasbeef: I agree it's still just a string that the node operator needs to understand, but it's a good thing to start with!
+20:14:04 <rusty> roasbeef: nah, this predates that, it's old...
+20:14:07 <BlueMatt> in the mean time, just *adding* the warning message is nice, cause we can use it in places where we dont want to close the channel but want to notify an error
+20:14:26 <BlueMatt> cause its actually nice that we have the error messages which close channels imo
+20:14:31 <BlueMatt> or notify counterparties we've closed
+20:14:35 <roasbeef> if there's no new structured data, then how's this imrpove on the other error at all?
