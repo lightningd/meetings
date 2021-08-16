@@ -319,3 +319,14 @@
 20:54:11 * t-bast waves goodbye at niftynei
 20:54:18 <niftynei> BlueMatt: "universal implementation" sounds fine?? sure. ship it.
 20:54:19 <valwal> *waves* bye lisa!
+20:54:26 <niftynei> tchauuu
+20:54:38 <cdecker[m]> C ya
+20:54:46 <BlueMatt> <ariard> BlueMatt: i mean to survive any issue with economic or lot-of-context <-- ok, maybe lets chat about this further later, i still dont quite know what you mean and we're running out of time to discuss other things?
+20:54:49 <roasbeef> me gusta
+20:55:01 <BlueMatt> do we want to fit another topic in?
+20:55:11 <BlueMatt> or are we outta time?
+20:55:17 <t-bast> yes please mandatory payment_secrets!
+20:55:19 <ariard> BlueMatt: each implem moves on their own with a blip
+20:55:20 <t-bast> it's very quick
+20:55:20 <roasbeef> I can hang for another 5 mins
+20:55:22 <t-bast> just say ACK
