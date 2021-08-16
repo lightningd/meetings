@@ -10,3 +10,13 @@
 20:06:02 <niftynei> i think we're on topic "warnings"
 20:06:15 <BlueMatt> I left a number of comments on the pr
 20:06:21 <BlueMatt> so waiting on those to be responded to
+20:06:32 <BlueMatt> t-bast: commented as well, and i think we agreed on some proposed changes
+20:06:32 <t-bast> Sounds like rusty needs to rebase and address comments
+20:06:35 <BlueMatt> further, the pr needs to be rebased
+20:06:40 <t-bast> But generally it's a concept ACK, right?
+20:06:44 <BlueMatt> so i think its basically a "waiting on rusty to respond" thing
+20:06:55 <valwal> ok
+20:07:04 <valwal> #topic channel_type s
+20:07:12 * rusty wakes up
+20:07:27 <valwal> oh hey rusty!
+20:07:33 <t-bast> hey rusty!
