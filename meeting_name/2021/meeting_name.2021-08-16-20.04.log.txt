@@ -169,3 +169,11 @@
 20:31:53 <valwal> #topic BLIPs
 20:31:54 <BlueMatt> t-bast: have y'all done cross-imppl testing? I think in that case we can land now?
 20:31:56 <Crypt-iq> ie spending to a p2pkh < 546, p2sh < 540
+20:32:16 <ryanthegentry> so on bLIPs first ty BlueMatt, ariard, t-bast for the comments
+20:32:24 <ariard> t-bast: does the spec mandates to enforce dust_limit_satoshis at coop closing?
+20:32:27 <ryanthegentry> Helped a lot with reframing the proposal here around feature bits, message types and TLVs assignments rather than be so generic
+20:32:48 <t-bast> BlueMatt: I've successfully tested against c-lightning - if that means we can land it now (or whenever rusty confirms that they're ready) I'm all for it ;)
+20:32:52 <t-bast> ariard: I think so, yes
+20:32:54 <BlueMatt> I think the Real (tm) question about bLIPs is "what is allowed to be a bLIP, and what MUST go in the BOLTs"
+20:32:58 <rusty> t-bast: yep, ack!
+20:33:00 <BlueMatt> t-bast: land it! (imo)
