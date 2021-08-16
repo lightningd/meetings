@@ -269,3 +269,7 @@
 20:45:01 <roasbeef> BlueMatt: yeh something like that could work as a quick heuristic
 20:45:11 <BlueMatt> dlc is a specific thing that some people will implement, but certainly isn't required
 20:45:15 <ariard> BlueMatt: what do you mean exactly by "universal" ?
+20:45:39 <BlueMatt> ariard: as in "all lightning nodes should implement this in order to keep reasonable compatibility between lightning nodes and clients"
+20:45:45 <niftynei> roasbeef: i think you're using prescriptive in a way that i'd disagree with; ideally any spec is descriptive (procedural)
+20:45:54 <ariard> BlueMatt: i think in previous discussions we had the idea that a blip could be promoted to a bolt it's widely adopted by LN implems
+20:46:04 <roasbeef> it's kinda an emergent trait imo, keysend wasn't really in that bucket a year ago, but it's more universal these days as devs view it as a sort of standard feature an impl should have
