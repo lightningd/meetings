@@ -341,3 +341,9 @@
 20:56:09 <roasbeef> approved, need to add the test vectors, but looks good
 20:56:17 <t-bast> Awesome
 20:56:21 <cdecker[m]> Wow, that was a quick one
+20:56:28 <ariard> re ln-spec-meetings-attached-to-coredev, if i can have a volontary from each orga to see invits/formats/online attendances/etc that would be nice
+20:56:39 <ariard> s/each orga/each implem/g
+20:56:40 <ariard> :)
+20:56:47 <t-bast> ariard: count me in
+20:57:10 <ariard> t-bast: goooood
+20:57:13 <valwal> #endmeeting

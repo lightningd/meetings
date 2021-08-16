@@ -1,0 +1,376 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:04:59</span><span class="nk"> &lt;valwal&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">meeting-name</span>
+<a name="l-2"></a><span class="tm">20:04:59</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Aug 16 20:04:59 2021 UTC and is due to finish in 60 minutes.  The chair is valwal. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:04:59</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:04:59</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'meeting_name'
+<a name="l-5"></a><span class="tm">20:05:13</span><span class="nk"> &lt;valwal&gt;</span> <span class="topic">#topic </span><span class="topicline">warnings</span>
+<a name="l-6"></a><span class="tm">20:05:33</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> yeah and i've discussed with other coredev orgas and they're okay to distribute more LN-invits :)
+<a name="l-7"></a><span class="tm">20:05:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">valwal:</span> you gots to startmeeting
+<a name="l-8"></a><span class="tm">20:05:43</span><span class="nk"> &lt;BlueMatt&gt;</span> with the #s
+<a name="l-9"></a><span class="tm">20:05:54</span><span class="nk"> &lt;niftynei&gt;</span> she did! lol
+<a name="l-10"></a><span class="tm">20:06:02</span><span class="nk"> &lt;niftynei&gt;</span> i think we're on topic "warnings"
+<a name="l-11"></a><span class="tm">20:06:15</span><span class="nk"> &lt;BlueMatt&gt;</span> I left a number of comments on the pr
+<a name="l-12"></a><span class="tm">20:06:21</span><span class="nk"> &lt;BlueMatt&gt;</span> so waiting on those to be responded to
+<a name="l-13"></a><span class="tm">20:06:32</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> commented as well, and i think we agreed on some proposed changes
+<a name="l-14"></a><span class="tm">20:06:32</span><span class="nk"> &lt;t-bast&gt;</span> Sounds like rusty needs to rebase and address comments
+<a name="l-15"></a><span class="tm">20:06:35</span><span class="nk"> &lt;BlueMatt&gt;</span> further, the pr needs to be rebased
+<a name="l-16"></a><span class="tm">20:06:40</span><span class="nk"> &lt;t-bast&gt;</span> But generally it's a concept ACK, right?
+<a name="l-17"></a><span class="tm">20:06:44</span><span class="nk"> &lt;BlueMatt&gt;</span> so i think its basically a "waiting on rusty to respond" thing
+<a name="l-18"></a><span class="tm">20:06:55</span><span class="nk"> &lt;valwal&gt;</span> ok
+<a name="l-19"></a><span class="tm">20:07:04</span><span class="nk"> &lt;valwal&gt;</span> <span class="topic">#topic </span><span class="topicline">channel_type s</span>
+<a name="l-20"></a><span class="tm">20:07:12 </span><span class="nka">* rusty</span> <span class="ac">wakes up</span>
+<a name="l-21"></a><span class="tm">20:07:27</span><span class="nk"> &lt;valwal&gt;</span> oh hey rusty!
+<a name="l-22"></a><span class="tm">20:07:33</span><span class="nk"> &lt;t-bast&gt;</span> hey rusty!
+<a name="l-23"></a><span class="tm">20:07:49</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, def concept ack here, iirc lnd even has a pr to implement it
+<a name="l-24"></a><span class="tm">20:08:07</span><span class="nk"> &lt;rusty&gt;</span> OK, I will respond on PR.  I basically plastered advice over everywhere we said you MUST erorr, wherever it was theoretically psosible to recover, said you MAY send warning.
+<a name="l-25"></a><span class="tm">20:08:25</span><span class="nk"> &lt;rusty&gt;</span> (You can still send error!  And if you've closed, of course you should)
+<a name="l-26"></a><span class="tm">20:08:43</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, the LDK implementation of the warnings message stuff that I pr'd largely ignored half of the error -&gt; warning changes, since I'm not a fan of them and needs discussion on the pr :)
+<a name="l-27"></a><span class="tm">20:08:55</span><span class="nk"> &lt;niftynei&gt;</span> is it correct to say that "error -&gt; close channel"/ "warning -&gt; disconnect" or is that too broad a generalization
+<a name="l-28"></a><span class="tm">20:09:16</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> no, you shouldnt even disconnect on warning
+<a name="l-29"></a><span class="tm">20:09:23</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> usually it's even better to send a warning without disconnecting
+<a name="l-30"></a><span class="tm">20:09:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> to avoid reconnect loops where your peer resends the same problematic message
+<a name="l-31"></a><span class="tm">20:09:49</span><span class="nk"> &lt;roasbeef&gt;</span> guess depends on what bleeds over to this new message, imo we should just have a new one that replaces all usage of the prior error message w/ richer context
+<a name="l-32"></a><span class="tm">20:09:49</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> error is "I have closed the channel, you should too", basically.
+<a name="l-33"></a><span class="tm">20:10:22</span><span class="nk"> &lt;roasbeef&gt;</span> most valuable error I've seen in the wild so far is the error when you get an invalid sig, have used that to find a bunch of state machine divergences within lnd, and most recently that HTLC ordering issue
+<a name="l-34"></a><span class="tm">20:10:40</span><span class="nk"> &lt;niftynei&gt;</span> the dual-funding impl in c-lightning uses warnings pretty much entirely; it fails the connection also tho as a sign to restart the negotiation. but that's maybe a niche case
+<a name="l-35"></a><span class="tm">20:10:54</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> true, that's the error that helped figure out many real bugs in the wild
+<a name="l-36"></a><span class="tm">20:11:10</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> that seems like a wholly separate discussion
+<a name="l-37"></a><span class="tm">20:11:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the current warning pr is all about "how to tell the counterparty that you're *not* closing the channel but something happened
+<a name="l-38"></a><span class="tm">20:11:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> true, but it'd be a nice discussion to have.  Fortunately both warning and error are extensible.
+<a name="l-39"></a><span class="tm">20:11:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> gotcha, disconnecting makes sense in that case, it's probably a case-by-case basis whether you should disconnect after sending a warning or not
+<a name="l-40"></a><span class="tm">20:11:36</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> if you want rich errors or whatever, we can do that in a new message.
+<a name="l-41"></a><span class="tm">20:11:43</span><span class="nk"> &lt;BlueMatt&gt;</span> or extending error/warning, as rusty notes
+<a name="l-42"></a><span class="tm">20:11:48</span><span class="nk"> &lt;niftynei&gt;</span> since "establishing a channel" you can safely restart the negotiation etc, yeah ok seems like a niche rather than a broad rule
+<a name="l-43"></a><span class="tm">20:12:37</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> indeed, its maybe a good thing to do, but I do feel like it needs at least a strawman proposal before we have a live discussion, otherwise we go in circles forever :)
+<a name="l-44"></a><span class="tm">20:12:43</span><span class="nk"> &lt;roasbeef&gt;</span> how useful will this warning message be if there's no new strucutred information? means we just all need to string match again...
+<a name="l-45"></a><span class="tm">20:13:00</span><span class="nk"> &lt;roasbeef&gt;</span> there's an ML thread where carla and rusty have started to work out a more structutred approach, I thought that was meant to be a part of this?
+<a name="l-46"></a><span class="tm">20:13:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> it allows you to implement error messages properly again :p
+<a name="l-47"></a><span class="tm">20:13:03</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it's really useful in closing negotiation for example
+<a name="l-48"></a><span class="tm">20:13:16</span><span class="nk"> &lt;BlueMatt&gt;</span> ie, actually close the channel
+<a name="l-49"></a><span class="tm">20:13:21</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> and when using channel_type to open a new channel with a non-default type
+<a name="l-50"></a><span class="tm">20:13:28</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> afaict your usage of the warnings in the dual-funding context to rollback your negotiation matches the richer error context intent of roasbeef?
+<a name="l-51"></a><span class="tm">20:13:29</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh I can see that being the case, but will it be if ppl send diff error strings vs having structured records? (using TLV)
+<a name="l-52"></a><span class="tm">20:13:49</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yep, we can extend these messages with tlvs when there's a spec for it :)
+<a name="l-53"></a><span class="tm">20:13:52</span><span class="nk"> &lt;roasbeef&gt;</span> and the chan_type case is one that can be programtically handled most of the time
+<a name="l-54"></a><span class="tm">20:13:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> I agree it's still just a string that the node operator needs to understand, but it's a good thing to start with!
+<a name="l-55"></a><span class="tm">20:14:04</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> nah, this predates that, it's old...
+<a name="l-56"></a><span class="tm">20:14:07</span><span class="nk"> &lt;BlueMatt&gt;</span> in the mean time, just *adding* the warning message is nice, cause we can use it in places where we dont want to close the channel but want to notify an error
+<a name="l-57"></a><span class="tm">20:14:26</span><span class="nk"> &lt;BlueMatt&gt;</span> cause its actually nice that we have the error messages which close channels imo
+<a name="l-58"></a><span class="tm">20:14:31</span><span class="nk"> &lt;BlueMatt&gt;</span> or notify counterparties we've closed
+<a name="l-59"></a><span class="tm">20:14:35</span><span class="nk"> &lt;roasbeef&gt;</span> if there's no new structured data, then how's this imrpove on the other error at all?
+<a name="l-60"></a><span class="tm">20:14:44</span><span class="nk"> &lt;roasbeef&gt;</span> given you can also use that to send out message, and most impls don't auto force close on it anymore
+<a name="l-61"></a><span class="tm">20:14:52</span><span class="nk"> &lt;t-bast&gt;</span> I agree with BlueMatt, it's already helpful in practice so let's roll it out, and improve later by adding more structure as we discover what we often need
+<a name="l-62"></a><span class="tm">20:14:56</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> not force-closing the chan
+<a name="l-63"></a><span class="tm">20:15:16</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yep, so we should *start* force closing on errors again :)
+<a name="l-64"></a><span class="tm">20:15:19</span><span class="nk"> &lt;ariard&gt;</span> which we already do quite liberally in LDK
+<a name="l-65"></a><span class="tm">20:15:23</span><span class="nk"> &lt;BlueMatt&gt;</span> cause, like, that's what the spec does
+<a name="l-66"></a><span class="tm">20:15:37</span><span class="nk"> &lt;roasbeef&gt;</span> that was always a dubious requirement imo
+<a name="l-67"></a><span class="tm">20:15:40</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> if you feel strongly, I suppose we could change the *current* error message message type to "warning" and add a new error message :)
+<a name="l-68"></a><span class="tm">20:15:50</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> its more "I've closed the channel, you should too, cause its gone"
+<a name="l-69"></a><span class="tm">20:15:52</span><span class="nk"> &lt;roasbeef&gt;</span> caused a lot of force closes early on when ppl disgareed on fees
+<a name="l-70"></a><span class="tm">20:16:28</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeh carla is working on that, there's a thread on the ML tracking the latest discussion (either new message or just extend prior w/ TLV data to be parsed)
+<a name="l-71"></a><span class="tm">20:16:38</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> no again thats separate
+<a name="l-72"></a><span class="tm">20:16:48</span><span class="nk"> &lt;BlueMatt&gt;</span> adding a tlv to indicate a type is something we can do *on top*
+<a name="l-73"></a><span class="tm">20:17:07</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">ariard:</span> not exactly, it's still "string messages that need to be parsed", but you could definitely codify the errors via a TLV in the warnings!
+<a name="l-74"></a><span class="tm">20:17:34</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> do you have a specific suggestion for the warning message prs aside from "I dont care about this"?
+<a name="l-75"></a><span class="tm">20:17:43</span><span class="nk"> &lt;BlueMatt&gt;</span> because otherwise I think we can just go forward with it
+<a name="l-76"></a><span class="tm">20:17:45</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> agree we can do on top, but don't see what just another error message delivers
+<a name="l-77"></a><span class="tm">20:17:56</span><span class="nk"> &lt;niftynei&gt;</span> there's probably a nice set of error states in the open to encode too, channel-type being one of them
+<a name="l-78"></a><span class="tm">20:18:05</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> gotcha, it's still seems a in-the-middle solution where you're parsing human-readable destinaed output to have machine-level automatic reactions
+<a name="l-79"></a><span class="tm">20:18:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> other people here seem to think its valuable to be able to communicate that a channel is closed. I tend to agree
+<a name="l-80"></a><span class="tm">20:18:28</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> yeh see this mail: https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-July/003142.html
+<a name="l-81"></a><span class="tm">20:18:34</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> if you dont, that's ok, we can still do it and you can just log that the channel is closed and make your users do more work.
+<a name="l-82"></a><span class="tm">20:18:39</span><span class="nk"> &lt;niftynei&gt;</span> like that's (channel opens) are probably the highest value place to add codified errors
+<a name="l-83"></a><span class="tm">20:18:46</span><span class="nk"> &lt;roasbeef&gt;</span> why can't the erorr be used for that? particularluy if the channel is closed, then the chan_id isn't really a thing anymore
+<a name="l-84"></a><span class="tm">20:19:05</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> it can be, it can be added on top if it!
+<a name="l-85"></a><span class="tm">20:19:19</span><span class="nk"> &lt;BlueMatt&gt;</span> because that error (a) requires more discussion, (b) isn't broadly implemented, (c) isnt even a spec pr
+<a name="l-86"></a><span class="tm">20:19:29</span><span class="nk"> &lt;roasbeef&gt;</span> so then the same meessage can just be used and we don't need a new one...?
+<a name="l-87"></a><span class="tm">20:19:35</span><span class="nk"> &lt;BlueMatt&gt;</span> "i want to delay to add more stuff" is generally not a valid objection unless "more stuff" is quick and easy :)
+<a name="l-88"></a><span class="tm">20:19:46</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yes, you can always add tlvs at the end of any message
+<a name="l-89"></a><span class="tm">20:19:48</span><span class="nk"> &lt;BlueMatt&gt;</span> to provide more context
+<a name="l-90"></a><span class="tm">20:19:48</span><span class="nk"> &lt;niftynei&gt;</span> well, you definitely have errors in the open that are distinct from warnings
+<a name="l-91"></a><span class="tm">20:20:03</span><span class="nk"> &lt;roasbeef&gt;</span> rather than delay, I don't see the motivation here given error already exists, and this is just that w/ a diff type
+<a name="l-92"></a><span class="tm">20:20:04</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> yeah i think that's matt proposal to merge the future carla's richer-context-error proposal in the warning message thanks to TLV
+<a name="l-93"></a><span class="tm">20:20:26</span><span class="nk"> &lt;niftynei&gt;</span> e.g. once the channel commitments have been exchanged, you error to signal you're going to chain
+<a name="l-94"></a><span class="tm">20:20:46</span><span class="nk"> &lt;BlueMatt&gt;</span> you want more context in errors/warnings, great! lets add warnings and then we can slap the tlv on the end! everyone gets what they want and y'all dont hold up progress for perfection :)
+<a name="l-95"></a><span class="tm">20:21:01</span><span class="nk"> &lt;t-bast&gt;</span> TBH the current state sounds really simple to me: errors and warnings are two different things (should be obvious), it's good to have both, currently it's just an unstructured string, later we can add structure in tlv to automate reactions. That's it!
+<a name="l-96"></a><span class="tm">20:21:01</span><span class="nk"> &lt;niftynei&gt;</span> if you're RBF'ing an extant open attempt, you still want warnings to signal you're failing the re-negotiation, not closing the channel
+<a name="l-97"></a><span class="tm">20:21:31</span><span class="nk"> &lt;roasbeef&gt;</span> as is, the warning says it should be text based again, so you can't add a TLV there
+<a name="l-98"></a><span class="tm">20:21:45</span><span class="nk"> &lt;roasbeef&gt;</span> since it inherits the ascii req afaict
+<a name="l-99"></a><span class="tm">20:21:47</span><span class="nk"> &lt;BlueMatt&gt;</span> yes you can
+<a name="l-100"></a><span class="tm">20:21:52</span><span class="nk"> &lt;BlueMatt&gt;</span> its length-delimited
+<a name="l-101"></a><span class="tm">20:21:56</span><span class="nk"> &lt;t-bast&gt;</span> as all lightning messages it has a trailing tlv stream
+<a name="l-102"></a><span class="tm">20:22:00</span><span class="nk"> &lt;BlueMatt&gt;</span> you can trivially add anything to the message end
+<a name="l-103"></a><span class="tm">20:22:16</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> as I've always said, traliling tlv infront of var sized field doesn't really work imo
+<a name="l-104"></a><span class="tm">20:22:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to rebase and respond to comments on warning</span>
+<a name="l-105"></a><span class="tm">20:22:23</span><span class="nk"> &lt;BlueMatt&gt;</span> next topic
+<a name="l-106"></a><span class="tm">20:22:27</span><span class="nk"> &lt;roasbeef&gt;</span> since you can run out of space there
+<a name="l-107"></a><span class="tm">20:22:34</span><span class="nk"> &lt;BlueMatt&gt;</span> you can run out of space in any message
+<a name="l-108"></a><span class="tm">20:22:36</span><span class="nk"> &lt;BlueMatt&gt;</span> come on man
+<a name="l-109"></a><span class="tm">20:22:36</span><span class="nk"> &lt;valwal&gt;</span> <span class="topic">#topic </span><span class="topicline">channel_type negotiation</span>
+<a name="l-110"></a><span class="tm">20:22:37</span><span class="nk"> &lt;BlueMatt&gt;</span> lets move on
+<a name="l-111"></a><span class="tm">20:22:56</span><span class="nk"> &lt;valwal&gt;</span> we can circle back if we finish everything else (lol)
+<a name="l-112"></a><span class="tm">20:23:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> no...open channel as is doesn't have var sized fields as an example
+<a name="l-113"></a><span class="tm">20:23:41</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> just send an empty string when you want to put tlvs then, there's nothing complicated here...please le'ts move to other topics, feel free to comment on the PR to elaborate?
+<a name="l-114"></a><span class="tm">20:23:52</span><span class="nk"> &lt;BlueMatt&gt;</span> where are we on channel_type negotiation, are you happier with where it went, roasbeef?
+<a name="l-115"></a><span class="tm">20:24:18</span><span class="nk"> &lt;t-bast&gt;</span> I've got channel_type ready in eclair, and found a few issues when testing compatibility with c-lightning
+<a name="l-116"></a><span class="tm">20:24:24</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> I think should be continued in that ML thread, will reply there, as there's till more to explore there and even just motivation for adding a new message that's exactly the same as another one w/ no added benefit
+<a name="l-117"></a><span class="tm">20:24:33</span><span class="nk"> &lt;t-bast&gt;</span> rusty did you have time to check my comments on your c-lightning PR?
+<a name="l-118"></a><span class="tm">20:24:35</span><span class="nk"> &lt;roasbeef&gt;</span> we have an impl of chan type now, need to do interop testing
+<a name="l-119"></a><span class="tm">20:24:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> anything you ran into that you think may bleed over to othe rimpls?
+<a name="l-120"></a><span class="tm">20:25:11</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it really looks like simple bugs in the implementation, nothing spec-related AFAICT
+<a name="l-121"></a><span class="tm">20:25:24</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> if you have an lnd branch to share I can test it against eclair tomorrow!
+<a name="l-122"></a><span class="tm">20:25:25</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> sorry, will have to rebase and get back to this.
+<a name="l-123"></a><span class="tm">20:25:47</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> it's here: https://github.com/lightningnetwork/lnd/pull/5373
+<a name="l-124"></a><span class="tm">20:26:11</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> no worries, just ping me when it's ready and I'll run my test scripts
+<a name="l-125"></a><span class="tm">20:26:21</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> cool thanks, I'll test it
+<a name="l-126"></a><span class="tm">20:26:33</span><span class="nk"> &lt;BlueMatt&gt;</span> cool
+<a name="l-127"></a><span class="tm">20:26:39</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast and roasbeef to do cross-impl testing</span>
+<a name="l-128"></a><span class="tm">20:26:41</span><span class="nk"> &lt;BlueMatt&gt;</span> next topic?
+<a name="l-129"></a><span class="tm">20:26:43</span><span class="nk"> &lt;roasbeef&gt;</span> the PR let us simplify our integration tests a good bit too, since we can just add the type vs the build tag, etc, etc
+<a name="l-130"></a><span class="tm">20:26:51</span><span class="nk"> &lt;valwal&gt;</span> <span class="topic">#topic </span><span class="topicline">Updated closing_signed fee requirements #847</span>
+<a name="l-131"></a><span class="tm">20:26:54</span><span class="nk"> &lt;BlueMatt&gt;</span> even nicer, roasbeef!
+<a name="l-132"></a><span class="tm">20:26:55</span><span class="nk"> &lt;roasbeef&gt;</span> who's driving the bot rn? isn't it tied to a single person?
+<a name="l-133"></a><span class="tm">20:27:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> valwal is, but i thought anyone could action?
+<a name="l-134"></a><span class="tm">20:27:14</span><span class="nk"> &lt;roasbeef&gt;</span> ah maybe, idk
+<a name="l-135"></a><span class="tm">20:27:18</span><span class="nk"> &lt;gene&gt;</span> hi
+<a name="l-136"></a><span class="tm">20:27:19</span><span class="nk"> &lt;roasbeef&gt;</span> guess we'll find out at the end kek
+<a name="l-137"></a><span class="tm">20:27:29</span><span class="nk"> &lt;cdecker[m]&gt;</span> Valwal is chairing
+<a name="l-138"></a><span class="tm">20:27:38</span><span class="nk"> &lt;BlueMatt&gt;</span> it seems there's rough agreement on 847, at least no objections on the pr
+<a name="l-139"></a><span class="tm">20:27:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> and I need to do cross-impl testing, I think, and then it can land?
+<a name="l-140"></a><span class="tm">20:27:51</span><span class="nk"> &lt;BlueMatt&gt;</span> any objections?
+<a name="l-141"></a><span class="tm">20:28:01</span><span class="nk"> &lt;BlueMatt&gt;</span> and/or with c-lightning folks, who've also mayne implemented it?
+<a name="l-142"></a><span class="tm">20:28:23</span><span class="nk"> &lt;t-bast&gt;</span> I'd love to land this one!
+<a name="l-143"></a><span class="tm">20:28:38</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> do you expose the knob to users (picking a chan type in the open chan API)? and if so, is it a type or do you let them flip each of teh bits? just curious from an API perspective as that came up in ours during review
+<a name="l-144"></a><span class="tm">20:28:42</span><span class="nk"> &lt;BlueMatt&gt;</span> there's also a number of dust concerns related to closing-transactions exposed today, looks like everyone except eclair currently allows nodes to set a dust limit which causes closing tx to be unspendable
+<a name="l-145"></a><span class="tm">20:29:02</span><span class="nk"> &lt;BlueMatt&gt;</span> but i think that needs a larger closing_signed change
+<a name="l-146"></a><span class="tm">20:29:06</span><span class="nk"> &lt;BlueMatt&gt;</span> so would propose it happen in a new pr
+<a name="l-147"></a><span class="tm">20:29:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes, I've defined a string enum of channel_types that the user can chose in the `open` API, and then we communicate back whether it was rejected by the other side or not
+<a name="l-148"></a><span class="tm">20:29:31</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> why would it cause to to be unspendable? assuming impls to verification that rejects bad dust values that is
+<a name="l-149"></a><span class="tm">20:29:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> well right now lnd doesn't (as far as I can tell) verify the counterparty-set dust limit at all, despite the spec saying you must :p
+<a name="l-150"></a><span class="tm">20:29:55</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> i think we allow p2pkh/p2sh closing outputs on the ldk side, our max dust_limit_satoshis is 660
+<a name="l-151"></a><span class="tm">20:29:57</span><span class="nk"> &lt;roasbeef&gt;</span> or I guess unbroadcastable? q still stands
+<a name="l-152"></a><span class="tm">20:29:58</span><span class="nk"> &lt;ariard&gt;</span> sats
+<a name="l-153"></a><span class="tm">20:29:59</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> but, more broadly, read your email!
+<a name="l-154"></a><span class="tm">20:30:05</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> ACK on fixing these dust issues in a separate PR, to allow #847 to land sooner
+<a name="l-155"></a><span class="tm">20:30:15</span><span class="nk"> &lt;roasbeef&gt;</span> it does, but it can be improved ;)
+<a name="l-156"></a><span class="tm">20:30:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> the issue is not your max dust_limit but rather your min
+<a name="l-157"></a><span class="tm">20:30:33</span><span class="nk"> &lt;roasbeef&gt;</span> yeh dust is a can of worms
+<a name="l-158"></a><span class="tm">20:30:44</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> can you point to where? The only thing I found looking for it was checking an upper-bound, not a lower-bound, and eugene appeared to confirm that was the case.
+<a name="l-159"></a><span class="tm">20:30:48</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes, it's just unbroadcastable
+<a name="l-160"></a><span class="tm">20:30:48</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> yeah let's fix dust separate from 846
+<a name="l-161"></a><span class="tm">20:30:52</span><span class="nk"> &lt;ariard&gt;</span> *847
+<a name="l-162"></a><span class="tm">20:31:03</span><span class="nk"> &lt;rusty&gt;</span> Yes, ack 847.
+<a name="l-163"></a><span class="tm">20:31:29</span><span class="nk"> &lt;BlueMatt&gt;</span> ok, so no objections to (a) cross-impl testing then merging 847, (b) fixing dust in closing transactions in a new pr.
+<a name="l-164"></a><span class="tm">20:31:31</span><span class="nk"> &lt;BlueMatt&gt;</span> next topic?
+<a name="l-165"></a><span class="tm">20:31:34</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> BTW on #847 my latest tests against c-lightning were green, nothing weird came out
+<a name="l-166"></a><span class="tm">20:31:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> ACK
+<a name="l-167"></a><span class="tm">20:31:44</span><span class="nk"> &lt;Crypt-iq&gt;</span> so coop closing doesn't take into account output type dust limits roasbeef
+<a name="l-168"></a><span class="tm">20:31:44</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> thans!
+<a name="l-169"></a><span class="tm">20:31:53</span><span class="nk"> &lt;valwal&gt;</span> <span class="topic">#topic </span><span class="topicline">BLIPs</span>
+<a name="l-170"></a><span class="tm">20:31:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> have y'all done cross-imppl testing? I think in that case we can land now?
+<a name="l-171"></a><span class="tm">20:31:56</span><span class="nk"> &lt;Crypt-iq&gt;</span> ie spending to a p2pkh &lt; 546, p2sh &lt; 540
+<a name="l-172"></a><span class="tm">20:32:16</span><span class="nk"> &lt;ryanthegentry&gt;</span> so on bLIPs first ty BlueMatt, ariard, t-bast for the comments
+<a name="l-173"></a><span class="tm">20:32:24</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> does the spec mandates to enforce dust_limit_satoshis at coop closing?
+<a name="l-174"></a><span class="tm">20:32:27</span><span class="nk"> &lt;ryanthegentry&gt;</span> Helped a lot with reframing the proposal here around feature bits, message types and TLVs assignments rather than be so generic
+<a name="l-175"></a><span class="tm">20:32:48</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> I've successfully tested against c-lightning - if that means we can land it now (or whenever rusty confirms that they're ready) I'm all for it ;)
+<a name="l-176"></a><span class="tm">20:32:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> I think so, yes
+<a name="l-177"></a><span class="tm">20:32:54</span><span class="nk"> &lt;BlueMatt&gt;</span> I think the Real (tm) question about bLIPs is "what is allowed to be a bLIP, and what MUST go in the BOLTs"
+<a name="l-178"></a><span class="tm">20:32:58</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yep, ack!
+<a name="l-179"></a><span class="tm">20:33:00</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> land it! (imo)
+<a name="l-180"></a><span class="tm">20:33:07</span><span class="nk"> &lt;BlueMatt&gt;</span> 🎉
+<a name="l-181"></a><span class="tm">20:33:08</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> we do on the LDK-side, like enforcing the holder-side but not checking the counterparty, that's really confusing i admit
+<a name="l-182"></a><span class="tm">20:33:15</span><span class="nk"> &lt;roasbeef&gt;</span> answer to #1 is basically anything imo
+<a name="l-183"></a><span class="tm">20:33:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="cmd">#2 </span><span class="cmdline">is the grey area, prob something that everyone must to do have a working network, like same htlc format</span>
+<a name="l-184"></a><span class="tm">20:33:54</span><span class="nk"> &lt;ryanthegentry&gt;</span> <span class="hi">BlueMatt:</span> one thing that seems low-hanging fruit is Message Types "32768-65535 are set aside for experimental and application-specific messages" per BOLT #1
+<a name="l-185"></a><span class="tm">20:34:04</span><span class="nk"> &lt;ryanthegentry&gt;</span> but nothing similar exists for feature bits or TLVs
+<a name="l-186"></a><span class="tm">20:34:08</span><span class="nk"> &lt;ariard&gt;</span> yeah we could still host best practices in the bolt as long as it's not mandatory
+<a name="l-187"></a><span class="tm">20:34:29</span><span class="nk"> &lt;ryanthegentry&gt;</span> could have a suggested sandbox area for all three, and encourage experimenters to document + ask for review in bLIPs
+<a name="l-188"></a><span class="tm">20:34:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> good point, I thought it made sense to check all txs so it seemed obvious to also do it for the closing tx, but in fact it's debatable...worth clarifying!
+<a name="l-189"></a><span class="tm">20:34:40</span><span class="nk"> &lt;ariard&gt;</span> the ietf do this with a lot of documents, for e.g dnssec best practices : https://www.rfc-editor.org/rfc/rfc6781.html
+<a name="l-190"></a><span class="tm">20:34:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to clarify dust limits in closing txs</span>
+<a name="l-191"></a><span class="tm">20:34:43</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ryanthegentry:</span> what's all 3 here?
+<a name="l-192"></a><span class="tm">20:34:50</span><span class="nk"> &lt;BlueMatt&gt;</span> I dunno, I feel like if you're just doing random testing, it doesnt need to be a bLIP - it should be constrained to your impl cause its "random testing"
+<a name="l-193"></a><span class="tm">20:34:54</span><span class="nk"> &lt;ryanthegentry&gt;</span> Feature Bits, Message Types, TLVs
+<a name="l-194"></a><span class="tm">20:34:56</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh could have a lot of stuff like that re fee bumping, etc
+<a name="l-195"></a><span class="tm">20:35:02</span><span class="nk"> &lt;BlueMatt&gt;</span> if its something you want to include in eg the state machine, it should be a bolt?
+<a name="l-196"></a><span class="tm">20:35:25</span><span class="nk"> &lt;cdecker[m]&gt;</span> Definitely
+<a name="l-197"></a><span class="tm">20:35:32</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">ryanthegentry:</span> my point was about for the bolt process to formalize first the namespace attribution
+<a name="l-198"></a><span class="tm">20:35:38</span><span class="nk"> &lt;BlueMatt&gt;</span> tho i guess maybe one example is rusty's turn-based-htlc thing, like, maybe thats only done in c-lightning but still others could implement it so could be a bLIP? I dunno, its all grey areas
+<a name="l-199"></a><span class="tm">20:35:43</span><span class="nk"> &lt;ariard&gt;</span> to let blip devs reused without any conflicts
+<a name="l-200"></a><span class="tm">20:35:48</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeh sure, re random testing, someone could modify the state machine tho, and add say DLC related stuff, imo that's bLIP territory since eveyrone doens't need to do it as it suger on top of everything else
+<a name="l-201"></a><span class="tm">20:36:02</span><span class="nk"> &lt;ariard&gt;</span> like message types/tlvs types
+<a name="l-202"></a><span class="tm">20:36:16</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, def dont want DLC in BOLTs (tho arguably not even in bLIPs either, but maybe just enough to claim message ids or whatever)
+<a name="l-203"></a><span class="tm">20:36:19</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> agree they meet re namespacing claims to prevent collisions, etc
+<a name="l-204"></a><span class="tm">20:36:32</span><span class="nk"> &lt;ryanthegentry&gt;</span> <span class="hi">ariard:</span> understood
+<a name="l-205"></a><span class="tm">20:36:44</span><span class="nk"> &lt;cdecker[m]&gt;</span> The round based protocol should be a bolt imho
+<a name="l-206"></a><span class="tm">20:36:51</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> i can say the DLC process is working quite nicely and we would prefer to stay on our own though referrencing blips if they're good :)
+<a name="l-207"></a><span class="tm">20:37:00</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> but what if no one but c-lightning ever implements it?
+<a name="l-208"></a><span class="tm">20:37:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">IMHO:</span> best practices, pre-widespread testing, weird ideas are all great as BLiPS.  Some may become BOLTs, sure...
+<a name="l-209"></a><span class="tm">20:37:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> we cant get consensus on it in a bolt, should it still be written up as a bLIP?
+<a name="l-210"></a><span class="tm">20:37:21</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> could be, one benefit ofr the bLIP style is that it'll be a contained document to provide additional context, etc, etc -- vs being an if statement in a much larger doc
+<a name="l-211"></a><span class="tm">20:37:21</span><span class="nk"> &lt;rusty&gt;</span> I think ppl find BOLTs intimidating.
+<a name="l-212"></a><span class="tm">20:37:28</span><span class="nk"> &lt;cdecker[m]&gt;</span> It still touches the state machine and is negotiated during setup
+<a name="l-213"></a><span class="tm">20:37:34</span><span class="nk"> &lt;ryanthegentry&gt;</span> <span class="hi">rusty:</span> sad that they do but agree
+<a name="l-214"></a><span class="tm">20:38:04</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but they may find a huge collection of bLIP very intimidating as well...
+<a name="l-215"></a><span class="tm">20:38:07</span><span class="nk"> &lt;BlueMatt&gt;</span> maybe the criteria should be "who implements this"-based?
+<a name="l-216"></a><span class="tm">20:38:10</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> yeah we might even run out of review bandwidth for best practices even if they're deepily bolt-oriented fee-bumping, timelocks settings
+<a name="l-217"></a><span class="tm">20:38:35</span><span class="nk"> &lt;BlueMatt&gt;</span> eg "if you seek broad implementation of this as a core part of lightning, it must be a bolt, if you do not, a bLIP"?
+<a name="l-218"></a><span class="tm">20:38:45</span><span class="nk"> &lt;BlueMatt&gt;</span> i mean its fuzzy but at least decent guidance?
+<a name="l-219"></a><span class="tm">20:38:53</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> true, but if we have an easy entree into the spec, maybe long term we get more qualified reviewers ?
+<a name="l-220"></a><span class="tm">20:39:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh agreed re review bandwidth, there's just so much stuff given the wide design space of LN, something like schnorr integration is BOLT territory since we all need to do it and it already has braod buy in
+<a name="l-221"></a><span class="tm">20:39:12</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> I like something along those liens
+<a name="l-222"></a><span class="tm">20:39:19</span><span class="nk"> &lt;rusty&gt;</span> If everyone needs to implement it, it needs to be a BOLT?
+<a name="l-223"></a><span class="tm">20:39:30</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> define "needs"
+<a name="l-224"></a><span class="tm">20:39:37</span><span class="nk"> &lt;BlueMatt&gt;</span> i think it needs to be a bit broader than "needs"
+<a name="l-225"></a><span class="tm">20:39:44</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> yeah i'm willingly to test the experiment though for any safety/operational best practices we're going to fetch the already-under-water same people
+<a name="l-226"></a><span class="tm">20:39:45</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> vagueness is sometimes a feature.
+<a name="l-227"></a><span class="tm">20:39:49</span><span class="nk"> &lt;BlueMatt&gt;</span> indeed
+<a name="l-228"></a><span class="tm">20:39:59</span><span class="nk"> &lt;ariard&gt;</span> like the risk of introducing security theater in a ref document
+<a name="l-229"></a><span class="tm">20:39:59</span><span class="nk"> &lt;BlueMatt&gt;</span> but I think "needs" isnt vague enough :p
+<a name="l-230"></a><span class="tm">20:40:31</span><span class="nk"> &lt;t-bast&gt;</span> "If it could benefit the whole network it should be a BOLT"?
+<a name="l-231"></a><span class="tm">20:40:35</span><span class="nk"> &lt;roasbeef&gt;</span> there's a lot of end-to-end behavior stuff that can be bLIP'd, given you just need the sender+receiver to understand it, like ppl adding podcast metadata to TLVs
+<a name="l-232"></a><span class="tm">20:40:56</span><span class="nk"> &lt;BlueMatt&gt;</span> but eg i think keysend *should* have been a bolt
+<a name="l-233"></a><span class="tm">20:40:58</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> yeah and please think about the few L2s devs like darosior/me also keeping the pace with mempool changes to be sure the base layer doesn't break us :/
+<a name="l-234"></a><span class="tm">20:40:59</span><span class="nk"> &lt;roasbeef&gt;</span> also feasible something starts as a bLIP, then gets broad buy in and becomes "prompted" somehow
+<a name="l-235"></a><span class="tm">20:41:05</span><span class="nk"> &lt;BlueMatt&gt;</span> so it cant just be "if its end-to-end, bLIP"
+<a name="l-236"></a><span class="tm">20:41:33</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> maybe the case, the history of keysend is that it started out as a small thing devs were into within the context of lnd (didn't even have a feature bit), then grew beyond that
+<a name="l-237"></a><span class="tm">20:41:46</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, I'm aware, not criticizing
+<a name="l-238"></a><span class="tm">20:41:53</span><span class="nk"> &lt;michaelfolkson&gt;</span> Any chance of just using BOLT 100+ for what would be bLIPs and avoiding months/years of discussions on what should be a bLIP and what should be a BOLT? Or has that ship sailed?
+<a name="l-239"></a><span class="tm">20:41:57</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> i disagree here and i think keysend is good enough as a blip
+<a name="l-240"></a><span class="tm">20:41:59</span><span class="nk"> &lt;BlueMatt&gt;</span> just using it as an example of something that I think we'd want to fit into the "this should be a bolt"
+<a name="l-241"></a><span class="tm">20:42:11</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">michaelfolkson:</span> it has nothing to do with the numbers
+<a name="l-242"></a><span class="tm">20:42:12</span><span class="nk"> &lt;ariard&gt;</span> like not risk of channel-closure if you fucked up a keysend implem
+<a name="l-243"></a><span class="tm">20:42:12</span><span class="nk"> &lt;roasbeef&gt;</span> so bLIPs can be an incubation space of sorts for new things before the get more widely adopted
+<a name="l-244"></a><span class="tm">20:42:13</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">michaelfolkson:</span> I think that's orthogonal
+<a name="l-245"></a><span class="tm">20:42:25</span><span class="nk"> &lt;niftynei&gt;</span> is adding this grey area better than not having a grey area? e.g. is having a set of documents that aren't BOLTS worthwhile if it introduces more surface area for debate?
+<a name="l-246"></a><span class="tm">20:42:33</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> i dunno, users expect it to work broadly, there's a lot of real UX issues caused by keysend not being universal
+<a name="l-247"></a><span class="tm">20:42:43</span><span class="nk"> &lt;BlueMatt&gt;</span> so i think it *def* fits under "this really needs to be universal"
+<a name="l-248"></a><span class="tm">20:42:49</span><span class="nk"> &lt;roasbeef&gt;</span> even w/ keysend at the time, some ppl wanted to do it a diff way, iirc using the shared secret of the onion instead, view diverged and keysend was just implemented as is in lnd
+<a name="l-249"></a><span class="tm">20:42:55</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> sure but solving the UXissuess that's done with a spec document, be it blip or bolt :)
+<a name="l-250"></a><span class="tm">20:43:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> its solved by things being universal
+<a name="l-251"></a><span class="tm">20:43:09</span><span class="nk"> &lt;niftynei&gt;</span> i think i just said the same thing as michaelfolkson
+<a name="l-252"></a><span class="tm">20:43:10</span><span class="nk"> &lt;BlueMatt&gt;</span> which I think is *precisely* the difference between blip and bolt
+<a name="l-253"></a><span class="tm">20:43:12</span><span class="nk"> &lt;niftynei&gt;</span> :P
+<a name="l-254"></a><span class="tm">20:43:20</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> right and things can become universal by either blip, bolt or bip
+<a name="l-255"></a><span class="tm">20:43:31</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> does it introduce more surface area? imo BOLT is prespriptive (you gotta do this), bLIP is descriptive (here's how thing things works and what we use it for)
+<a name="l-256"></a><span class="tm">20:43:33</span><span class="nk"> &lt;ariard&gt;</span> that's a communication-towards-devs issue
+<a name="l-257"></a><span class="tm">20:43:41</span><span class="nk"> &lt;michaelfolkson&gt;</span> This discussion will run and run. There will always be grey area with between BOLT and bLIPs. I just find this the least interesting thing to discuss with minimal payoff (but maybe that's just me)
+<a name="l-258"></a><span class="tm">20:43:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> if they are universal, they can/should migrate from blip to bolt (which is fine!) but if its intended to be, or is universal, it should be a bolt, not remain a blip
+<a name="l-259"></a><span class="tm">20:44:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">michaelfolkson:</span> it's progressing pretty well in the spec PR...
+<a name="l-260"></a><span class="tm">20:44:18</span><span class="nk"> &lt;ryanthegentry&gt;</span> I really like the concreteness of looking at how valwal adjusted BOLT #9 in her Keysend bLIP
+<a name="l-261"></a><span class="tm">20:44:20</span><span class="nk"> &lt;ryanthegentry&gt;</span> https://github.com/lightningnetwork/lightning-rfc/blob/2ce13ef01a17de1ccefa615072b4bee8f13e4ca0/09-features.md
+<a name="l-262"></a><span class="tm">20:44:27</span><span class="nk"> &lt;t-bast&gt;</span> I think bLIPs can be useful because otherwise we're currently either using PRs-that-dont-get-reviewed or unspecified-things-in-implementations for it - at least having things documented centrally is an improvement
+<a name="l-263"></a><span class="tm">20:44:31</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> and what if in the future the dlcspec start to implement chan_type?
+<a name="l-264"></a><span class="tm">20:44:35</span><span class="nk"> &lt;ryanthegentry&gt;</span> with the "bLIP Reserved Feature Bits" and a link to the descriptive doc
+<a name="l-265"></a><span class="tm">20:44:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> +100
+<a name="l-266"></a><span class="tm">20:44:37</span><span class="nk"> &lt;BlueMatt&gt;</span> so, i guess, to make it concrete, if we put text in the blip 1 doc that says something like "if its intended to become universal or near universal, it must be a bolt", is that ok?
+<a name="l-267"></a><span class="tm">20:44:38</span><span class="nk"> &lt;ariard&gt;</span> should it also mo ved as a bolt
+<a name="l-268"></a><span class="tm">20:44:58</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> DLC is never intended to be universal? so it can reamian a blip
+<a name="l-269"></a><span class="tm">20:45:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeh something like that could work as a quick heuristic
+<a name="l-270"></a><span class="tm">20:45:11</span><span class="nk"> &lt;BlueMatt&gt;</span> dlc is a specific thing that some people will implement, but certainly isn't required
+<a name="l-271"></a><span class="tm">20:45:15</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> what do you mean exactly by "universal" ?
+<a name="l-272"></a><span class="tm">20:45:39</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> as in "all lightning nodes should implement this in order to keep reasonable compatibility between lightning nodes and clients"
+<a name="l-273"></a><span class="tm">20:45:45</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">roasbeef:</span> i think you're using prescriptive in a way that i'd disagree with; ideally any spec is descriptive (procedural)
+<a name="l-274"></a><span class="tm">20:45:54</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> i think in previous discussions we had the idea that a blip could be promoted to a bolt it's widely adopted by LN implems
+<a name="l-275"></a><span class="tm">20:46:04</span><span class="nk"> &lt;roasbeef&gt;</span> it's kinda an emergent trait imo, keysend wasn't really in that bucket a year ago, but it's more universal these days as devs view it as a sort of standard feature an impl should have
+<a name="l-276"></a><span class="tm">20:46:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> yes, if something starts as "we're doing this, and dont really expect others to" and then others do it, users start expecting it, and it becomes something that everyone does/has to do, then it can migrate
+<a name="l-277"></a><span class="tm">20:46:25</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> yeah but reality, is that LN universality is and will always be a moving target
+<a name="l-278"></a><span class="tm">20:46:26</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">michaelfolkson:</span> true, but I think trying an area with a lower barrier to entry may encourage more participation.
+<a name="l-279"></a><span class="tm">20:46:31</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> i dont think anyone disagrees that migration is an option?
+<a name="l-280"></a><span class="tm">20:46:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> more importantly, i think, *users* expect it to be universal :p
+<a name="l-281"></a><span class="tm">20:47:11</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> so i think the migration path is solving both our concern
+<a name="l-282"></a><span class="tm">20:47:11</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> yeh I guess we differ there w.r.t definition, another take is bitcon consensus rules are prescriptive, policy is discriptive -- the set of things all LN implementation need to agree on is smaller in comparison, so there's a lot of free energy to be used for new ideas/concepts
+<a name="l-283"></a><span class="tm">20:47:25</span><span class="nk"> &lt;niftynei&gt;</span> what if we just let spec authors decide how to propose their stuff and see what happens
+<a name="l-284"></a><span class="tm">20:47:29</span><span class="nk"> &lt;BlueMatt&gt;</span> ok, so do we have consensus, niftynei what say you? are there other concerns you have?
+<a name="l-285"></a><span class="tm">20:47:43</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ryanthegentry:</span> on the contrary, I'm wary of bLIPs modifying directly bolts, because that will require more review from more people - I'd rather have bLIPs only update other bLIPs to avoid needing more review from people who already spend a lot of time reviewing stuff
+<a name="l-286"></a><span class="tm">20:47:48</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> note, i think we won't agree all on what should become universal and the really long-term direction of lighnining, it's an evolutionary process
+<a name="l-287"></a><span class="tm">20:47:51</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> do you have specific objection to, or think its uneccessary, to specify things based on a "universal implementation" heuristic?
+<a name="l-288"></a><span class="tm">20:48:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> yes, of course, its vague, and we'll disagree, but at least its the heuristic.
+<a name="l-289"></a><span class="tm">20:48:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> that's teh case rn, now they have another option
+<a name="l-290"></a><span class="tm">20:48:29</span><span class="nk"> &lt;michaelfolkson&gt;</span> The thing with new acronyms and processes is they seem exciting, glitzy and solve the problems of previous acronym at the beginning. But then after a while they suffer from exact same challenges ;)
+<a name="l-291"></a><span class="tm">20:48:36</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> and Core's policy is prescriptive for LN :/
+<a name="l-292"></a><span class="tm">20:48:36</span><span class="nk"> &lt;ryanthegentry&gt;</span> <span class="hi">t-bast:</span> touché :)
+<a name="l-293"></a><span class="tm">20:48:40</span><span class="nk"> &lt;roasbeef&gt;</span> one that's a bit more defined, and may be interpreted to carry less weight
+<a name="l-294"></a><span class="tm">20:48:57</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">michaelfolkson:</span> I think everyone here agrees that blips solve a specific issue, and have been proposing similar ideas since before it had a time or felt exciting
+<a name="l-295"></a><span class="tm">20:49:14</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well having things documented is definitely the right thing to do. When combined with a migration to bolt once it becomes central to LN also seems ok
+<a name="l-296"></a><span class="tm">20:49:29</span><span class="nk"> &lt;niftynei&gt;</span> i feel like we're trying to solve a problem that exists but isn't really the purview of this chat idk
+<a name="l-297"></a><span class="tm">20:49:36 </span><span class="nka">* michaelfolkson</span> <span class="ac">goes back to lurking</span>
+<a name="l-298"></a><span class="tm">20:49:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> can you elaborate?
+<a name="l-299"></a><span class="tm">20:50:18</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">michaelfolkson:</span> that's quite true from xp, the dlcspecs was quite fast at first, then slows down considerably now you have multiple implems
+<a name="l-300"></a><span class="tm">20:50:58</span><span class="nk"> &lt;niftynei&gt;</span> more documentation of how things work is always a good thing, the scope of who else you expect/intend to also adopt them is a function of the level of interoperability you expect the application to have with others, no? and which application that is exactly
+<a name="l-301"></a><span class="tm">20:51:14</span><span class="nk"> &lt;ariard&gt;</span> i've a doubt on such "universal implementation" heuristic to solve issues with long-term economic consequences for the network, like channel jamming
+<a name="l-302"></a><span class="tm">20:51:19</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ryanthegentry:</span> maybe it's just my personal opinion, but I'd rather have a few common bLIPs that may get updated frequently (e.g. to list feature bits / message types / tlv fields used by all bLIPs) that don't really need to be looked at by all LN devs than updating BOLTs for that
+<a name="l-303"></a><span class="tm">20:51:30</span><span class="nk"> &lt;cdecker[m]&gt;</span> I guess the slowdown is the cost of maintaining compatibility and avoid a netsplit :-)
+<a name="l-304"></a><span class="tm">20:51:37</span><span class="nk"> &lt;ariard&gt;</span> the best approach might be just to let different solutions compete and see with time which one is the better
+<a name="l-305"></a><span class="tm">20:52:01</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">cdecker[m]:</span> note, a netsplit is a security concer for all of us as we all share the same mempool/blockspace :)
+<a name="l-306"></a><span class="tm">20:52:16</span><span class="nk"> &lt;roasbeef&gt;</span> ok, something something universal, ship it!
+<a name="l-307"></a><span class="tm">20:52:28</span><span class="nk"> &lt;BlueMatt&gt;</span> &lt;ariard&gt; i've a doubt on such "universal implementation" heuristic to solve issues with long-term economic consequences for the network, like channel jamming &lt;-- huh?
+<a name="l-308"></a><span class="tm">20:52:33</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm *really* confused by what this means
+<a name="l-309"></a><span class="tm">20:52:40</span><span class="nk"> &lt;niftynei&gt;</span> if you're working on a lightning node implementation and want it to talk to other lightning nodes then you'd want to look at the BOLTs, no?
+<a name="l-310"></a><span class="tm">20:52:47</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> i mean to survive any issue with economic or lot-of-context
+<a name="l-311"></a><span class="tm">20:52:47</span><span class="nk"> &lt;roasbeef&gt;</span> I think he means we'd want a network wide solution to stuff like that BlueMatt
+<a name="l-312"></a><span class="tm">20:52:47</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yeah, was thinking more of incompatible end-to-end things that just get rejected
+<a name="l-313"></a><span class="tm">20:53:03</span><span class="nk"> &lt;BlueMatt&gt;</span> &lt;niftynei&gt; more documentation of how things work is always a good thing, the scope of who else you expect/intend to also adopt them is a function of the level of interoperability you expect the application to have with others, no? and which application that is exactly &lt;-- I'm *really* confused if you're disagreeing with anything I'm saying or not.
+<a name="l-314"></a><span class="tm">20:53:06</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> yeh for the every base level of functionality, lots of added stuff you may not need to impl just to get a basic payment working
+<a name="l-315"></a><span class="tm">20:53:11</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> yeah that
+<a name="l-316"></a><span class="tm">20:53:13</span><span class="nk"> &lt;roasbeef&gt;</span> the very base*
+<a name="l-317"></a><span class="tm">20:53:45</span><span class="nk"> &lt;ariard&gt;</span> and for channel jamming we might need a step-by-step process, spread on many standalone documents
+<a name="l-318"></a><span class="tm">20:53:56</span><span class="nk"> &lt;niftynei&gt;</span> oof i gotta go i'm sorry. i'll catch up on the logs after the fact!
+<a name="l-319"></a><span class="tm">20:54:11 </span><span class="nka">* t-bast</span> <span class="ac">waves goodbye at niftynei</span>
+<a name="l-320"></a><span class="tm">20:54:18</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">BlueMatt:</span> "universal implementation" sounds fine?? sure. ship it.
+<a name="l-321"></a><span class="tm">20:54:19</span><span class="nk"> &lt;valwal&gt;</span> *waves* bye lisa!
+<a name="l-322"></a><span class="tm">20:54:26</span><span class="nk"> &lt;niftynei&gt;</span> tchauuu
+<a name="l-323"></a><span class="tm">20:54:38</span><span class="nk"> &lt;cdecker[m]&gt;</span> C ya
+<a name="l-324"></a><span class="tm">20:54:46</span><span class="nk"> &lt;BlueMatt&gt;</span> &lt;ariard&gt; BlueMatt: i mean to survive any issue with economic or lot-of-context &lt;-- ok, maybe lets chat about this further later, i still dont quite know what you mean and we're running out of time to discuss other things?
+<a name="l-325"></a><span class="tm">20:54:49</span><span class="nk"> &lt;roasbeef&gt;</span> me gusta
+<a name="l-326"></a><span class="tm">20:55:01</span><span class="nk"> &lt;BlueMatt&gt;</span> do we want to fit another topic in?
+<a name="l-327"></a><span class="tm">20:55:11</span><span class="nk"> &lt;BlueMatt&gt;</span> or are we outta time?
+<a name="l-328"></a><span class="tm">20:55:17</span><span class="nk"> &lt;t-bast&gt;</span> yes please mandatory payment_secrets!
+<a name="l-329"></a><span class="tm">20:55:19</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> each implem moves on their own with a blip
+<a name="l-330"></a><span class="tm">20:55:20</span><span class="nk"> &lt;t-bast&gt;</span> it's very quick
+<a name="l-331"></a><span class="tm">20:55:20</span><span class="nk"> &lt;roasbeef&gt;</span> I can hang for another 5 mins
+<a name="l-332"></a><span class="tm">20:55:22</span><span class="nk"> &lt;t-bast&gt;</span> just say ACK
+<a name="l-333"></a><span class="tm">20:55:29</span><span class="nk"> &lt;roasbeef&gt;</span> +1 to mandatory secrets, we already do it, ACK
+<a name="l-334"></a><span class="tm">20:55:29</span><span class="nk"> &lt;valwal&gt;</span> <span class="topic">#topic </span><span class="topicline">mandatory payment secrets</span>
+<a name="l-335"></a><span class="tm">20:55:34</span><span class="nk"> &lt;cdecker[m]&gt;</span> Got to drop off soon too
+<a name="l-336"></a><span class="tm">20:55:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> i already ack'd the pr :p
+<a name="l-337"></a><span class="tm">20:55:40</span><span class="nk"> &lt;BlueMatt&gt;</span> it has two acks, ship it.
+<a name="l-338"></a><span class="tm">20:55:46</span><span class="nk"> &lt;t-bast&gt;</span> Great, and c-lightning has verified the test vectors, so merge?
+<a name="l-339"></a><span class="tm">20:55:55</span><span class="nk"> &lt;BlueMatt&gt;</span> (I havent verified the vectors, tho)
+<a name="l-340"></a><span class="tm">20:56:01</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to merge #887</span>
+<a name="l-341"></a><span class="tm">20:56:09</span><span class="nk"> &lt;roasbeef&gt;</span> approved, need to add the test vectors, but looks good
+<a name="l-342"></a><span class="tm">20:56:17</span><span class="nk"> &lt;t-bast&gt;</span> Awesome
+<a name="l-343"></a><span class="tm">20:56:21</span><span class="nk"> &lt;cdecker[m]&gt;</span> Wow, that was a quick one
+<a name="l-344"></a><span class="tm">20:56:28</span><span class="nk"> &lt;ariard&gt;</span> re ln-spec-meetings-attached-to-coredev, if i can have a volontary from each orga to see invits/formats/online attendances/etc that would be nice
+<a name="l-345"></a><span class="tm">20:56:39</span><span class="nk"> &lt;ariard&gt;</span> s/each orga/each implem/g
+<a name="l-346"></a><span class="tm">20:56:40</span><span class="nk"> &lt;ariard&gt;</span> :)
+<a name="l-347"></a><span class="tm">20:56:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> count me in
+<a name="l-348"></a><span class="tm">20:57:10</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> goooood
+<a name="l-349"></a><span class="tm">20:57:13</span><span class="nk"> &lt;valwal&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>
