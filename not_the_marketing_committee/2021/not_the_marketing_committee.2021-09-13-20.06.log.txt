@@ -187,3 +187,14 @@
 20:41:42 <rusty> roasbeef: yes!!  Can we just kill legacy already?
 20:41:48 <t-bast> roasbeef: how do you plan on using a channel_type feature bit if you have channels with a peer that doesn't support it (when you want to start making it mandatory)?
 20:42:11 <roasbeef> rusty: legacy as in non static key? yes pls, I think the eclair version that supports static key is out now?
+20:42:24 <crypt-iq> i think he meant legacy onion
+20:42:35 <t-bast> roasbeef: as usual, not eclair, eclair-mobile only doesn't support it
+20:42:39 <rusty> Anyway, I think there's agreement on this, but I want to reformulate it to:
+20:42:40 <rusty> Sender: - if negotiated:
+20:42:40 <rusty> - MUST set channel_type.
+20:42:40 <rusty> ... Receiver:
+20:42:40 <rusty> - if negotiated:
+20:42:40 <rusty> - if channel_type not set, MUST fail
+20:42:43 <BlueMatt> roasbeef: yea, if we force the messages to indicate old channel type, then we're testing an old channel type and then can test all the transactions against that :) I think we do have just very fundamentally different tests as a library that exposes messages vs a whole software program :)
+20:43:17 <rusty> Happy to do that on-issue though.  Shall we move on?
+20:43:20 <roasbeef> t-bast: so i think we'd need to continue to sidestep the issue w/ setting required bits for chan types w/ the old peer, but once they signalled this bit it wouldn't be an issue
