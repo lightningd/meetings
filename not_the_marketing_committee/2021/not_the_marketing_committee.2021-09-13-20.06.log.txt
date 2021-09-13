@@ -65,3 +65,9 @@
 20:18:20 <BlueMatt> roasbeef: we can revisit the feature bit discussion when y'all add the "programatic why we warned" logic in the tlv
 20:18:29 <t-bast> BlueMatt: we did have the close-all-channels on all-0s error, but we may have removed it recently, I'll need to check
 20:18:42 <roasbeef> BlueMatt: which PR #904?
+20:19:08 <BlueMatt> roasbeef: no, 834. 904 would again be a conversation about quick close feature bits, which seems separate from just warning messages?
+20:19:09 <roasbeef> yeah we're moving forward w/ the TLVs on our end, likely just in the old error message though, given the warning message is identical
+20:19:33 <BlueMatt> roasbeef: I mean error already has programatic handling assigned to it - close the channel.
+20:19:36 <niftynei> but it's not identical
+20:19:37 <roasbeef> must be ignored? totally confused
+20:19:39 <BlueMatt> roasbeef: not sure what else you'd want to add?
