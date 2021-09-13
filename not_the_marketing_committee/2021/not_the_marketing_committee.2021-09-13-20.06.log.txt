@@ -298,3 +298,9 @@
 21:01:13 <crypt-iq> the short channel id field is 8 bytes long, chance of collision is 2^32 ?
 21:01:27 <t-bast> rusty: ok, if it's the first commitment_point then that's all good
 21:01:31 <roasbeef> woah, so 901 lets you just continue to send a new funding_locked to update the alias?
+21:01:42 <roasbeef> like after normal chan operation has started?
+21:01:56 <rusty> roasbeef: yeah, BlueMatt wanted that.  I won't be doing that, since you gotta respect all aliases ou gave out, forever.
+21:02:05 <t-bast> I think what rusty and BlueMatt are saying for the commitment_point here is contradictory? Or am I understanding it wrong?
+21:02:06 <rusty> And ofc I can just keep using the first alias.
+21:02:26 <BlueMatt> t-bast: heh, yes, it seems we are now.
+21:02:35 <t-bast> Rusty you're saying it should always be your initial commitment_point, BlueMatt is arguing the PR says it's the next one (which may be commitment_point N)?
