@@ -79,3 +79,11 @@
 20:20:51 <t-bast> rusty: it was an issue at some point and we've had unwanted channel closure, but it's gotten much better in the last 12 months to be honest
 20:21:10 <BlueMatt> I've *never* seen an unwanted channel closure as the result of an error message, fwiw :)
 20:21:24 <roasbeef> it's ill advised imo, which is why it never really caught on
+20:22:06 <rusty> roasbeef: wait, t-bast just said they're force-closing on all errors.  I double-checked c-lightning, we gave up and are ignoring all errors :(  We reconnect though
+20:22:07 <t-bast> BlueMatt: you arrived on mainnet at the right time, after the nastyness happened xD
+20:22:15 <BlueMatt> t-bast: I'm aware
+20:22:27 <BlueMatt> roasbeef: its ill advised to tell your peer that you're broadcasting the local state? that just seems like an incredibly helpful and nice thing to do.
+20:22:32 <roasbeef> rusty: so then just eclair force closes?
+20:22:47 <t-bast> roasbeef: yes, when we receive an error we do
+20:22:48 <roasbeef> BlueMatt: you can do that w/ an error message, but doesn't mean they need to force close
+20:22:49 <rusty> roasbeef: and LDK it seems.
