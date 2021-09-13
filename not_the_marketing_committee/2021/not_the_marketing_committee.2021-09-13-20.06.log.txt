@@ -27,3 +27,10 @@
 20:11:37 <roasbeef> it's just the old error message w/ a new name
 20:11:48 <rusty> BlueMatt: but if they don't set the feature, you can ignore errors more.
 20:11:55 <BlueMatt> rusty: ok, let me rephrase, I think we should *add* an all-0s error message :)
+20:12:13 <t-bast> roasbeef: it's an odd message, they've been explicitly created to allow optional things that you don't need to support, there's really 0 reason to have a feature bit for warning messages
+20:12:14 <rusty> BlueMatt: OK, I disagree.  It's another implementation details which won't be implemented.
+20:12:27 <BlueMatt> why wouldn't you implement it?
+20:12:38 <BlueMatt> that's a useful way to say "go away, close the channels, I'm not gonna talk to you anymore"
+20:12:44 <BlueMatt> without having to have a reconnect loop
+20:12:45 <roasbeef> comment re PR: https://github.com/lightningnetwork/lightning-rfc/pull/904#issuecomment-909815114
+20:12:56 <rusty> BlueMatt: I haven't yet.  I never send such a thing, and I can't see why I would.
