@@ -161,3 +161,11 @@
 20:36:26 <roasbeef> the way I see it, for features like this, we all prob have a config flag or build flag to be able to test versions of the software w/ and w/o it in our integration tests right? so this is just another conjunction there
 20:36:36 <BlueMatt> tho i guess i dunno i dont care either way, and maybe it is more complicated? whatever.
 20:37:08 <BlueMatt> roasbeef: no, we dont for most of this stuff, we just edit the message being delivered in testing to simulate older peers
+20:37:21 <roasbeef> I think this whole saga has shown also we don't really have a strict criteria of when feature bit or not, maybe has been muddied by newer TLV fields in messages
+20:37:22 <t-bast> That's really not an area I think is worth fighting for on my end, I don't think it solves what you think it does (because you can't just make it mandatory when you want to migrate to it because you have connected peers with channels that still may not support it)
+20:37:24 <BlueMatt> so thats probably some of why I see these flags as spurious in some cases
+20:37:26 <roasbeef> which is where some of this ambiguitiy is
+20:37:39 <t-bast> But if it solves an issue for you, I'm happing to add a feature bit
+20:37:42 <roasbeef> BlueMatt: do you then remove the older logic from the client?
+20:37:42 <rusty> roasbeef: yeah, basically we would always send it, we'd just on recv do: if (negotiated(option_channel_feature)) { if (!tlvs->channel_type) fail } else { tlvs->channel_type = NULL' }
+20:38:11 <BlueMatt> roasbeef: no, but we can simulate talking to an old peer whether there is a feature bit or not. so we can test old logic just fine with or without a feature bit
