@@ -153,3 +153,6 @@
 20:34:43 <t-bast> xD
 20:34:58 <roasbeef> quick close was merged iirc
 20:35:05 <roasbeef> this is chan type feature bit
+20:35:20 <t-bast> I agree that the argument stands for both, you can argue that channel_type needs a feature bit, and you can use the same argument to say that quick close does as well
+20:35:26 <rusty> I agree with roasbeef here, but I think the right semantic is "if you don't negotiate this, ignore channel_type and use default, if you do, you must send and use it"
+20:35:37 <BlueMatt> feature bit for channel type seems like it would make the logic simpler, but I dunno if I get to have an opinion cause I haven't implemented it yet :)
