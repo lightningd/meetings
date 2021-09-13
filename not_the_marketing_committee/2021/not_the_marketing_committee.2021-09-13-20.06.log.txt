@@ -344,3 +344,11 @@
 21:13:37 <t-bast> Thanks! And we should be done with Bolt 11 test vectors for a small while
 21:13:39 <rusty> Actually, with BlueMatt and t-bast, that's enough to merge.
 21:13:47 <t-bast> yay!
+21:13:59 <rusty> I rpropose we merge, and stragglers like me can catch up...
+21:14:07 <rusty> Any objectsion?
+21:14:08 <t-bast> But if you plan on validating the test vectors, no need to rush we can wait to see if you find an issue we missed
+21:14:17 <roasbeef> test vectors good
+21:14:18 <t-bast> Whatever you'd like
+21:14:29 <rusty> #action t-bast to merge https://github.com/lightningnetwork/lightning-rfc/pull/898
+21:14:41 <rusty> OK, I think we're done!
+21:14:49 <t-bast> Neat, thanks guys!
