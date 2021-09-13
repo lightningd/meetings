@@ -71,3 +71,9 @@
 20:19:36 <niftynei> but it's not identical
 20:19:37 <roasbeef> must be ignored? totally confused
 20:19:39 <BlueMatt> roasbeef: not sure what else you'd want to add?
+20:20:06 <BlueMatt> the current warning message, because it has nothing but a string, must be ignored from a logic perspective. you can go log it, tell the user, whatever, but you can't *do* something
+20:20:09 <roasbeef> the close channel clause is essentially deprecated, no one does it
+20:20:13 <t-bast> rusty: yeah I think nowadays you shouldn't have too may issues re-activating the logic of force-closing when you receive an error, it's not biting us at all on our node
+20:20:24 <BlueMatt> roasbeef: we do it, eclair does it, and c-lightning is planning on doing it, maybe with a feature bit
+20:20:29 <BlueMatt> so, no, its not deprecated
+20:20:51 <t-bast> rusty: it was an issue at some point and we've had unwanted channel closure, but it's gotten much better in the last 12 months to be honest
