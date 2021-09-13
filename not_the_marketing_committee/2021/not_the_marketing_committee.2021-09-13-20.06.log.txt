@@ -202,3 +202,6 @@
 20:43:25 <roasbeef> rusty: sgtm
 20:43:46 <roasbeef> the feature bit name spacing we have rn is a lot better than the OG, but there're still some leaks like that imo t-bast
 20:44:17 <t-bast> roasbeef: but if they never do? You'll keep accepting channels that dont use the channel type mechanism...so you'll want to eventually kick them out by making it mandatory and closing channels with them? Otherwise they'll keep opening new channels that don't use the feature
+20:44:25 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/894 and 905
+20:44:50 <roasbeef> t-bast: yeah, so we'd need to reject them, or purposefully downgrade like we do now w/ older eclair nodes -- would rather not downgrade, so we'd prob jsut reject them all
+20:45:10 <BlueMatt> roasbeef: hwats your thoughts on the options at https://github.com/lightningnetwork/lightning-rfc/issues/905 ?
