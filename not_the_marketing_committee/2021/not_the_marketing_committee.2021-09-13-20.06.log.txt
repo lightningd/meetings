@@ -92,3 +92,8 @@
 20:23:45 <roasbeef> lnd doesn't watch the mempool though, so we'll only note that once it hits the chain
 20:24:02 <roasbeef> yeh that sounds useful, but we don't have a way to do that atm w/ just the string
 20:24:03 <BlueMatt> yes, we do have a way to tell a node that, the error message!
+20:24:22 <BlueMatt> sending an error message with a channel_id set is *exactly* that, according to the spec, and the way eclair and LDK have implemented it
+20:24:33 <BlueMatt> I understand historically that was not practical, but those nodes hardly exist anymore.
+20:24:37 <rusty> I think warning is still useful, as there are cases which are recoverable (esp since reconnection does reset some state).
+20:24:58 <BlueMatt> now, as an alternative to the current warning message pr, we *could* swap the message types
+20:25:02 <rusty> But yes, you have to avoid looping too hard.
