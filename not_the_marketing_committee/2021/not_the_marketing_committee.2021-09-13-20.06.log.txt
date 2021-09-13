@@ -325,3 +325,10 @@
 21:08:16 <t-bast> Are there other proposals for aliases?
 21:08:21 <BlueMatt> yes, feature bit for this is useful :)
 21:08:43 <rusty> *If* you undersand this, we need to *not* route via the real scid for private channels, otherwise probing is still a thing.
+21:08:49 <roasbeef> t-bast: iirc y'all had an older one a few years ago?
+21:09:05 <rusty> (And if you don't, we need to, since you don't know about the alias)
+21:09:18 <niftynei> yeah this feels similar to something else but i cant remember exactly. it's not important
+21:09:20 <t-bast> roasbeef: on the contrary, I fought against rusty's alias proposal and instead proposed route blinding, which I don't think clashes with this proposal :)
+21:09:21 <BlueMatt> rusty: good point, yea
+21:09:24 <mschmoock> rusty: +1
+21:09:30 <roasbeef> t-bast: ah yeh route blinding
