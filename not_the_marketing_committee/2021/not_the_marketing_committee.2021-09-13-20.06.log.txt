@@ -340,3 +340,7 @@
 21:12:11 <rusty> https://github.com/lightningnetwork/lightning-rfc/pull/898 ?  I think it just needs acks?
 21:12:16 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/898
 21:12:40 <BlueMatt> I've acked, we merged the chnages already
+21:13:14 <rusty> #action rusty to validate https://github.com/lightningnetwork/lightning-rfc/pull/898
+21:13:37 <t-bast> Thanks! And we should be done with Bolt 11 test vectors for a small while
+21:13:39 <rusty> Actually, with BlueMatt and t-bast, that's enough to merge.
+21:13:47 <t-bast> yay!
