@@ -310,3 +310,5 @@
 21:03:03 <BlueMatt> I'll let the author of the pr select one and clarify it in the pR :)
 21:03:09 <rusty> t-bast: exactly.
 21:03:17 <t-bast> ACK then
+21:03:42 <t-bast> It needs to be clarified in the PR though, it's easy to misinterpret
+21:03:59 <rusty> t-bast: agreed, good catch BlueMatt
