@@ -1,8 +1,12 @@
 20:06:20 <rusty> #startmeeting Not the marketing committee
-20:06:20 <lndev-bot> Meeting started Mon Sep 13 20:06:20 2021 UTC and is due to finish in 60 minutes.  The chair is rusty. Information about MeetBot at http://wiki.debian.org/MeetBot.
-20:06:20 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
-20:06:20 <lndev-bot> The meeting name has been set to 'not_the_marketing_committee'
 20:06:20 <lndev-bot`> Meeting started Mon Sep 13 20:06:20 2021 UTC and is due to finish in 60 minutes.  The chair is rusty. Information about MeetBot at http://wiki.debian.org/MeetBot.
 20:06:20 <lndev-bot`> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
 20:06:20 <lndev-bot`> The meeting name has been set to 'not_the_marketing_committee'
+20:06:20 <lndev-bot> Meeting started Mon Sep 13 20:06:20 2021 UTC and is due to finish in 60 minutes.  The chair is rusty. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:06:20 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:06:20 <lndev-bot> The meeting name has been set to 'not_the_marketing_committee'
 20:06:22 <niftynei> two bots for the price of one, of this is exciting
+20:06:50 <cdecker[m]> Hurray
+20:07:09 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/834
+20:07:13 <cdecker[m]> Stopped one of them, I think it was trying to make up for last time
+20:07:28 <niftynei> looks like  lndev-botimous prime has been chosen as the survivor lol ;)
