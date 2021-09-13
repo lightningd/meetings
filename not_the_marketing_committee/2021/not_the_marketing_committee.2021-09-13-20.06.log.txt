@@ -110,3 +110,9 @@
 20:27:47 <BlueMatt> it does
 20:28:00 <BlueMatt> but i suggested it as roasbeef seemed insistent on error messages being ignored going forward
 20:28:05 <BlueMatt> but now roasbeef stopped responding :/
+20:28:15 <rusty> That seems like a backward step.  Here are a short list of where we currently send a warning (and reconnect):
+20:28:16 <niftynei> like .. sometimes warning messages are fatal and other times they aren't, depending on what version of CL you're talking to? idk
+20:28:18 <roasbeef> no not that they should be ignored
+20:28:24 <t-bast> to be fair, I get the feeling that roasbeef you're completely dismissing this PR on principle because you'd like something else (error codes automated *some* scenarios), which feels to me very orthogonal and can be done separately
+20:28:36 <roasbeef> they're useful, we've used them to debug invalid sig issues in the past
+20:29:03 <roasbeef> no I'm not, I'm just saying I don't find it useful really as is, and we prob won't implement it, ofc ppl can deploy it or w/e
