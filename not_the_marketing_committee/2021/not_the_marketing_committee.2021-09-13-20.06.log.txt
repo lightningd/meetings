@@ -121,3 +121,16 @@
 20:29:39 <roasbeef> maybe we'll bLIP it, since everyone doesn't think error codes are useful
 20:29:54 <t-bast> it's already been useful for us many times in the wild, and feels like a net improvement that requires like 20 lines of code, so I'd really like to see it happen...
 20:30:04 <niftynei> i mean honestly, it sounds like LND is in favor of upgrading all their error messages to warnings?
+20:30:19 <niftynei> to match your current behavior to the spec
+20:30:21 <BlueMatt> roasbeef: sheesh, no one is saying error codes are *not* useful
+20:30:28 <BlueMatt> roasbeef: please stop putting words in others' mouths
+20:30:32 <roasbeef> sure, seems you've already implemented it, but the lingering question re the dep w/ it and the quick close thing stands: if nodes don't impl warning, they can't do quick close or the other way around?
+20:30:37 <rusty> - various experimental things (malformed STFU message, etc).
+20:30:37 <rusty> - short_id mismatch in announcement_signatures
+20:30:37 <rusty> - almost any malformed message (e.g. update_htlc which we can't decode)
+20:30:37 <rusty> - unable to add htlc for any reason
+20:30:37 <rusty> - update_fee from non-opener
+20:30:38 <rusty> - update_fee unreasonable
+20:30:39 <t-bast> I'm interested in the error codes as well, and would love to see a PR for that, but it feels completely additive to warnings to me, if we have both I'd be very happy
+20:30:43 <roasbeef> idk that was said pretty plainly in #834
+20:30:50 <BlueMatt> roasbeef: people have given you *feedback* on error codes, and suggested its a great thing to add as a tlv in a warning message, adding new logic to how you have to handle them
