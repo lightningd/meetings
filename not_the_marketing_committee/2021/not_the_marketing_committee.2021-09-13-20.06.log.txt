@@ -34,3 +34,8 @@
 20:12:44 <BlueMatt> without having to have a reconnect loop
 20:12:45 <roasbeef> comment re PR: https://github.com/lightningnetwork/lightning-rfc/pull/904#issuecomment-909815114
 20:12:56 <rusty> BlueMatt: I haven't yet.  I never send such a thing, and I can't see why I would.
+20:13:05 <t-bast> roasbeef: it helped a lot figure out many bugs in the wild already on our side, so I'd say it has already proven its worth as-is
+20:13:06 <roasbeef> so rather than use the explicit feature bit dep system we built in, we now rely on implicit TLV deps?
+20:13:17 <BlueMatt> roasbeef: I believe your comment there, really, is more about quick close feature bit, less about warning message feature bit
+20:13:50 <rusty> I agree with roasbeef, we should use a feature bit.  And if set, that means errors are *errors*, are genuinely unrecoverable, and you should really drop to chain.
+20:13:52 <roasbeef> BlueMatt: no it's about both, the quick close depends on the warning message the way it's written, and we have a natural way to indicate dependent protocol features: the feature bit deps
