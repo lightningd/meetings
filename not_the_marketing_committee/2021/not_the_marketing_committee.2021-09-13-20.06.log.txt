@@ -18,3 +18,12 @@
 20:09:35 <BlueMatt> and whether we want to do that
 20:10:51 <BlueMatt> thoughts?
 20:10:53 <roasbeef> see my comment on that other PR: there was a new change that depended on this new warning message, but in that case how is the peer meant to even know to expect the warning message if there's no feature bit?
+20:11:01 <roasbeef> I don't understand this new aversion to feature bits
+20:11:13 <rusty> BlueMatt: yes, I believe you're the only one to support it, and I think you fail them one at a time as reestablish is sent,
+20:11:14 <roasbeef> unless you always send the warning _and_ error in all scenarios?
+20:11:17 <t-bast> I'm very neutral on whether we should keep all-0s error message or not, I don't mind either way
+20:11:26 <BlueMatt> the peer cant "expect a warning message", warning messages are required to be "ignored"
+20:11:31 <roasbeef> still as is, I don't really see what this PR does
+20:11:37 <roasbeef> it's just the old error message w/ a new name
+20:11:48 <rusty> BlueMatt: but if they don't set the feature, you can ignore errors more.
+20:11:55 <BlueMatt> rusty: ok, let me rephrase, I think we should *add* an all-0s error message :)
