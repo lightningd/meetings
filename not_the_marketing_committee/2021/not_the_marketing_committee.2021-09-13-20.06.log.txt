@@ -278,3 +278,8 @@
 20:58:19 <roasbeef> t-bast: I think 910 carves out the scid thing for more general usage?
 20:58:27 <BlueMatt> rusty: I have a hard time implementing it as *not* a universal alias mechanism
 20:58:30 <t-bast> ok, interesting
+20:58:45 <BlueMatt> like, I dont think you can implement it without it accidentally being one, so might as well make it explicit
+20:58:46 <roasbeef> t-bast: so like the thing where ppl can use random stuff in the hop hints and not give away on-chain info
+20:58:48 <BlueMatt> and its kinda cool to have anyway
+20:58:50 <rusty> t-bast: 910 means you *always* get given an alias if you support this, even if you have a public channel, even if you don't intend to use it before conf.
+20:59:14 <t-bast> Great, that sounds cool
