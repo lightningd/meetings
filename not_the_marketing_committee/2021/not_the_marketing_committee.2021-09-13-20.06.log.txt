@@ -259,3 +259,7 @@
 20:53:35 <BlueMatt> rusty: you opened a replacement for this today, no?
 20:53:51 <t-bast> I'll add a commit on #894, no need to rush merging that PR
 20:54:07 <BlueMatt> https://github.com/lightningnetwork/lightning-rfc/pull/910
+20:54:52 <roasbeef> rusty: yeh you can set your down, but unless I'm missing something, a collision can still happen which makes how you act based on info the onion ambiguous right? Alice and Bob both say their scid is 10, you get an HTLC from dave that wants to route thru scid 10, what do you do?
+20:55:16 <rusty> roasbeef: you tell Alice and Bob what their scids are.
+20:55:20 <roasbeef> if we say, you gotta reject any collisions (you force a conneciton recycle?) then it works
+20:55:33 <BlueMatt> roasbeef: the scid aliases are unidirectional
