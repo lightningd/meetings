@@ -333,3 +333,6 @@
 21:09:24 <mschmoock> rusty: +1
 21:09:30 <roasbeef> t-bast: ah yeh route blinding
 21:09:52 <rusty> Yeah, routeblinding is a superset, but more ambitious.  THis is a minfix.
+21:10:47 <rusty> #action rusty update #910 to add feature bit, make routing via non-announcable real scids invalid if negotiated.
+21:11:27 <rusty> Oh, that means it's a channel_type, since we gotta remember whether we negotiated that bit at open...
+21:11:28 <BlueMatt> so we're way over time, are there any short things to tackle?
