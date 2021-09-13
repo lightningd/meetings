@@ -312,3 +312,5 @@
 21:03:17 <t-bast> ACK then
 21:03:42 <t-bast> It needs to be clarified in the PR though, it's easy to misinterpret
 21:03:59 <rusty> t-bast: agreed, good catch BlueMatt
+21:05:00 <rusty> #action Rusty to fix PR to clarify next_per_commitment_point is #1 in #910
+21:05:28 <rusty> OK, so is 910 the winner over the "just for trusted zeroconf" 895?
