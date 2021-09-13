@@ -332,3 +332,4 @@
 21:09:21 <BlueMatt> rusty: good point, yea
 21:09:24 <mschmoock> rusty: +1
 21:09:30 <roasbeef> t-bast: ah yeh route blinding
+21:09:52 <rusty> Yeah, routeblinding is a superset, but more ambitious.  THis is a minfix.
