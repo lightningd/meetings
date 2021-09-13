@@ -263,3 +263,8 @@
 20:55:16 <rusty> roasbeef: you tell Alice and Bob what their scids are.
 20:55:20 <roasbeef> if we say, you gotta reject any collisions (you force a conneciton recycle?) then it works
 20:55:33 <BlueMatt> roasbeef: the scid aliases are unidirectional
+20:55:34 <rusty> roasbeef: they tell you what they will use for HTLCs coming *from them*, sure.
+20:55:36 <roasbeef> rusty: only if you're the funder of both?
+20:55:46 <rusty> roasbeef: both sides give *different* aliases.
+20:56:15 <cdecker[m]> Or we could make them deterministic, i.e., last 8 bytes of the funding txid
+20:56:18 <BlueMatt> B tells A what scids A can put in invoices that B will use to forward from C. B cannot put that same scid in their own invoices as A only uses it for inbound from B, not relaying to
