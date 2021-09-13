@@ -1,0 +1,382 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:06:20</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">Not the marketing committee</span>
+<a name="l-2"></a><span class="tm">20:06:20</span><span class="nk"> &lt;lndev-bot`&gt;</span> Meeting started Mon Sep 13 20:06:20 2021 UTC and is due to finish in 60 minutes.  The chair is rusty. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:06:20</span><span class="nk"> &lt;lndev-bot`&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:06:20</span><span class="nk"> &lt;lndev-bot`&gt;</span> The meeting name has been set to 'not_the_marketing_committee'
+<a name="l-5"></a><span class="tm">20:06:20</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Sep 13 20:06:20 2021 UTC and is due to finish in 60 minutes.  The chair is rusty. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-6"></a><span class="tm">20:06:20</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-7"></a><span class="tm">20:06:20</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'not_the_marketing_committee'
+<a name="l-8"></a><span class="tm">20:06:22</span><span class="nk"> &lt;niftynei&gt;</span> two bots for the price of one, of this is exciting
+<a name="l-9"></a><span class="tm">20:06:50</span><span class="nk"> &lt;cdecker[m]&gt;</span> Hurray
+<a name="l-10"></a><span class="tm">20:07:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/834</span>
+<a name="l-11"></a><span class="tm">20:07:13</span><span class="nk"> &lt;cdecker[m]&gt;</span> Stopped one of them, I think it was trying to make up for last time
+<a name="l-12"></a><span class="tm">20:07:28</span><span class="nk"> &lt;niftynei&gt;</span> looks like  lndev-botimous prime has been chosen as the survivor lol ;)
+<a name="l-13"></a><span class="tm">20:08:14</span><span class="nk"> &lt;cdecker[m]&gt;</span> Shouldn't matter, logs and agenda will still work
+<a name="l-14"></a><span class="tm">20:08:35</span><span class="nk"> &lt;t-bast&gt;</span> Go #834, go! I think it's high time this gets merged, we've seen it being useful many times already in the real world (just found a c-lightning issue today thanks to it)
+<a name="l-15"></a><span class="tm">20:08:38</span><span class="nk"> &lt;rusty&gt;</span> OK, I can rebase this.  roasbeef mentioned wanting a feature bit, which in this case seems overkill (you can always still send an erorr)
+<a name="l-16"></a><span class="tm">20:08:40</span><span class="nk"> &lt;BlueMatt&gt;</span> I think the only thing left to resolve on warnings is https://github.com/lightningnetwork/lightning-rfc/pull/834#discussion_r702330608 ?
+<a name="l-17"></a><span class="tm">20:09:28</span><span class="nk"> &lt;BlueMatt&gt;</span> oh, wait, no, still need to resolve the removal of the all-0s error message
+<a name="l-18"></a><span class="tm">20:09:35</span><span class="nk"> &lt;BlueMatt&gt;</span> and whether we want to do that
+<a name="l-19"></a><span class="tm">20:10:51</span><span class="nk"> &lt;BlueMatt&gt;</span> thoughts?
+<a name="l-20"></a><span class="tm">20:10:53</span><span class="nk"> &lt;roasbeef&gt;</span> see my comment on that other PR: there was a new change that depended on this new warning message, but in that case how is the peer meant to even know to expect the warning message if there's no feature bit?
+<a name="l-21"></a><span class="tm">20:11:01</span><span class="nk"> &lt;roasbeef&gt;</span> I don't understand this new aversion to feature bits
+<a name="l-22"></a><span class="tm">20:11:13</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yes, I believe you're the only one to support it, and I think you fail them one at a time as reestablish is sent,
+<a name="l-23"></a><span class="tm">20:11:14</span><span class="nk"> &lt;roasbeef&gt;</span> unless you always send the warning _and_ error in all scenarios?
+<a name="l-24"></a><span class="tm">20:11:17</span><span class="nk"> &lt;t-bast&gt;</span> I'm very neutral on whether we should keep all-0s error message or not, I don't mind either way
+<a name="l-25"></a><span class="tm">20:11:26</span><span class="nk"> &lt;BlueMatt&gt;</span> the peer cant "expect a warning message", warning messages are required to be "ignored"
+<a name="l-26"></a><span class="tm">20:11:31</span><span class="nk"> &lt;roasbeef&gt;</span> still as is, I don't really see what this PR does
+<a name="l-27"></a><span class="tm">20:11:37</span><span class="nk"> &lt;roasbeef&gt;</span> it's just the old error message w/ a new name
+<a name="l-28"></a><span class="tm">20:11:48</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> but if they don't set the feature, you can ignore errors more.
+<a name="l-29"></a><span class="tm">20:11:55</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> ok, let me rephrase, I think we should *add* an all-0s error message :)
+<a name="l-30"></a><span class="tm">20:12:13</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it's an odd message, they've been explicitly created to allow optional things that you don't need to support, there's really 0 reason to have a feature bit for warning messages
+<a name="l-31"></a><span class="tm">20:12:14</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> OK, I disagree.  It's another implementation details which won't be implemented.
+<a name="l-32"></a><span class="tm">20:12:27</span><span class="nk"> &lt;BlueMatt&gt;</span> why wouldn't you implement it?
+<a name="l-33"></a><span class="tm">20:12:38</span><span class="nk"> &lt;BlueMatt&gt;</span> that's a useful way to say "go away, close the channels, I'm not gonna talk to you anymore"
+<a name="l-34"></a><span class="tm">20:12:44</span><span class="nk"> &lt;BlueMatt&gt;</span> without having to have a reconnect loop
+<a name="l-35"></a><span class="tm">20:12:45</span><span class="nk"> &lt;roasbeef&gt;</span> comment re PR: https://github.com/lightningnetwork/lightning-rfc/pull/904#issuecomment-909815114
+<a name="l-36"></a><span class="tm">20:12:56</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> I haven't yet.  I never send such a thing, and I can't see why I would.
+<a name="l-37"></a><span class="tm">20:13:05</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it helped a lot figure out many bugs in the wild already on our side, so I'd say it has already proven its worth as-is
+<a name="l-38"></a><span class="tm">20:13:06</span><span class="nk"> &lt;roasbeef&gt;</span> so rather than use the explicit feature bit dep system we built in, we now rely on implicit TLV deps?
+<a name="l-39"></a><span class="tm">20:13:17</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I believe your comment there, really, is more about quick close feature bit, less about warning message feature bit
+<a name="l-40"></a><span class="tm">20:13:50</span><span class="nk"> &lt;rusty&gt;</span> I agree with roasbeef, we should use a feature bit.  And if set, that means errors are *errors*, are genuinely unrecoverable, and you should really drop to chain.
+<a name="l-41"></a><span class="tm">20:13:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> no it's about both, the quick close depends on the warning message the way it's written, and we have a natural way to indicate dependent protocol features: the feature bit deps
+<a name="l-42"></a><span class="tm">20:14:09</span><span class="nk"> &lt;niftynei&gt;</span> <span class="hi">rusty:</span> "close all channels" is probably more useful if there's more than one channel btw peers :P
+<a name="l-43"></a><span class="tm">20:14:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> ah, as a backwards compat for the implementations that always ignored errors?
+<a name="l-44"></a><span class="tm">20:14:17</span><span class="nk"> &lt;rusty&gt;</span> (And we can drop all our "wait, this is a spurious error, reconnec and try again" logic)
+<a name="l-45"></a><span class="tm">20:14:40</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> outside of the scope of quick close, is there ever a reason why you'd seek out a peer that will send warning messages?
+<a name="l-46"></a><span class="tm">20:14:41</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, e.g. LND used to send an error if you were too slow to handshake, and we used to close channels...
+<a name="l-47"></a><span class="tm">20:14:46</span><span class="nk"> &lt;t-bast&gt;</span> Agreed with BlueMatt, we can argue about whether quick close needs a feature bits, but warning messages are really optional messages you're free to ignore but that may help you diagnose issues in the wild, and that doesn't need a feature bit at all, that's why we split messages in odd vs even
+<a name="l-48"></a><span class="tm">20:14:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> bugs related to the warning message? or bugs in new feature that assume the warning message?
+<a name="l-49"></a><span class="tm">20:15:10</span><span class="nk"> &lt;BlueMatt&gt;</span> I do think rusty has a point here, though, I would be in favor of a feature bit that means "yes, errors are errors, follow the spec, stop ignoring them"
+<a name="l-50"></a><span class="tm">20:15:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> bugs in new and old features that now include warning messages which help us figure out what's wrong on the other side
+<a name="l-51"></a><span class="tm">20:15:25</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> I disagree, I'd really like to get rid of the cases where c-lightning ignores errors because implementations used to send them.
+<a name="l-52"></a><span class="tm">20:15:40</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> figruing it out is all manual tho right? given you have no way to programmatically handle the new message as it's just a string?
+<a name="l-53"></a><span class="tm">20:15:58</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> re: all-0s, I guess I'm still vaguely of the thinking that reconnect loops absolutely suck, and we should stop throwing our hands up and assuming they're ok.
+<a name="l-54"></a><span class="tm">20:16:00</span><span class="nk"> &lt;roasbeef&gt;</span> in which cases would the warning message help you uniquely dianose something that the existing error message would't?
+<a name="l-55"></a><span class="tm">20:16:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yes, because unlike error messages, warning messages dont close the channel.
+<a name="l-56"></a><span class="tm">20:16:34</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> we still don't ignore errors and don't plan on starting to ignore them
+<a name="l-57"></a><span class="tm">20:16:58</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> do y'all implement the all-0s close-all-channels error logic?
+<a name="l-58"></a><span class="tm">20:17:10</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> ouch, we had several cases we had to, to avoid forced closing.  Maybe safe to remove them now...
+<a name="l-59"></a><span class="tm">20:17:14</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> re why would seek them out, assuming it has error codes, then yeah as you're able to programtically handle certain denegrate cases, and also know that you have strucutred data in the errors
+<a name="l-60"></a><span class="tm">20:17:28</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> even manual, it's a net improvement compared to what we had before, that's the best argument I can have for a feature - it solves a problem we actually have, not a theoretical one
+<a name="l-61"></a><span class="tm">20:17:32</span><span class="nk"> &lt;roasbeef&gt;</span> but it's less about seeking them out, and making it explicit that two protocol features are dependent on each other
+<a name="l-62"></a><span class="tm">20:17:50</span><span class="nk"> &lt;roasbeef&gt;</span> this is the PR that adds that dep btw: https://github.com/lightningnetwork/lightning-rfc/pull/904
+<a name="l-63"></a><span class="tm">20:17:54</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I'd understand if you added a feature bit for when warnings got a programatic handling support, but that's not what we're talking about here
+<a name="l-64"></a><span class="tm">20:18:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the warning messages in this pr *MUST* be ignored
+<a name="l-65"></a><span class="tm">20:18:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> we can revisit the feature bit discussion when y'all add the "programatic why we warned" logic in the tlv
+<a name="l-66"></a><span class="tm">20:18:29</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> we did have the close-all-channels on all-0s error, but we may have removed it recently, I'll need to check
+<a name="l-67"></a><span class="tm">20:18:42</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> which PR #904?
+<a name="l-68"></a><span class="tm">20:19:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> no, 834. 904 would again be a conversation about quick close feature bits, which seems separate from just warning messages?
+<a name="l-69"></a><span class="tm">20:19:09</span><span class="nk"> &lt;roasbeef&gt;</span> yeah we're moving forward w/ the TLVs on our end, likely just in the old error message though, given the warning message is identical
+<a name="l-70"></a><span class="tm">20:19:33</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I mean error already has programatic handling assigned to it - close the channel.
+<a name="l-71"></a><span class="tm">20:19:36</span><span class="nk"> &lt;niftynei&gt;</span> but it's not identical
+<a name="l-72"></a><span class="tm">20:19:37</span><span class="nk"> &lt;roasbeef&gt;</span> must be ignored? totally confused
+<a name="l-73"></a><span class="tm">20:19:39</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> not sure what else you'd want to add?
+<a name="l-74"></a><span class="tm">20:20:06</span><span class="nk"> &lt;BlueMatt&gt;</span> the current warning message, because it has nothing but a string, must be ignored from a logic perspective. you can go log it, tell the user, whatever, but you can't *do* something
+<a name="l-75"></a><span class="tm">20:20:09</span><span class="nk"> &lt;roasbeef&gt;</span> the close channel clause is essentially deprecated, no one does it
+<a name="l-76"></a><span class="tm">20:20:13</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> yeah I think nowadays you shouldn't have too may issues re-activating the logic of force-closing when you receive an error, it's not biting us at all on our node
+<a name="l-77"></a><span class="tm">20:20:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> we do it, eclair does it, and c-lightning is planning on doing it, maybe with a feature bit
+<a name="l-78"></a><span class="tm">20:20:29</span><span class="nk"> &lt;BlueMatt&gt;</span> so, no, its not deprecated
+<a name="l-79"></a><span class="tm">20:20:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> it was an issue at some point and we've had unwanted channel closure, but it's gotten much better in the last 12 months to be honest
+<a name="l-80"></a><span class="tm">20:21:10</span><span class="nk"> &lt;BlueMatt&gt;</span> I've *never* seen an unwanted channel closure as the result of an error message, fwiw :)
+<a name="l-81"></a><span class="tm">20:21:24</span><span class="nk"> &lt;roasbeef&gt;</span> it's ill advised imo, which is why it never really caught on
+<a name="l-82"></a><span class="tm">20:22:06</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> wait, t-bast just said they're force-closing on all errors.  I double-checked c-lightning, we gave up and are ignoring all errors :(  We reconnect though
+<a name="l-83"></a><span class="tm">20:22:07</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> you arrived on mainnet at the right time, after the nastyness happened xD
+<a name="l-84"></a><span class="tm">20:22:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> I'm aware
+<a name="l-85"></a><span class="tm">20:22:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> its ill advised to tell your peer that you're broadcasting the local state? that just seems like an incredibly helpful and nice thing to do.
+<a name="l-86"></a><span class="tm">20:22:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> so then just eclair force closes?
+<a name="l-87"></a><span class="tm">20:22:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes, when we receive an error we do
+<a name="l-88"></a><span class="tm">20:22:48</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> you can do that w/ an error message, but doesn't mean they need to force close
+<a name="l-89"></a><span class="tm">20:22:49</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> and LDK it seems.
+<a name="l-90"></a><span class="tm">20:23:28</span><span class="nk"> &lt;roasbeef&gt;</span> say "I broadcasted btw, it's in the mempool" is totally useful, but rn we don't have a way to allow nodes to properly handle that, since it's just a string
+<a name="l-91"></a><span class="tm">20:23:32</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> sure, I mean they dont have to broadcast, but its a really great way to say "dont try to route over this again, dont expect me to accept anything, you should give up on this channel"
+<a name="l-92"></a><span class="tm">20:23:45</span><span class="nk"> &lt;roasbeef&gt;</span> lnd doesn't watch the mempool though, so we'll only note that once it hits the chain
+<a name="l-93"></a><span class="tm">20:24:02</span><span class="nk"> &lt;roasbeef&gt;</span> yeh that sounds useful, but we don't have a way to do that atm w/ just the string
+<a name="l-94"></a><span class="tm">20:24:03</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, we do have a way to tell a node that, the error message!
+<a name="l-95"></a><span class="tm">20:24:22</span><span class="nk"> &lt;BlueMatt&gt;</span> sending an error message with a channel_id set is *exactly* that, according to the spec, and the way eclair and LDK have implemented it
+<a name="l-96"></a><span class="tm">20:24:33</span><span class="nk"> &lt;BlueMatt&gt;</span> I understand historically that was not practical, but those nodes hardly exist anymore.
+<a name="l-97"></a><span class="tm">20:24:37</span><span class="nk"> &lt;rusty&gt;</span> I think warning is still useful, as there are cases which are recoverable (esp since reconnection does reset some state).
+<a name="l-98"></a><span class="tm">20:24:58</span><span class="nk"> &lt;BlueMatt&gt;</span> now, as an alternative to the current warning message pr, we *could* swap the message types
+<a name="l-99"></a><span class="tm">20:25:02</span><span class="nk"> &lt;rusty&gt;</span> But yes, you have to avoid looping too hard.
+<a name="l-100"></a><span class="tm">20:25:12</span><span class="nk"> &lt;BlueMatt&gt;</span> ie define a new "warning" message, with the type of current error, and then add a *new* error message
+<a name="l-101"></a><span class="tm">20:25:34</span><span class="nk"> &lt;BlueMatt&gt;</span> the new error message would have the semantics of error as-define, but not lnd/c-ln implemented.
+<a name="l-102"></a><span class="tm">20:26:18</span><span class="nk"> &lt;niftynei&gt;</span> do the msg type support that?
+<a name="l-103"></a><span class="tm">20:26:24</span><span class="nk"> &lt;BlueMatt&gt;</span> hmm?
+<a name="l-104"></a><span class="tm">20:26:35</span><span class="nk"> &lt;niftynei&gt;</span> isn't error msg a mandatory msg bit
+<a name="l-105"></a><span class="tm">20:26:50</span><span class="nk"> &lt;BlueMatt&gt;</span> probably, but its not like there are any implementations that *dont* understand it
+<a name="l-106"></a><span class="tm">20:27:03</span><span class="nk"> &lt;BlueMatt&gt;</span> like, yes, we'll redefine it to "you must understand how to deserialize this, but also you must then ignore it"
+<a name="l-107"></a><span class="tm">20:27:04</span><span class="nk"> &lt;niftynei&gt;</span> ah no it's 17
+<a name="l-108"></a><span class="tm">20:27:08</span><span class="nk"> &lt;BlueMatt&gt;</span> oh, even better
+<a name="l-109"></a><span class="tm">20:27:27</span><span class="nk"> &lt;niftynei&gt;</span> that sucks though from an implementation/upgrade standpoint
+<a name="l-110"></a><span class="tm">20:27:47</span><span class="nk"> &lt;BlueMatt&gt;</span> it does
+<a name="l-111"></a><span class="tm">20:28:00</span><span class="nk"> &lt;BlueMatt&gt;</span> but i suggested it as roasbeef seemed insistent on error messages being ignored going forward
+<a name="l-112"></a><span class="tm">20:28:05</span><span class="nk"> &lt;BlueMatt&gt;</span> but now roasbeef stopped responding :/
+<a name="l-113"></a><span class="tm">20:28:15</span><span class="nk"> &lt;rusty&gt;</span> That seems like a backward step.  Here are a short list of where we currently send a warning (and reconnect):
+<a name="l-114"></a><span class="tm">20:28:16</span><span class="nk"> &lt;niftynei&gt;</span> like .. sometimes warning messages are fatal and other times they aren't, depending on what version of CL you're talking to? idk
+<a name="l-115"></a><span class="tm">20:28:18</span><span class="nk"> &lt;roasbeef&gt;</span> no not that they should be ignored
+<a name="l-116"></a><span class="tm">20:28:24</span><span class="nk"> &lt;t-bast&gt;</span> to be fair, I get the feeling that roasbeef you're completely dismissing this PR on principle because you'd like something else (error codes automated *some* scenarios), which feels to me very orthogonal and can be done separately
+<a name="l-117"></a><span class="tm">20:28:36</span><span class="nk"> &lt;roasbeef&gt;</span> they're useful, we've used them to debug invalid sig issues in the past
+<a name="l-118"></a><span class="tm">20:29:03</span><span class="nk"> &lt;roasbeef&gt;</span> no I'm not, I'm just saying I don't find it useful really as is, and we prob won't implement it, ofc ppl can deploy it or w/e
+<a name="l-119"></a><span class="tm">20:29:23</span><span class="nk"> &lt;roasbeef&gt;</span> we're following thru w/ our error codes thing, since it solves a buncha problems for us
+<a name="l-120"></a><span class="tm">20:29:27</span><span class="nk"> &lt;niftynei&gt;</span> but your reason for finding it "unuseful" is that ... you've never enforced the semantics of errors meaning "close the channel"??
+<a name="l-121"></a><span class="tm">20:29:39</span><span class="nk"> &lt;roasbeef&gt;</span> maybe we'll bLIP it, since everyone doesn't think error codes are useful
+<a name="l-122"></a><span class="tm">20:29:54</span><span class="nk"> &lt;t-bast&gt;</span> it's already been useful for us many times in the wild, and feels like a net improvement that requires like 20 lines of code, so I'd really like to see it happen...
+<a name="l-123"></a><span class="tm">20:30:04</span><span class="nk"> &lt;niftynei&gt;</span> i mean honestly, it sounds like LND is in favor of upgrading all their error messages to warnings?
+<a name="l-124"></a><span class="tm">20:30:19</span><span class="nk"> &lt;niftynei&gt;</span> to match your current behavior to the spec
+<a name="l-125"></a><span class="tm">20:30:21</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> sheesh, no one is saying error codes are *not* useful
+<a name="l-126"></a><span class="tm">20:30:28</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> please stop putting words in others' mouths
+<a name="l-127"></a><span class="tm">20:30:32</span><span class="nk"> &lt;roasbeef&gt;</span> sure, seems you've already implemented it, but the lingering question re the dep w/ it and the quick close thing stands: if nodes don't impl warning, they can't do quick close or the other way around?
+<a name="l-128"></a><span class="tm">20:30:37</span><span class="nk"> &lt;rusty&gt;</span> - various experimental things (malformed STFU message, etc).
+<a name="l-129"></a><span class="tm">20:30:37</span><span class="nk"> &lt;rusty&gt;</span> - short_id mismatch in announcement_signatures
+<a name="l-130"></a><span class="tm">20:30:37</span><span class="nk"> &lt;rusty&gt;</span> - almost any malformed message (e.g. update_htlc which we can't decode)
+<a name="l-131"></a><span class="tm">20:30:37</span><span class="nk"> &lt;rusty&gt;</span> - unable to add htlc for any reason
+<a name="l-132"></a><span class="tm">20:30:37</span><span class="nk"> &lt;rusty&gt;</span> - update_fee from non-opener
+<a name="l-133"></a><span class="tm">20:30:38</span><span class="nk"> &lt;rusty&gt;</span> - update_fee unreasonable
+<a name="l-134"></a><span class="tm">20:30:39</span><span class="nk"> &lt;t-bast&gt;</span> I'm interested in the error codes as well, and would love to see a PR for that, but it feels completely additive to warnings to me, if we have both I'd be very happy
+<a name="l-135"></a><span class="tm">20:30:43</span><span class="nk"> &lt;roasbeef&gt;</span> idk that was said pretty plainly in #834
+<a name="l-136"></a><span class="tm">20:30:50</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> people have given you *feedback* on error codes, and suggested its a great thing to add as a tlv in a warning message, adding new logic to how you have to handle them
+<a name="l-137"></a><span class="tm">20:31:20</span><span class="nk"> &lt;roasbeef&gt;</span> maybe we should move onto something else?
+<a name="l-138"></a><span class="tm">20:31:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> and also said that warnings are useful on their own, and error codes are a nice extension, thus we should move forward with warnings then add stuff on top
+<a name="l-139"></a><span class="tm">20:31:27</span><span class="nk"> &lt;roasbeef&gt;</span> this has taken up a lot of time
+<a name="l-140"></a><span class="tm">20:31:28</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> of course they can do quick close without it, and that's a completely separate discussion...?
+<a name="l-141"></a><span class="tm">20:31:38</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm not really sure how you have so misinterpreted the feedback given there.
+<a name="l-142"></a><span class="tm">20:31:45</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> but then #904 would need to be modified right? since it says send a warning if the quick close fails?
+<a name="l-143"></a><span class="tm">20:32:04</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> no, it's just that it's *nicer* with a warning, it's a small improvement
+<a name="l-144"></a><span class="tm">20:32:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> did you see my comment at https://github.com/lightningnetwork/lightning-rfc/pull/904#issuecomment-911982144 ?
+<a name="l-145"></a><span class="tm">20:32:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> doesn't *require* it at all
+<a name="l-146"></a><span class="tm">20:32:25</span><span class="nk"> &lt;BlueMatt&gt;</span> I tried to explain it a bit more verbosely
+<a name="l-147"></a><span class="tm">20:33:32</span><span class="nk"> &lt;rusty&gt;</span> OK, I think we're in circles now.
+<a name="l-148"></a><span class="tm">20:33:34</span><span class="nk"> &lt;rusty&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/906</span>
+<a name="l-149"></a><span class="tm">20:33:50</span><span class="nk"> &lt;roasbeef&gt;</span> updated to bit 44/45
+<a name="l-150"></a><span class="tm">20:34:19</span><span class="nk"> &lt;rusty&gt;</span> I agree with roasbeef here, but I think the right semantic is "if you don't negotiate this, don't quickclose, if you do, you must"
+<a name="l-151"></a><span class="tm">20:34:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> this isnt about quickclose, this is channel type?
+<a name="l-152"></a><span class="tm">20:34:39</span><span class="nk"> &lt;rusty&gt;</span> Oops.
+<a name="l-153"></a><span class="tm">20:34:43</span><span class="nk"> &lt;t-bast&gt;</span> xD
+<a name="l-154"></a><span class="tm">20:34:58</span><span class="nk"> &lt;roasbeef&gt;</span> quick close was merged iirc
+<a name="l-155"></a><span class="tm">20:35:05</span><span class="nk"> &lt;roasbeef&gt;</span> this is chan type feature bit
+<a name="l-156"></a><span class="tm">20:35:20</span><span class="nk"> &lt;t-bast&gt;</span> I agree that the argument stands for both, you can argue that channel_type needs a feature bit, and you can use the same argument to say that quick close does as well
+<a name="l-157"></a><span class="tm">20:35:26</span><span class="nk"> &lt;rusty&gt;</span> I agree with roasbeef here, but I think the right semantic is "if you don't negotiate this, ignore channel_type and use default, if you do, you must send and use it"
+<a name="l-158"></a><span class="tm">20:35:37</span><span class="nk"> &lt;BlueMatt&gt;</span> feature bit for channel type seems like it would make the logic simpler, but I dunno if I get to have an opinion cause I haven't implemented it yet :)
+<a name="l-159"></a><span class="tm">20:36:21</span><span class="nk"> &lt;t-bast&gt;</span> TBH if you feel strongly about having a feature bit here, I don't mind. If we do, I agree with rusty that the condition must be updated
+<a name="l-160"></a><span class="tm">20:36:24</span><span class="nk"> &lt;rusty&gt;</span> (I actually think quickclose is a stronger candidate for feature bit, but that's separate)
+<a name="l-161"></a><span class="tm">20:36:26</span><span class="nk"> &lt;roasbeef&gt;</span> the way I see it, for features like this, we all prob have a config flag or build flag to be able to test versions of the software w/ and w/o it in our integration tests right? so this is just another conjunction there
+<a name="l-162"></a><span class="tm">20:36:36</span><span class="nk"> &lt;BlueMatt&gt;</span> tho i guess i dunno i dont care either way, and maybe it is more complicated? whatever.
+<a name="l-163"></a><span class="tm">20:37:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> no, we dont for most of this stuff, we just edit the message being delivered in testing to simulate older peers
+<a name="l-164"></a><span class="tm">20:37:21</span><span class="nk"> &lt;roasbeef&gt;</span> I think this whole saga has shown also we don't really have a strict criteria of when feature bit or not, maybe has been muddied by newer TLV fields in messages
+<a name="l-165"></a><span class="tm">20:37:22</span><span class="nk"> &lt;t-bast&gt;</span> That's really not an area I think is worth fighting for on my end, I don't think it solves what you think it does (because you can't just make it mandatory when you want to migrate to it because you have connected peers with channels that still may not support it)
+<a name="l-166"></a><span class="tm">20:37:24</span><span class="nk"> &lt;BlueMatt&gt;</span> so thats probably some of why I see these flags as spurious in some cases
+<a name="l-167"></a><span class="tm">20:37:26</span><span class="nk"> &lt;roasbeef&gt;</span> which is where some of this ambiguitiy is
+<a name="l-168"></a><span class="tm">20:37:39</span><span class="nk"> &lt;t-bast&gt;</span> But if it solves an issue for you, I'm happing to add a feature bit
+<a name="l-169"></a><span class="tm">20:37:42</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> do you then remove the older logic from the client?
+<a name="l-170"></a><span class="tm">20:37:42</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, basically we would always send it, we'd just on recv do: if (negotiated(option_channel_feature)) { if (!tlvs-&gt;channel_type) fail } else { tlvs-&gt;channel_type = NULL' }
+<a name="l-171"></a><span class="tm">20:38:11</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> no, but we can simulate talking to an old peer whether there is a feature bit or not. so we can test old logic just fine with or without a feature bit
+<a name="l-172"></a><span class="tm">20:38:32</span><span class="nk"> &lt;BlueMatt&gt;</span> actually, we can test *easier* without a feature bit
+<a name="l-173"></a><span class="tm">20:38:37</span><span class="nk"> &lt;BlueMatt&gt;</span> one less thing to deal with
+<a name="l-174"></a><span class="tm">20:38:59</span><span class="nk"> &lt;roasbeef&gt;</span> you do the same even for stuff like ensuring you can open non-anchor channels after that's default?
+<a name="l-175"></a><span class="tm">20:39:03</span><span class="nk"> &lt;BlueMatt&gt;</span> of course my or your particular test infrastructure isn't a great reason to have a feature bit or not, imo, but whatever
+<a name="l-176"></a><span class="tm">20:39:03</span><span class="nk"> &lt;rusty&gt;</span> One nice feature of a feature bit is that when you make it compulsory your logic gets simpler.
+<a name="l-177"></a><span class="tm">20:39:20</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> not saying that should be the reason, but was a respone to "it's an extra if statement"
+<a name="l-178"></a><span class="tm">20:39:25</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> +1
+<a name="l-179"></a><span class="tm">20:39:37</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> it's true that you can remove some code, but only if you also remove the option for your users to switch from mandatory to optional...
+<a name="l-180"></a><span class="tm">20:39:50</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> eventually, yeah.
+<a name="l-181"></a><span class="tm">20:39:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> we haven't dared do that yet (even though we'd love to start doing it soonish)
+<a name="l-182"></a><span class="tm">20:40:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yea, again, all of our tests deal with unencrypted messages to be delivered, so we can do ~whatever we want in our protocol tests.
+<a name="l-183"></a><span class="tm">20:40:22</span><span class="nk"> &lt;roasbeef&gt;</span> we tried to do it for static remote key, but that didn't really work, hence the need for the chan type stuff in the first place
+<a name="l-184"></a><span class="tm">20:40:55</span><span class="nk"> &lt;rusty&gt;</span> Yeah, lnprototest tests this now (it assumes you allow downgrade, which we explicitly will not once static_remotekey becomes compulsory)
+<a name="l-185"></a><span class="tm">20:41:17</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> ah interesting, but was referring to stuff more like how the chain  handling conditions change for a peer due to diff chan types, stuff like the csv delay as an example changes, but maybe we just have really diff test set ups
+<a name="l-186"></a><span class="tm">20:41:30</span><span class="nk"> &lt;roasbeef&gt;</span> or like being able to parse the old onion format
+<a name="l-187"></a><span class="tm">20:41:42</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yes!!  Can we just kill legacy already?
+<a name="l-188"></a><span class="tm">20:41:48</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> how do you plan on using a channel_type feature bit if you have channels with a peer that doesn't support it (when you want to start making it mandatory)?
+<a name="l-189"></a><span class="tm">20:42:11</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> legacy as in non static key? yes pls, I think the eclair version that supports static key is out now?
+<a name="l-190"></a><span class="tm">20:42:24</span><span class="nk"> &lt;crypt-iq&gt;</span> i think he meant legacy onion
+<a name="l-191"></a><span class="tm">20:42:35</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> as usual, not eclair, eclair-mobile only doesn't support it
+<a name="l-192"></a><span class="tm">20:42:39</span><span class="nk"> &lt;rusty&gt;</span> Anyway, I think there's agreement on this, but I want to reformulate it to:
+<a name="l-193"></a><span class="tm">20:42:40</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">Sender:</span> - if negotiated:
+<a name="l-194"></a><span class="tm">20:42:40</span><span class="nk"> &lt;rusty&gt;</span> - MUST set channel_type.
+<a name="l-195"></a><span class="tm">20:42:40</span><span class="nk"> &lt;rusty&gt;</span> ... Receiver:
+<a name="l-196"></a><span class="tm">20:42:40</span><span class="nk"> &lt;rusty&gt;</span> - if negotiated:
+<a name="l-197"></a><span class="tm">20:42:40</span><span class="nk"> &lt;rusty&gt;</span> - if channel_type not set, MUST fail
+<a name="l-198"></a><span class="tm">20:42:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> yea, if we force the messages to indicate old channel type, then we're testing an old channel type and then can test all the transactions against that :) I think we do have just very fundamentally different tests as a library that exposes messages vs a whole software program :)
+<a name="l-199"></a><span class="tm">20:43:17</span><span class="nk"> &lt;rusty&gt;</span> Happy to do that on-issue though.  Shall we move on?
+<a name="l-200"></a><span class="tm">20:43:20</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> so i think we'd need to continue to sidestep the issue w/ setting required bits for chan types w/ the old peer, but once they signalled this bit it wouldn't be an issue
+<a name="l-201"></a><span class="tm">20:43:25</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> yes, lets move on
+<a name="l-202"></a><span class="tm">20:43:25</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> sgtm
+<a name="l-203"></a><span class="tm">20:43:46</span><span class="nk"> &lt;roasbeef&gt;</span> the feature bit name spacing we have rn is a lot better than the OG, but there're still some leaks like that imo t-bast
+<a name="l-204"></a><span class="tm">20:44:17</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> but if they never do? You'll keep accepting channels that dont use the channel type mechanism...so you'll want to eventually kick them out by making it mandatory and closing channels with them? Otherwise they'll keep opening new channels that don't use the feature
+<a name="l-205"></a><span class="tm">20:44:25</span><span class="nk"> &lt;rusty&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/894 and 905</span>
+<a name="l-206"></a><span class="tm">20:44:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeah, so we'd need to reject them, or purposefully downgrade like we do now w/ older eclair nodes -- would rather not downgrade, so we'd prob jsut reject them all
+<a name="l-207"></a><span class="tm">20:45:10</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> hwats your thoughts on the options at https://github.com/lightningnetwork/lightning-rfc/issues/905 ?
+<a name="l-208"></a><span class="tm">20:45:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> ok, I don't really know how to handle the "now we close all channels with a peer because they don't support one of our mandatory features" and communicate it to node operators
+<a name="l-209"></a><span class="tm">20:45:34</span><span class="nk"> &lt;rusty&gt;</span> Pick a number, please, and I'll implement it :)  I admit I've been absent on this issue
+<a name="l-210"></a><span class="tm">20:45:37</span><span class="nk"> &lt;BlueMatt&gt;</span> specifically option 2, which t-bast and I suggested, and which I've implemented
+<a name="l-211"></a><span class="tm">20:46:31</span><span class="nk"> &lt;t-bast&gt;</span> Oh yeah for this dust limit thing, please spend a bit of time reading the issue, and be convinced with option 2 that basically says that while in practice option 1 is cleaner, it's really a lot of unnecessary hassle :D
+<a name="l-212"></a><span class="tm">20:46:44</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> not saying close, we just wouldn't let them open any new ones, the way I see it tho, all new types would just use this and we can even add an explicit feature bit dep on it
+<a name="l-213"></a><span class="tm">20:47:02</span><span class="nk"> &lt;roasbeef&gt;</span> I think we have an impl of option 1 w/o the bit, as it was just teasing out the changes somewhat
+<a name="l-214"></a><span class="tm">20:47:19</span><span class="nk"> &lt;roasbeef&gt;</span> 2 is def easier...and I guess theo nly ppl on the blast radius are those that used a non-segwit addr for upfront shutdown
+<a name="l-215"></a><span class="tm">20:47:29</span><span class="nk"> &lt;t-bast&gt;</span> I just wanted to raise awareness on this, and on the fact that I think #894 can be merged as-is independently of #905 (which we can argue on the issue directly, and I'll open a PR once I've gathered enough feedback / rough consensus)
+<a name="l-216"></a><span class="tm">20:47:35</span><span class="nk"> &lt;BlueMatt&gt;</span> right, that plus happen to close with a very low value
+<a name="l-217"></a><span class="tm">20:47:43</span><span class="nk"> &lt;BlueMatt&gt;</span> *and* have a low dust limit, which i think basically no nodes use today
+<a name="l-218"></a><span class="tm">20:47:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> ok, that's a good alternative, I'll think about it
+<a name="l-219"></a><span class="tm">20:48:07</span><span class="nk"> &lt;BlueMatt&gt;</span> so I'm not sure there's *anyone* in the blast radius for #2, actually
+<a name="l-220"></a><span class="tm">20:48:10</span><span class="nk"> &lt;rusty&gt;</span> Yeah, let's just ban non-sw closes, and grandfather in non-sw for upfront, iff dust limit high enough?
+<a name="l-221"></a><span class="tm">20:48:23</span><span class="nk"> &lt;crypt-iq&gt;</span> i think it may be good to explicitly state in the spec that both channel reserves need to be above both dust limits, which i dont think is explicit
+<a name="l-222"></a><span class="tm">20:48:31</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> that's basically what option 2 is, except with not just dust limit, but only the payout value at close
+<a name="l-223"></a><span class="tm">20:48:38</span><span class="nk"> &lt;rusty&gt;</span> Yeah, I'm not sure anyone will notice.  For us, if we do this and you ry to shutdown to non-sw, we'll warning you and hangup, then you can try again
+<a name="l-224"></a><span class="tm">20:48:46</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> I tested on our node, we do have people closing to non-segwit, but none ever ran into that case where it would have lead to a force-close. So I feel pretty safe with option #2
+<a name="l-225"></a><span class="tm">20:48:55</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> ack, I misspoke.
+<a name="l-226"></a><span class="tm">20:49:18</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> well, my point here is also that no one currently *sets* a dust limit too low for non-segwit closes
+<a name="l-227"></a><span class="tm">20:49:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> in order for a node to get a force-close here they have to (a) have a dust limit at 330, and (b) use non-segwit close
+<a name="l-228"></a><span class="tm">20:49:40</span><span class="nk"> &lt;BlueMatt&gt;</span> or 354 i guess
+<a name="l-229"></a><span class="tm">20:49:41</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> yes, but I tested even if they did, we never had a shutdown that would have run into this :)
+<a name="l-230"></a><span class="tm">20:49:48</span><span class="nk"> &lt;BlueMatt&gt;</span> (b) is true, but (a) I think basically isnt
+<a name="l-231"></a><span class="tm">20:50:01</span><span class="nk"> &lt;BlueMatt&gt;</span> right, and (c) actually close with a &lt;540 sats output
+<a name="l-232"></a><span class="tm">20:50:05</span><span class="nk"> &lt;BlueMatt&gt;</span> so its ~nothing imo
+<a name="l-233"></a><span class="tm">20:50:28</span><span class="nk"> &lt;t-bast&gt;</span> Great, so if there's rough consensus about option 2, I'll open a PR for that
+<a name="l-234"></a><span class="tm">20:50:38</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to open a PR for option 2 of issue 905</span>
+<a name="l-235"></a><span class="tm">20:50:51</span><span class="nk"> &lt;roasbeef&gt;</span> jeremy was right, dust sucks, we should just elminiate it
+<a name="l-236"></a><span class="tm">20:50:52</span><span class="nk"> &lt;roasbeef&gt;</span> kek
+<a name="l-237"></a><span class="tm">20:50:58</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> lol
+<a name="l-238"></a><span class="tm">20:51:00</span><span class="nk"> &lt;BlueMatt&gt;</span> lol
+<a name="l-239"></a><span class="tm">20:51:02</span><span class="nk"> &lt;t-bast&gt;</span> Or should I do it in a new commit in #894? Or merge #894 as-is?
+<a name="l-240"></a><span class="tm">20:51:06</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> xD
+<a name="l-241"></a><span class="tm">20:51:18</span><span class="nk"> &lt;ariard&gt;</span> i think #894 is mergable?
+<a name="l-242"></a><span class="tm">20:51:26</span><span class="nk"> &lt;BlueMatt&gt;</span> if we move forward with #2, I think we should mention in 894 that the dust limit is 354
+<a name="l-243"></a><span class="tm">20:51:37</span><span class="nk"> &lt;rusty&gt;</span> Yep...
+<a name="l-244"></a><span class="tm">20:51:41</span><span class="nk"> &lt;BlueMatt&gt;</span> i guess i dont care if its a followup
+<a name="l-245"></a><span class="tm">20:51:44</span><span class="nk"> &lt;BlueMatt&gt;</span> but it seems a waste
+<a name="l-246"></a><span class="tm">20:51:53</span><span class="nk"> &lt;BlueMatt&gt;</span> I'll leave it up to the author, the changes themselves there are fine
+<a name="l-247"></a><span class="tm">20:51:53</span><span class="nk"> &lt;roasbeef&gt;</span> 894 mentions 354 iirc
+<a name="l-248"></a><span class="tm">20:51:57</span><span class="nk"> &lt;niftynei&gt;</span> is it 354 or 330?
+<a name="l-249"></a><span class="tm">20:52:03</span><span class="nk"> &lt;roasbeef&gt;</span> fine w/ 894 as is
+<a name="l-250"></a><span class="tm">20:52:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> it does not say that the dust limit that nodes *MUST* check for is 354
+<a name="l-251"></a><span class="tm">20:52:16</span><span class="nk"> &lt;roasbeef&gt;</span> ahh good ol dust arithmetic
+<a name="l-252"></a><span class="tm">20:52:16</span><span class="nk"> &lt;BlueMatt&gt;</span> it mentions it is a dust limit
+<a name="l-253"></a><span class="tm">20:52:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei:</span> 354 is anysegwit, 330 is segwit-taproot/v0
+<a name="l-254"></a><span class="tm">20:52:33</span><span class="nk"> &lt;niftynei&gt;</span> oic you're using the highest of segwit dust options, gotcha
+<a name="l-255"></a><span class="tm">20:52:44</span><span class="nk"> &lt;rusty&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/895</span>
+<a name="l-256"></a><span class="tm">20:52:45</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> 330 is for p2wsh but 354 is the max dust limit for all segwit versions, so it's a safe way to encompass all segwit
+<a name="l-257"></a><span class="tm">20:52:59</span><span class="nk"> &lt;niftynei&gt;</span> ty for the explanation t-bast!
+<a name="l-258"></a><span class="tm">20:53:30</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> the self-assignment of fake ids, I don't think it's a problem.  I set my own aliases, so I make sure they don't clash.
+<a name="l-259"></a><span class="tm">20:53:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> you opened a replacement for this today, no?
+<a name="l-260"></a><span class="tm">20:53:51</span><span class="nk"> &lt;t-bast&gt;</span> I'll add a commit on #894, no need to rush merging that PR
+<a name="l-261"></a><span class="tm">20:54:07</span><span class="nk"> &lt;BlueMatt&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/910
+<a name="l-262"></a><span class="tm">20:54:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> yeh you can set your down, but unless I'm missing something, a collision can still happen which makes how you act based on info the onion ambiguous right? Alice and Bob both say their scid is 10, you get an HTLC from dave that wants to route thru scid 10, what do you do?
+<a name="l-263"></a><span class="tm">20:55:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> you tell Alice and Bob what their scids are.
+<a name="l-264"></a><span class="tm">20:55:20</span><span class="nk"> &lt;roasbeef&gt;</span> if we say, you gotta reject any collisions (you force a conneciton recycle?) then it works
+<a name="l-265"></a><span class="tm">20:55:33</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the scid aliases are unidirectional
+<a name="l-266"></a><span class="tm">20:55:34</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> they tell you what they will use for HTLCs coming *from them*, sure.
+<a name="l-267"></a><span class="tm">20:55:36</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> only if you're the funder of both?
+<a name="l-268"></a><span class="tm">20:55:46</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> both sides give *different* aliases.
+<a name="l-269"></a><span class="tm">20:56:15</span><span class="nk"> &lt;cdecker[m]&gt;</span> Or we could make them deterministic, i.e., last 8 bytes of the funding txid
+<a name="l-270"></a><span class="tm">20:56:18</span><span class="nk"> &lt;BlueMatt&gt;</span> B tells A what scids A can put in invoices that B will use to forward from C. B cannot put that same scid in their own invoices as A only uses it for inbound from B, not relaying to
+<a name="l-271"></a><span class="tm">20:56:40</span><span class="nk"> &lt;rusty&gt;</span> You only need to know what scid they'll use when writing routehints for bolt 11.
+<a name="l-272"></a><span class="tm">20:57:13</span><span class="nk"> &lt;rusty&gt;</span> I tell Alice to use 10, Bob to use 11.
+<a name="l-273"></a><span class="tm">20:57:21</span><span class="nk"> &lt;roasbeef&gt;</span> ah ok, I had the like responsibilities flipped
+<a name="l-274"></a><span class="tm">20:57:30</span><span class="nk"> &lt;roasbeef&gt;</span> make sense now...I think
+<a name="l-275"></a><span class="tm">20:57:54</span><span class="nk"> &lt;rusty&gt;</span> Yeah... so BlueMatt wanted this to be a universal alias mechanism, not just a zeroconf open.  That's kinda different enough that I opened a competing PR.
+<a name="l-276"></a><span class="tm">20:57:54</span><span class="nk"> &lt;roasbeef&gt;</span> ok now 895 vs 910?
+<a name="l-277"></a><span class="tm">20:58:00</span><span class="nk"> &lt;t-bast&gt;</span> What exactly is the difference between the two PRs? Only the explicit mention of using the channel for the `push_msat` amount?
+<a name="l-278"></a><span class="tm">20:58:19</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> I think 910 carves out the scid thing for more general usage?
+<a name="l-279"></a><span class="tm">20:58:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> I have a hard time implementing it as *not* a universal alias mechanism
+<a name="l-280"></a><span class="tm">20:58:30</span><span class="nk"> &lt;t-bast&gt;</span> ok, interesting
+<a name="l-281"></a><span class="tm">20:58:45</span><span class="nk"> &lt;BlueMatt&gt;</span> like, I dont think you can implement it without it accidentally being one, so might as well make it explicit
+<a name="l-282"></a><span class="tm">20:58:46</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> so like the thing where ppl can use random stuff in the hop hints and not give away on-chain info
+<a name="l-283"></a><span class="tm">20:58:48</span><span class="nk"> &lt;BlueMatt&gt;</span> and its kinda cool to have anyway
+<a name="l-284"></a><span class="tm">20:58:50</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> 910 means you *always* get given an alias if you support this, even if you have a public channel, even if you don't intend to use it before conf.
+<a name="l-285"></a><span class="tm">20:59:14</span><span class="nk"> &lt;t-bast&gt;</span> Great, that sounds cool
+<a name="l-286"></a><span class="tm">20:59:51</span><span class="nk"> &lt;crypt-iq&gt;</span> now you have to maintain a mapping of all scids for a channel -&gt; channel?
+<a name="l-287"></a><span class="tm">20:59:52</span><span class="nk"> &lt;rusty&gt;</span> i.e. you "funding locked" (now a misnomer, but whatev) immediately with some alias value.  You probably still fail incoming payments until confirmed, unless you trust.
+<a name="l-288"></a><span class="tm">21:00:02</span><span class="nk"> &lt;t-bast&gt;</span> I agree with BlueMatt on his comment about the `next_commitment_point` though, it can be misleading: if you send `funding_locked` at any time, what value do you put in here? Especially if you may send `funding_locked` in parallel to commitment updates?
+<a name="l-289"></a><span class="tm">21:00:05</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">crypt-iq:</span> yes, another alias.
+<a name="l-290"></a><span class="tm">21:00:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> the sender has to maintain all the mappings they sent. the recipient only has to maintain one.
+<a name="l-291"></a><span class="tm">21:00:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> its made a bit clearer in the latest pr, but the text as-is in the spec i think is clear enough, as long as we all agree
+<a name="l-292"></a><span class="tm">21:00:42</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yeah, we could rename that field to commitment_point_1 or something.
+<a name="l-293"></a><span class="tm">21:00:57</span><span class="nk"> &lt;rusty&gt;</span> And agreed, it's redundant, but it's also simple.
+<a name="l-294"></a><span class="tm">21:01:00</span><span class="nk"> &lt;BlueMatt&gt;</span> it says "MUST set `next_per_commitment_point` to the per-commitment point to be used for the following commitment transaction, derived as specified in"
+<a name="l-295"></a><span class="tm">21:01:04</span><span class="nk"> &lt;BlueMatt&gt;</span> which is reasonably clear
+<a name="l-296"></a><span class="tm">21:01:07</span><span class="nk"> &lt;BlueMatt&gt;</span> I think
+<a name="l-297"></a><span class="tm">21:01:11</span><span class="nk"> &lt;BlueMatt&gt;</span> but worth confirming/pointing out
+<a name="l-298"></a><span class="tm">21:01:13</span><span class="nk"> &lt;crypt-iq&gt;</span> the short channel id field is 8 bytes long, chance of collision is 2^32 ?
+<a name="l-299"></a><span class="tm">21:01:27</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> ok, if it's the first commitment_point then that's all good
+<a name="l-300"></a><span class="tm">21:01:31</span><span class="nk"> &lt;roasbeef&gt;</span> woah, so 901 lets you just continue to send a new funding_locked to update the alias?
+<a name="l-301"></a><span class="tm">21:01:42</span><span class="nk"> &lt;roasbeef&gt;</span> like after normal chan operation has started?
+<a name="l-302"></a><span class="tm">21:01:56</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> yeah, BlueMatt wanted that.  I won't be doing that, since you gotta respect all aliases ou gave out, forever.
+<a name="l-303"></a><span class="tm">21:02:05</span><span class="nk"> &lt;t-bast&gt;</span> I think what rusty and BlueMatt are saying for the commitment_point here is contradictory? Or am I understanding it wrong?
+<a name="l-304"></a><span class="tm">21:02:06</span><span class="nk"> &lt;rusty&gt;</span> And ofc I can just keep using the first alias.
+<a name="l-305"></a><span class="tm">21:02:26</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> heh, yes, it seems we are now.
+<a name="l-306"></a><span class="tm">21:02:35</span><span class="nk"> &lt;t-bast&gt;</span> Rusty you're saying it should always be your initial commitment_point, BlueMatt is arguing the PR says it's the next one (which may be commitment_point N)?
+<a name="l-307"></a><span class="tm">21:02:44</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> it's no longer clear if you have sent commitment_signed already, which was previously not possible.
+<a name="l-308"></a><span class="tm">21:02:51</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> to be fair, it doesnt matter which, we just gotta pick :)
+<a name="l-309"></a><span class="tm">21:03:02</span><span class="nk"> &lt;t-bast&gt;</span> I think always sending the initial one here is the simplest, as you don't actually use it (except for the first `funding_locked` you receive)
+<a name="l-310"></a><span class="tm">21:03:03</span><span class="nk"> &lt;BlueMatt&gt;</span> I'll let the author of the pr select one and clarify it in the pR :)
+<a name="l-311"></a><span class="tm">21:03:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> exactly.
+<a name="l-312"></a><span class="tm">21:03:17</span><span class="nk"> &lt;t-bast&gt;</span> ACK then
+<a name="l-313"></a><span class="tm">21:03:42</span><span class="nk"> &lt;t-bast&gt;</span> It needs to be clarified in the PR though, it's easy to misinterpret
+<a name="l-314"></a><span class="tm">21:03:59</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> agreed, good catch BlueMatt
+<a name="l-315"></a><span class="tm">21:05:00</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">Rusty to fix PR to clarify next_per_commitment_point is #1 in #910</span>
+<a name="l-316"></a><span class="tm">21:05:28</span><span class="nk"> &lt;rusty&gt;</span> OK, so is 910 the winner over the "just for trusted zeroconf" 895?
+<a name="l-317"></a><span class="tm">21:05:43</span><span class="nk"> &lt;BlueMatt&gt;</span> after thinking about it more, I dont feel super strongly, fwiw, about the ability to send the message over and over with new aliases, I think its cool and we might as well, cause the cost from 1 to many is low and there are use-cases for having many, but I do think we should include the text about always sending an alias cause that's important
+<a name="l-318"></a><span class="tm">21:06:11</span><span class="nk"> &lt;BlueMatt&gt;</span> the temporal shift over time of the scid alias i think is less useful than just having a pool, but in any case all of those details are up to the sender + recipient, the spec is generic
+<a name="l-319"></a><span class="tm">21:06:25</span><span class="nk"> &lt;t-bast&gt;</span> At first glance, it does look like a winner IMO. pm47 will review both on our end, I'll ask him to chime in this week.
+<a name="l-320"></a><span class="tm">21:06:51</span><span class="nk"> &lt;rusty&gt;</span> Yeah, I am tempted to upgrade the "- SHOULD initially set `alias` to value not related to the real `short_channel_id`." to "- MUST initially set `alias` to value not related to the real `short_channel_id`."
+<a name="l-321"></a><span class="tm">21:06:56</span><span class="nk"> &lt;roasbeef&gt;</span> yeh seems to work, can also ask the breez ppl to take a look at it, but I think it lines up w/ what they already do (they can keep their current scid generation scheme)
+<a name="l-322"></a><span class="tm">21:07:26</span><span class="nk"> &lt;t-bast&gt;</span> good idea to have breez take a look as well, the more reviews the merrier
+<a name="l-323"></a><span class="tm">21:07:51</span><span class="nk"> &lt;niftynei&gt;</span> does adding aliases here mean that there's other proposals for aliases that are now superceded?
+<a name="l-324"></a><span class="tm">21:08:11</span><span class="nk"> &lt;rusty&gt;</span> Oops, we need a feature bit for this!
+<a name="l-325"></a><span class="tm">21:08:16</span><span class="nk"> &lt;t-bast&gt;</span> Are there other proposals for aliases?
+<a name="l-326"></a><span class="tm">21:08:21</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, feature bit for this is useful :)
+<a name="l-327"></a><span class="tm">21:08:43</span><span class="nk"> &lt;rusty&gt;</span> *If* you undersand this, we need to *not* route via the real scid for private channels, otherwise probing is still a thing.
+<a name="l-328"></a><span class="tm">21:08:49</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> iirc y'all had an older one a few years ago?
+<a name="l-329"></a><span class="tm">21:09:05</span><span class="nk"> &lt;rusty&gt;</span> (And if you don't, we need to, since you don't know about the alias)
+<a name="l-330"></a><span class="tm">21:09:18</span><span class="nk"> &lt;niftynei&gt;</span> yeah this feels similar to something else but i cant remember exactly. it's not important
+<a name="l-331"></a><span class="tm">21:09:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> on the contrary, I fought against rusty's alias proposal and instead proposed route blinding, which I don't think clashes with this proposal :)
+<a name="l-332"></a><span class="tm">21:09:21</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> good point, yea
+<a name="l-333"></a><span class="tm">21:09:24</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">rusty:</span> +1
+<a name="l-334"></a><span class="tm">21:09:30</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> ah yeh route blinding
+<a name="l-335"></a><span class="tm">21:09:52</span><span class="nk"> &lt;rusty&gt;</span> Yeah, routeblinding is a superset, but more ambitious.  THis is a minfix.
+<a name="l-336"></a><span class="tm">21:10:47</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty update #910 to add feature bit, make routing via non-announcable real scids invalid if negotiated.</span>
+<a name="l-337"></a><span class="tm">21:11:27</span><span class="nk"> &lt;rusty&gt;</span> Oh, that means it's a channel_type, since we gotta remember whether we negotiated that bit at open...
+<a name="l-338"></a><span class="tm">21:11:28</span><span class="nk"> &lt;BlueMatt&gt;</span> so we're way over time, are there any short things to tackle?
+<a name="l-339"></a><span class="tm">21:11:46</span><span class="nk"> &lt;mschmoock&gt;</span> mission creep :D
+<a name="l-340"></a><span class="tm">21:12:11</span><span class="nk"> &lt;rusty&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/898 ?  I think it just needs acks?
+<a name="l-341"></a><span class="tm">21:12:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="topic">#topic </span><span class="topicline">https://github.com/lightningnetwork/lightning-rfc/pull/898</span>
+<a name="l-342"></a><span class="tm">21:12:40</span><span class="nk"> &lt;BlueMatt&gt;</span> I've acked, we merged the chnages already
+<a name="l-343"></a><span class="tm">21:13:14</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty to validate https://github.com/lightningnetwork/lightning-rfc/pull/898</span>
+<a name="l-344"></a><span class="tm">21:13:37</span><span class="nk"> &lt;t-bast&gt;</span> Thanks! And we should be done with Bolt 11 test vectors for a small while
+<a name="l-345"></a><span class="tm">21:13:39</span><span class="nk"> &lt;rusty&gt;</span> Actually, with BlueMatt and t-bast, that's enough to merge.
+<a name="l-346"></a><span class="tm">21:13:47</span><span class="nk"> &lt;t-bast&gt;</span> yay!
+<a name="l-347"></a><span class="tm">21:13:59</span><span class="nk"> &lt;rusty&gt;</span> I rpropose we merge, and stragglers like me can catch up...
+<a name="l-348"></a><span class="tm">21:14:07</span><span class="nk"> &lt;rusty&gt;</span> Any objectsion?
+<a name="l-349"></a><span class="tm">21:14:08</span><span class="nk"> &lt;t-bast&gt;</span> But if you plan on validating the test vectors, no need to rush we can wait to see if you find an issue we missed
+<a name="l-350"></a><span class="tm">21:14:17</span><span class="nk"> &lt;roasbeef&gt;</span> test vectors good
+<a name="l-351"></a><span class="tm">21:14:18</span><span class="nk"> &lt;t-bast&gt;</span> Whatever you'd like
+<a name="l-352"></a><span class="tm">21:14:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to merge https://github.com/lightningnetwork/lightning-rfc/pull/898</span>
+<a name="l-353"></a><span class="tm">21:14:41</span><span class="nk"> &lt;rusty&gt;</span> OK, I think we're done!
+<a name="l-354"></a><span class="tm">21:14:49</span><span class="nk"> &lt;t-bast&gt;</span> Neat, thanks guys!
+<a name="l-355"></a><span class="tm">21:14:57</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>

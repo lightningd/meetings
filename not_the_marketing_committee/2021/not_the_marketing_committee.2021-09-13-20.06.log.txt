@@ -352,3 +352,4 @@
 21:14:29 <rusty> #action t-bast to merge https://github.com/lightningnetwork/lightning-rfc/pull/898
 21:14:41 <rusty> OK, I think we're done!
 21:14:49 <t-bast> Neat, thanks guys!
+21:14:57 <rusty> #endmeeting
