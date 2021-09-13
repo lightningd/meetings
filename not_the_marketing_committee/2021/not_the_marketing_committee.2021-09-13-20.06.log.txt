@@ -231,3 +231,12 @@
 20:50:01 <BlueMatt> right, and (c) actually close with a <540 sats output
 20:50:05 <BlueMatt> so its ~nothing imo
 20:50:28 <t-bast> Great, so if there's rough consensus about option 2, I'll open a PR for that
+20:50:38 <t-bast> #action t-bast to open a PR for option 2 of issue 905
+20:50:51 <roasbeef> jeremy was right, dust sucks, we should just elminiate it
+20:50:52 <roasbeef> kek
+20:50:58 <rusty> roasbeef: lol
+20:51:00 <BlueMatt> lol
+20:51:02 <t-bast> Or should I do it in a new commit in #894? Or merge #894 as-is?
+20:51:06 <t-bast> roasbeef: xD
+20:51:18 <ariard> i think #894 is mergable?
+20:51:26 <BlueMatt> if we move forward with #2, I think we should mention in 894 that the dust limit is 354
