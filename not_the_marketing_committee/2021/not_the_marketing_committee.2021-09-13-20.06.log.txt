@@ -99,3 +99,10 @@
 20:25:02 <rusty> But yes, you have to avoid looping too hard.
 20:25:12 <BlueMatt> ie define a new "warning" message, with the type of current error, and then add a *new* error message
 20:25:34 <BlueMatt> the new error message would have the semantics of error as-define, but not lnd/c-ln implemented.
+20:26:18 <niftynei> do the msg type support that?
+20:26:24 <BlueMatt> hmm?
+20:26:35 <niftynei> isn't error msg a mandatory msg bit
+20:26:50 <BlueMatt> probably, but its not like there are any implementations that *dont* understand it
+20:27:03 <BlueMatt> like, yes, we'll redefine it to "you must understand how to deserialize this, but also you must then ignore it"
+20:27:04 <niftynei> ah no it's 17
+20:27:08 <BlueMatt> oh, even better
