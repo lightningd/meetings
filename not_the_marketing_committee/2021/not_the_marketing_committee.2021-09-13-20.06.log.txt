@@ -320,3 +320,8 @@
 21:06:51 <rusty> Yeah, I am tempted to upgrade the "- SHOULD initially set `alias` to value not related to the real `short_channel_id`." to "- MUST initially set `alias` to value not related to the real `short_channel_id`."
 21:06:56 <roasbeef> yeh seems to work, can also ask the breez ppl to take a look at it, but I think it lines up w/ what they already do (they can keep their current scid generation scheme)
 21:07:26 <t-bast> good idea to have breez take a look as well, the more reviews the merrier
+21:07:51 <niftynei> does adding aliases here mean that there's other proposals for aliases that are now superceded?
+21:08:11 <rusty> Oops, we need a feature bit for this!
+21:08:16 <t-bast> Are there other proposals for aliases?
+21:08:21 <BlueMatt> yes, feature bit for this is useful :)
+21:08:43 <rusty> *If* you undersand this, we need to *not* route via the real scid for private channels, otherwise probing is still a thing.
