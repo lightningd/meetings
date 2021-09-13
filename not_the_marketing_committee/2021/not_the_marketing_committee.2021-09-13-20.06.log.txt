@@ -288,3 +288,13 @@
 21:00:02 <t-bast> I agree with BlueMatt on his comment about the `next_commitment_point` though, it can be misleading: if you send `funding_locked` at any time, what value do you put in here? Especially if you may send `funding_locked` in parallel to commitment updates?
 21:00:05 <rusty> crypt-iq: yes, another alias.
 21:00:08 <BlueMatt> crypt-iq: the sender has to maintain all the mappings they sent. the recipient only has to maintain one.
+21:00:41 <BlueMatt> t-bast: its made a bit clearer in the latest pr, but the text as-is in the spec i think is clear enough, as long as we all agree
+21:00:42 <rusty> t-bast: yeah, we could rename that field to commitment_point_1 or something.
+21:00:57 <rusty> And agreed, it's redundant, but it's also simple.
+21:01:00 <BlueMatt> it says "MUST set `next_per_commitment_point` to the per-commitment point to be used for the following commitment transaction, derived as specified in"
+21:01:04 <BlueMatt> which is reasonably clear
+21:01:07 <BlueMatt> I think
+21:01:11 <BlueMatt> but worth confirming/pointing out
+21:01:13 <crypt-iq> the short channel id field is 8 bytes long, chance of collision is 2^32 ?
+21:01:27 <t-bast> rusty: ok, if it's the first commitment_point then that's all good
+21:01:31 <roasbeef> woah, so 901 lets you just continue to send a new funding_locked to update the alias?
