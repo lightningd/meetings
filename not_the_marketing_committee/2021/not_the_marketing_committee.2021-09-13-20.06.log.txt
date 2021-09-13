@@ -169,3 +169,8 @@
 20:37:42 <roasbeef> BlueMatt: do you then remove the older logic from the client?
 20:37:42 <rusty> roasbeef: yeah, basically we would always send it, we'd just on recv do: if (negotiated(option_channel_feature)) { if (!tlvs->channel_type) fail } else { tlvs->channel_type = NULL' }
 20:38:11 <BlueMatt> roasbeef: no, but we can simulate talking to an old peer whether there is a feature bit or not. so we can test old logic just fine with or without a feature bit
+20:38:32 <BlueMatt> actually, we can test *easier* without a feature bit
+20:38:37 <BlueMatt> one less thing to deal with
+20:38:59 <roasbeef> you do the same even for stuff like ensuring you can open non-anchor channels after that's default?
+20:39:03 <BlueMatt> of course my or your particular test infrastructure isn't a great reason to have a feature bit or not, imo, but whatever
+20:39:03 <rusty> One nice feature of a feature bit is that when you make it compulsory your logic gets simpler.
