@@ -87,3 +87,8 @@
 20:22:47 <t-bast> roasbeef: yes, when we receive an error we do
 20:22:48 <roasbeef> BlueMatt: you can do that w/ an error message, but doesn't mean they need to force close
 20:22:49 <rusty> roasbeef: and LDK it seems.
+20:23:28 <roasbeef> say "I broadcasted btw, it's in the mempool" is totally useful, but rn we don't have a way to allow nodes to properly handle that, since it's just a string
+20:23:32 <BlueMatt> roasbeef: sure, I mean they dont have to broadcast, but its a really great way to say "dont try to route over this again, dont expect me to accept anything, you should give up on this channel"
+20:23:45 <roasbeef> lnd doesn't watch the mempool though, so we'll only note that once it hits the chain
+20:24:02 <roasbeef> yeh that sounds useful, but we don't have a way to do that atm w/ just the string
+20:24:03 <BlueMatt> yes, we do have a way to tell a node that, the error message!
