@@ -251,3 +251,8 @@
 20:52:16 <roasbeef> ahh good ol dust arithmetic
 20:52:16 <BlueMatt> it mentions it is a dust limit
 20:52:27 <BlueMatt> niftynei: 354 is anysegwit, 330 is segwit-taproot/v0
+20:52:33 <niftynei> oic you're using the highest of segwit dust options, gotcha
+20:52:44 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/895
+20:52:45 <t-bast> niftynei: 330 is for p2wsh but 354 is the max dust limit for all segwit versions, so it's a safe way to encompass all segwit
+20:52:59 <niftynei> ty for the explanation t-bast!
+20:53:30 <rusty> roasbeef: the self-assignment of fake ids, I don't think it's a problem.  I set my own aliases, so I make sure they don't clash.
