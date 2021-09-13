@@ -147,3 +147,9 @@
 20:33:32 <rusty> OK, I think we're in circles now.
 20:33:34 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/906
 20:33:50 <roasbeef> updated to bit 44/45
+20:34:19 <rusty> I agree with roasbeef here, but I think the right semantic is "if you don't negotiate this, don't quickclose, if you do, you must"
+20:34:35 <BlueMatt> rusty: this isnt about quickclose, this is channel type?
+20:34:39 <rusty> Oops.
+20:34:43 <t-bast> xD
+20:34:58 <roasbeef> quick close was merged iirc
+20:35:05 <roasbeef> this is chan type feature bit
