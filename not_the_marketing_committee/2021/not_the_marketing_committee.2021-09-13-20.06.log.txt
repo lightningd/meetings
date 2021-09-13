@@ -39,3 +39,10 @@
 20:13:17 <BlueMatt> roasbeef: I believe your comment there, really, is more about quick close feature bit, less about warning message feature bit
 20:13:50 <rusty> I agree with roasbeef, we should use a feature bit.  And if set, that means errors are *errors*, are genuinely unrecoverable, and you should really drop to chain.
 20:13:52 <roasbeef> BlueMatt: no it's about both, the quick close depends on the warning message the way it's written, and we have a natural way to indicate dependent protocol features: the feature bit deps
+20:14:09 <niftynei> rusty: "close all channels" is probably more useful if there's more than one channel btw peers :P
+20:14:12 <BlueMatt> rusty: ah, as a backwards compat for the implementations that always ignored errors?
+20:14:17 <rusty> (And we can drop all our "wait, this is a spurious error, reconnec and try again" logic)
+20:14:40 <BlueMatt> roasbeef: outside of the scope of quick close, is there ever a reason why you'd seek out a peer that will send warning messages?
+20:14:41 <rusty> BlueMatt: yeah, e.g. LND used to send an error if you were too slow to handshake, and we used to close channels...
+20:14:46 <t-bast> Agreed with BlueMatt, we can argue about whether quick close needs a feature bits, but warning messages are really optional messages you're free to ignore but that may help you diagnose issues in the wild, and that doesn't need a feature bit at all, that's why we split messages in odd vs even
+20:14:52 <roasbeef> t-bast: bugs related to the warning message? or bugs in new feature that assume the warning message?
