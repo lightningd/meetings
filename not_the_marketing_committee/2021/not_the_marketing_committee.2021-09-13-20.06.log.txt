@@ -51,3 +51,7 @@
 20:15:25 <rusty> t-bast: I disagree, I'd really like to get rid of the cases where c-lightning ignores errors because implementations used to send them.
 20:15:40 <roasbeef> t-bast: figruing it out is all manual tho right? given you have no way to programmatically handle the new message as it's just a string?
 20:15:58 <BlueMatt> rusty: re: all-0s, I guess I'm still vaguely of the thinking that reconnect loops absolutely suck, and we should stop throwing our hands up and assuming they're ok.
+20:16:00 <roasbeef> in which cases would the warning message help you uniquely dianose something that the existing error message would't?
+20:16:25 <BlueMatt> roasbeef: yes, because unlike error messages, warning messages dont close the channel.
+20:16:34 <t-bast> rusty: we still don't ignore errors and don't plan on starting to ignore them
+20:16:58 <BlueMatt> t-bast: do y'all implement the all-0s close-all-channels error logic?
