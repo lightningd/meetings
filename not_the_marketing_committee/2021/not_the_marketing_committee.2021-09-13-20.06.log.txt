@@ -106,3 +106,7 @@
 20:27:03 <BlueMatt> like, yes, we'll redefine it to "you must understand how to deserialize this, but also you must then ignore it"
 20:27:04 <niftynei> ah no it's 17
 20:27:08 <BlueMatt> oh, even better
+20:27:27 <niftynei> that sucks though from an implementation/upgrade standpoint
+20:27:47 <BlueMatt> it does
+20:28:00 <BlueMatt> but i suggested it as roasbeef seemed insistent on error messages being ignored going forward
+20:28:05 <BlueMatt> but now roasbeef stopped responding :/
