@@ -97,3 +97,5 @@
 20:24:37 <rusty> I think warning is still useful, as there are cases which are recoverable (esp since reconnection does reset some state).
 20:24:58 <BlueMatt> now, as an alternative to the current warning message pr, we *could* swap the message types
 20:25:02 <rusty> But yes, you have to avoid looping too hard.
+20:25:12 <BlueMatt> ie define a new "warning" message, with the type of current error, and then add a *new* error message
+20:25:34 <BlueMatt> the new error message would have the semantics of error as-define, but not lnd/c-ln implemented.
