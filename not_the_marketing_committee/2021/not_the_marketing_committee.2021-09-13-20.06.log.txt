@@ -268,3 +268,7 @@
 20:55:46 <rusty> roasbeef: both sides give *different* aliases.
 20:56:15 <cdecker[m]> Or we could make them deterministic, i.e., last 8 bytes of the funding txid
 20:56:18 <BlueMatt> B tells A what scids A can put in invoices that B will use to forward from C. B cannot put that same scid in their own invoices as A only uses it for inbound from B, not relaying to
+20:56:40 <rusty> You only need to know what scid they'll use when writing routehints for bolt 11.
+20:57:13 <rusty> I tell Alice to use 10, Bob to use 11.
+20:57:21 <roasbeef> ah ok, I had the like responsibilities flipped
+20:57:30 <roasbeef> make sense now...I think
