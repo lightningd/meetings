@@ -304,3 +304,9 @@
 21:02:06 <rusty> And ofc I can just keep using the first alias.
 21:02:26 <BlueMatt> t-bast: heh, yes, it seems we are now.
 21:02:35 <t-bast> Rusty you're saying it should always be your initial commitment_point, BlueMatt is arguing the PR says it's the next one (which may be commitment_point N)?
+21:02:44 <rusty> BlueMatt: it's no longer clear if you have sent commitment_signed already, which was previously not possible.
+21:02:51 <BlueMatt> t-bast: to be fair, it doesnt matter which, we just gotta pick :)
+21:03:02 <t-bast> I think always sending the initial one here is the simplest, as you don't actually use it (except for the first `funding_locked` you receive)
+21:03:03 <BlueMatt> I'll let the author of the pr select one and clarify it in the pR :)
+21:03:09 <rusty> t-bast: exactly.
+21:03:17 <t-bast> ACK then
