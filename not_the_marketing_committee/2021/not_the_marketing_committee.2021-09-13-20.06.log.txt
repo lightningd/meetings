@@ -55,3 +55,9 @@
 20:16:25 <BlueMatt> roasbeef: yes, because unlike error messages, warning messages dont close the channel.
 20:16:34 <t-bast> rusty: we still don't ignore errors and don't plan on starting to ignore them
 20:16:58 <BlueMatt> t-bast: do y'all implement the all-0s close-all-channels error logic?
+20:17:10 <rusty> t-bast: ouch, we had several cases we had to, to avoid forced closing.  Maybe safe to remove them now...
+20:17:14 <roasbeef> BlueMatt: re why would seek them out, assuming it has error codes, then yeah as you're able to programtically handle certain denegrate cases, and also know that you have strucutred data in the errors
+20:17:28 <t-bast> roasbeef: even manual, it's a net improvement compared to what we had before, that's the best argument I can have for a feature - it solves a problem we actually have, not a theoretical one
+20:17:32 <roasbeef> but it's less about seeking them out, and making it explicit that two protocol features are dependent on each other
+20:17:50 <roasbeef> this is the PR that adds that dep btw: https://github.com/lightningnetwork/lightning-rfc/pull/904
+20:17:54 <BlueMatt> roasbeef: I'd understand if you added a feature bit for when warnings got a programatic handling support, but that's not what we're talking about here
