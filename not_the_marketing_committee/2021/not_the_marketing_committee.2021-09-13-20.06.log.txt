@@ -208,3 +208,7 @@
 20:45:32 <t-bast> roasbeef: ok, I don't really know how to handle the "now we close all channels with a peer because they don't support one of our mandatory features" and communicate it to node operators
 20:45:34 <rusty> Pick a number, please, and I'll implement it :)  I admit I've been absent on this issue
 20:45:37 <BlueMatt> specifically option 2, which t-bast and I suggested, and which I've implemented
+20:46:31 <t-bast> Oh yeah for this dust limit thing, please spend a bit of time reading the issue, and be convinced with option 2 that basically says that while in practice option 1 is cleaner, it's really a lot of unnecessary hassle :D
+20:46:44 <roasbeef> t-bast: not saying close, we just wouldn't let them open any new ones, the way I see it tho, all new types would just use this and we can even add an explicit feature bit dep on it
+20:47:02 <roasbeef> I think we have an impl of option 1 w/o the bit, as it was just teasing out the changes somewhat
+20:47:19 <roasbeef> 2 is def easier...and I guess theo nly ppl on the blast radius are those that used a non-segwit addr for upfront shutdown
