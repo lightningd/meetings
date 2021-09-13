@@ -156,3 +156,8 @@
 20:35:20 <t-bast> I agree that the argument stands for both, you can argue that channel_type needs a feature bit, and you can use the same argument to say that quick close does as well
 20:35:26 <rusty> I agree with roasbeef here, but I think the right semantic is "if you don't negotiate this, ignore channel_type and use default, if you do, you must send and use it"
 20:35:37 <BlueMatt> feature bit for channel type seems like it would make the logic simpler, but I dunno if I get to have an opinion cause I haven't implemented it yet :)
+20:36:21 <t-bast> TBH if you feel strongly about having a feature bit here, I don't mind. If we do, I agree with rusty that the condition must be updated
+20:36:24 <rusty> (I actually think quickclose is a stronger candidate for feature bit, but that's separate)
+20:36:26 <roasbeef> the way I see it, for features like this, we all prob have a config flag or build flag to be able to test versions of the software w/ and w/o it in our integration tests right? so this is just another conjunction there
+20:36:36 <BlueMatt> tho i guess i dunno i dont care either way, and maybe it is more complicated? whatever.
+20:37:08 <BlueMatt> roasbeef: no, we dont for most of this stuff, we just edit the message being delivered in testing to simulate older peers
