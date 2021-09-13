@@ -272,3 +272,9 @@
 20:57:13 <rusty> I tell Alice to use 10, Bob to use 11.
 20:57:21 <roasbeef> ah ok, I had the like responsibilities flipped
 20:57:30 <roasbeef> make sense now...I think
+20:57:54 <rusty> Yeah... so BlueMatt wanted this to be a universal alias mechanism, not just a zeroconf open.  That's kinda different enough that I opened a competing PR.
+20:57:54 <roasbeef> ok now 895 vs 910?
+20:58:00 <t-bast> What exactly is the difference between the two PRs? Only the explicit mention of using the channel for the `push_msat` amount?
+20:58:19 <roasbeef> t-bast: I think 910 carves out the scid thing for more general usage?
+20:58:27 <BlueMatt> rusty: I have a hard time implementing it as *not* a universal alias mechanism
+20:58:30 <t-bast> ok, interesting
