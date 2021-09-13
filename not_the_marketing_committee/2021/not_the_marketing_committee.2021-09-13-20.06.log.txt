@@ -283,3 +283,8 @@
 20:58:48 <BlueMatt> and its kinda cool to have anyway
 20:58:50 <rusty> t-bast: 910 means you *always* get given an alias if you support this, even if you have a public channel, even if you don't intend to use it before conf.
 20:59:14 <t-bast> Great, that sounds cool
+20:59:51 <crypt-iq> now you have to maintain a mapping of all scids for a channel -> channel?
+20:59:52 <rusty> i.e. you "funding locked" (now a misnomer, but whatev) immediately with some alias value.  You probably still fail incoming payments until confirmed, unless you trust.
+21:00:02 <t-bast> I agree with BlueMatt on his comment about the `next_commitment_point` though, it can be misleading: if you send `funding_locked` at any time, what value do you put in here? Especially if you may send `funding_locked` in parallel to commitment updates?
+21:00:05 <rusty> crypt-iq: yes, another alias.
+21:00:08 <BlueMatt> crypt-iq: the sender has to maintain all the mappings they sent. the recipient only has to maintain one.
