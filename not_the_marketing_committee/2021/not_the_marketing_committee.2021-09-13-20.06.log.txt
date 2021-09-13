@@ -180,3 +180,6 @@
 20:39:50 <rusty> t-bast: eventually, yeah.
 20:39:57 <t-bast> rusty: we haven't dared do that yet (even though we'd love to start doing it soonish)
 20:40:15 <BlueMatt> roasbeef: yea, again, all of our tests deal with unencrypted messages to be delivered, so we can do ~whatever we want in our protocol tests.
+20:40:22 <roasbeef> we tried to do it for static remote key, but that didn't really work, hence the need for the chan type stuff in the first place
+20:40:55 <rusty> Yeah, lnprototest tests this now (it assumes you allow downgrade, which we explicitly will not once static_remotekey becomes compulsory)
+20:41:17 <roasbeef> BlueMatt: ah interesting, but was referring to stuff more like how the chain  handling conditions change for a peer due to diff chan types, stuff like the csv delay as an example changes, but maybe we just have really diff test set ups
