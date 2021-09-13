@@ -240,3 +240,14 @@
 20:51:06 <t-bast> roasbeef: xD
 20:51:18 <ariard> i think #894 is mergable?
 20:51:26 <BlueMatt> if we move forward with #2, I think we should mention in 894 that the dust limit is 354
+20:51:37 <rusty> Yep...
+20:51:41 <BlueMatt> i guess i dont care if its a followup
+20:51:44 <BlueMatt> but it seems a waste
+20:51:53 <BlueMatt> I'll leave it up to the author, the changes themselves there are fine
+20:51:53 <roasbeef> 894 mentions 354 iirc
+20:51:57 <niftynei> is it 354 or 330?
+20:52:03 <roasbeef> fine w/ 894 as is
+20:52:12 <BlueMatt> roasbeef: it does not say that the dust limit that nodes *MUST* check for is 354
+20:52:16 <roasbeef> ahh good ol dust arithmetic
+20:52:16 <BlueMatt> it mentions it is a dust limit
+20:52:27 <BlueMatt> niftynei: 354 is anysegwit, 330 is segwit-taproot/v0
