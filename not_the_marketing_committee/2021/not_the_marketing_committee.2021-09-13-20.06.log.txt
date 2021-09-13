@@ -205,3 +205,6 @@
 20:44:25 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/894 and 905
 20:44:50 <roasbeef> t-bast: yeah, so we'd need to reject them, or purposefully downgrade like we do now w/ older eclair nodes -- would rather not downgrade, so we'd prob jsut reject them all
 20:45:10 <BlueMatt> roasbeef: hwats your thoughts on the options at https://github.com/lightningnetwork/lightning-rfc/issues/905 ?
+20:45:32 <t-bast> roasbeef: ok, I don't really know how to handle the "now we close all channels with a peer because they don't support one of our mandatory features" and communicate it to node operators
+20:45:34 <rusty> Pick a number, please, and I'll implement it :)  I admit I've been absent on this issue
+20:45:37 <BlueMatt> specifically option 2, which t-bast and I suggested, and which I've implemented
