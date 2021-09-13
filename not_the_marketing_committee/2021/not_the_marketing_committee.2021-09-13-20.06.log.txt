@@ -144,3 +144,6 @@
 20:32:20 <BlueMatt> roasbeef: did you see my comment at https://github.com/lightningnetwork/lightning-rfc/pull/904#issuecomment-911982144 ?
 20:32:20 <t-bast> roasbeef: doesn't *require* it at all
 20:32:25 <BlueMatt> I tried to explain it a bit more verbosely
+20:33:32 <rusty> OK, I think we're in circles now.
+20:33:34 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/906
+20:33:50 <roasbeef> updated to bit 44/45
