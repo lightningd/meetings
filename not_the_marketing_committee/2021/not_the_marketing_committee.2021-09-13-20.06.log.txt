@@ -212,3 +212,10 @@
 20:46:44 <roasbeef> t-bast: not saying close, we just wouldn't let them open any new ones, the way I see it tho, all new types would just use this and we can even add an explicit feature bit dep on it
 20:47:02 <roasbeef> I think we have an impl of option 1 w/o the bit, as it was just teasing out the changes somewhat
 20:47:19 <roasbeef> 2 is def easier...and I guess theo nly ppl on the blast radius are those that used a non-segwit addr for upfront shutdown
+20:47:29 <t-bast> I just wanted to raise awareness on this, and on the fact that I think #894 can be merged as-is independently of #905 (which we can argue on the issue directly, and I'll open a PR once I've gathered enough feedback / rough consensus)
+20:47:35 <BlueMatt> right, that plus happen to close with a very low value
+20:47:43 <BlueMatt> *and* have a low dust limit, which i think basically no nodes use today
+20:47:51 <t-bast> roasbeef: ok, that's a good alternative, I'll think about it
+20:48:07 <BlueMatt> so I'm not sure there's *anyone* in the blast radius for #2, actually
+20:48:10 <rusty> Yeah, let's just ban non-sw closes, and grandfather in non-sw for upfront, iff dust limit high enough?
+20:48:23 <crypt-iq> i think it may be good to explicitly state in the spec that both channel reserves need to be above both dust limits, which i dont think is explicit
