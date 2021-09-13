@@ -134,3 +134,10 @@
 20:30:39 <t-bast> I'm interested in the error codes as well, and would love to see a PR for that, but it feels completely additive to warnings to me, if we have both I'd be very happy
 20:30:43 <roasbeef> idk that was said pretty plainly in #834
 20:30:50 <BlueMatt> roasbeef: people have given you *feedback* on error codes, and suggested its a great thing to add as a tlv in a warning message, adding new logic to how you have to handle them
+20:31:20 <roasbeef> maybe we should move onto something else?
+20:31:24 <BlueMatt> roasbeef: and also said that warnings are useful on their own, and error codes are a nice extension, thus we should move forward with warnings then add stuff on top
+20:31:27 <roasbeef> this has taken up a lot of time
+20:31:28 <t-bast> roasbeef: of course they can do quick close without it, and that's a completely separate discussion...?
+20:31:38 <BlueMatt> I'm not really sure how you have so misinterpreted the feedback given there.
+20:31:45 <roasbeef> t-bast: but then #904 would need to be modified right? since it says send a warning if the quick close fails?
+20:32:04 <t-bast> roasbeef: no, it's just that it's *nicer* with a warning, it's a small improvement
