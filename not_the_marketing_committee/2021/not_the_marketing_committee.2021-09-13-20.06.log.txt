@@ -198,3 +198,7 @@
 20:42:43 <BlueMatt> roasbeef: yea, if we force the messages to indicate old channel type, then we're testing an old channel type and then can test all the transactions against that :) I think we do have just very fundamentally different tests as a library that exposes messages vs a whole software program :)
 20:43:17 <rusty> Happy to do that on-issue though.  Shall we move on?
 20:43:20 <roasbeef> t-bast: so i think we'd need to continue to sidestep the issue w/ setting required bits for chan types w/ the old peer, but once they signalled this bit it wouldn't be an issue
+20:43:25 <BlueMatt> rusty: yes, lets move on
+20:43:25 <roasbeef> rusty: sgtm
+20:43:46 <roasbeef> the feature bit name spacing we have rn is a lot better than the OG, but there're still some leaks like that imo t-bast
+20:44:17 <t-bast> roasbeef: but if they never do? You'll keep accepting channels that dont use the channel type mechanism...so you'll want to eventually kick them out by making it mandatory and closing channels with them? Otherwise they'll keep opening new channels that don't use the feature
