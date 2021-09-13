@@ -16,3 +16,5 @@
 20:08:40 <BlueMatt> I think the only thing left to resolve on warnings is https://github.com/lightningnetwork/lightning-rfc/pull/834#discussion_r702330608 ?
 20:09:28 <BlueMatt> oh, wait, no, still need to resolve the removal of the all-0s error message
 20:09:35 <BlueMatt> and whether we want to do that
+20:10:51 <BlueMatt> thoughts?
+20:10:53 <roasbeef> see my comment on that other PR: there was a new change that depended on this new warning message, but in that case how is the peer meant to even know to expect the warning message if there's no feature bit?
