@@ -116,3 +116,8 @@
 20:28:24 <t-bast> to be fair, I get the feeling that roasbeef you're completely dismissing this PR on principle because you'd like something else (error codes automated *some* scenarios), which feels to me very orthogonal and can be done separately
 20:28:36 <roasbeef> they're useful, we've used them to debug invalid sig issues in the past
 20:29:03 <roasbeef> no I'm not, I'm just saying I don't find it useful really as is, and we prob won't implement it, ofc ppl can deploy it or w/e
+20:29:23 <roasbeef> we're following thru w/ our error codes thing, since it solves a buncha problems for us
+20:29:27 <niftynei> but your reason for finding it "unuseful" is that ... you've never enforced the semantics of errors meaning "close the channel"??
+20:29:39 <roasbeef> maybe we'll bLIP it, since everyone doesn't think error codes are useful
+20:29:54 <t-bast> it's already been useful for us many times in the wild, and feels like a net improvement that requires like 20 lines of code, so I'd really like to see it happen...
+20:30:04 <niftynei> i mean honestly, it sounds like LND is in favor of upgrading all their error messages to warnings?
