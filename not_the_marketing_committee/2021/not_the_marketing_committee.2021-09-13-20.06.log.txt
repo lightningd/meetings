@@ -14,3 +14,5 @@
 20:08:35 <t-bast> Go #834, go! I think it's high time this gets merged, we've seen it being useful many times already in the real world (just found a c-lightning issue today thanks to it)
 20:08:38 <rusty> OK, I can rebase this.  roasbeef mentioned wanting a feature bit, which in this case seems overkill (you can always still send an erorr)
 20:08:40 <BlueMatt> I think the only thing left to resolve on warnings is https://github.com/lightningnetwork/lightning-rfc/pull/834#discussion_r702330608 ?
+20:09:28 <BlueMatt> oh, wait, no, still need to resolve the removal of the all-0s error message
+20:09:35 <BlueMatt> and whether we want to do that
