@@ -61,3 +61,7 @@
 20:17:32 <roasbeef> but it's less about seeking them out, and making it explicit that two protocol features are dependent on each other
 20:17:50 <roasbeef> this is the PR that adds that dep btw: https://github.com/lightningnetwork/lightning-rfc/pull/904
 20:17:54 <BlueMatt> roasbeef: I'd understand if you added a feature bit for when warnings got a programatic handling support, but that's not what we're talking about here
+20:18:02 <BlueMatt> roasbeef: the warning messages in this pr *MUST* be ignored
+20:18:20 <BlueMatt> roasbeef: we can revisit the feature bit discussion when y'all add the "programatic why we warned" logic in the tlv
+20:18:29 <t-bast> BlueMatt: we did have the close-all-channels on all-0s error, but we may have removed it recently, I'll need to check
+20:18:42 <roasbeef> BlueMatt: which PR #904?
