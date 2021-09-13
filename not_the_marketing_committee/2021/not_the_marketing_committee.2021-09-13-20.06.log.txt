@@ -314,3 +314,6 @@
 21:03:59 <rusty> t-bast: agreed, good catch BlueMatt
 21:05:00 <rusty> #action Rusty to fix PR to clarify next_per_commitment_point is #1 in #910
 21:05:28 <rusty> OK, so is 910 the winner over the "just for trusted zeroconf" 895?
+21:05:43 <BlueMatt> after thinking about it more, I dont feel super strongly, fwiw, about the ability to send the message over and over with new aliases, I think its cool and we might as well, cause the cost from 1 to many is low and there are use-cases for having many, but I do think we should include the text about always sending an alias cause that's important
+21:06:11 <BlueMatt> the temporal shift over time of the scid alias i think is less useful than just having a pool, but in any case all of those details are up to the sender + recipient, the spec is generic
+21:06:25 <t-bast> At first glance, it does look like a winner IMO. pm47 will review both on our end, I'll ask him to chime in this week.
