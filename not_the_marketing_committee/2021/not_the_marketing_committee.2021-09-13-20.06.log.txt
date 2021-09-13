@@ -183,3 +183,7 @@
 20:40:22 <roasbeef> we tried to do it for static remote key, but that didn't really work, hence the need for the chan type stuff in the first place
 20:40:55 <rusty> Yeah, lnprototest tests this now (it assumes you allow downgrade, which we explicitly will not once static_remotekey becomes compulsory)
 20:41:17 <roasbeef> BlueMatt: ah interesting, but was referring to stuff more like how the chain  handling conditions change for a peer due to diff chan types, stuff like the csv delay as an example changes, but maybe we just have really diff test set ups
+20:41:30 <roasbeef> or like being able to parse the old onion format
+20:41:42 <rusty> roasbeef: yes!!  Can we just kill legacy already?
+20:41:48 <t-bast> roasbeef: how do you plan on using a channel_type feature bit if you have channels with a peer that doesn't support it (when you want to start making it mandatory)?
+20:42:11 <roasbeef> rusty: legacy as in non static key? yes pls, I think the eclair version that supports static key is out now?
