@@ -174,3 +174,9 @@
 20:38:59 <roasbeef> you do the same even for stuff like ensuring you can open non-anchor channels after that's default?
 20:39:03 <BlueMatt> of course my or your particular test infrastructure isn't a great reason to have a feature bit or not, imo, but whatever
 20:39:03 <rusty> One nice feature of a feature bit is that when you make it compulsory your logic gets simpler.
+20:39:20 <roasbeef> BlueMatt: not saying that should be the reason, but was a respone to "it's an extra if statement"
+20:39:25 <roasbeef> rusty: +1
+20:39:37 <t-bast> rusty: it's true that you can remove some code, but only if you also remove the option for your users to switch from mandatory to optional...
+20:39:50 <rusty> t-bast: eventually, yeah.
+20:39:57 <t-bast> rusty: we haven't dared do that yet (even though we'd love to start doing it soonish)
+20:40:15 <BlueMatt> roasbeef: yea, again, all of our tests deal with unencrypted messages to be delivered, so we can do ~whatever we want in our protocol tests.
