@@ -219,3 +219,8 @@
 20:48:07 <BlueMatt> so I'm not sure there's *anyone* in the blast radius for #2, actually
 20:48:10 <rusty> Yeah, let's just ban non-sw closes, and grandfather in non-sw for upfront, iff dust limit high enough?
 20:48:23 <crypt-iq> i think it may be good to explicitly state in the spec that both channel reserves need to be above both dust limits, which i dont think is explicit
+20:48:31 <BlueMatt> rusty: that's basically what option 2 is, except with not just dust limit, but only the payout value at close
+20:48:38 <rusty> Yeah, I'm not sure anyone will notice.  For us, if we do this and you ry to shutdown to non-sw, we'll warning you and hangup, then you can try again
+20:48:46 <t-bast> BlueMatt: I tested on our node, we do have people closing to non-segwit, but none ever ran into that case where it would have lead to a force-close. So I feel pretty safe with option #2
+20:48:55 <rusty> BlueMatt: ack, I misspoke.
+20:49:18 <BlueMatt> t-bast: well, my point here is also that no one currently *sets* a dust limit too low for non-segwit closes
