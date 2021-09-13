@@ -336,3 +336,7 @@
 21:10:47 <rusty> #action rusty update #910 to add feature bit, make routing via non-announcable real scids invalid if negotiated.
 21:11:27 <rusty> Oh, that means it's a channel_type, since we gotta remember whether we negotiated that bit at open...
 21:11:28 <BlueMatt> so we're way over time, are there any short things to tackle?
+21:11:46 <mschmoock> mission creep :D
+21:12:11 <rusty> https://github.com/lightningnetwork/lightning-rfc/pull/898 ?  I think it just needs acks?
+21:12:16 <rusty> #topic https://github.com/lightningnetwork/lightning-rfc/pull/898
+21:12:40 <BlueMatt> I've acked, we merged the chnages already
