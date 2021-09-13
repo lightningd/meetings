@@ -46,3 +46,8 @@
 20:14:41 <rusty> BlueMatt: yeah, e.g. LND used to send an error if you were too slow to handshake, and we used to close channels...
 20:14:46 <t-bast> Agreed with BlueMatt, we can argue about whether quick close needs a feature bits, but warning messages are really optional messages you're free to ignore but that may help you diagnose issues in the wild, and that doesn't need a feature bit at all, that's why we split messages in odd vs even
 20:14:52 <roasbeef> t-bast: bugs related to the warning message? or bugs in new feature that assume the warning message?
+20:15:10 <BlueMatt> I do think rusty has a point here, though, I would be in favor of a feature bit that means "yes, errors are errors, follow the spec, stop ignoring them"
+20:15:15 <t-bast> roasbeef: bugs in new and old features that now include warning messages which help us figure out what's wrong on the other side
+20:15:25 <rusty> t-bast: I disagree, I'd really like to get rid of the cases where c-lightning ignores errors because implementations used to send them.
+20:15:40 <roasbeef> t-bast: figruing it out is all manual tho right? given you have no way to programmatically handle the new message as it's just a string?
+20:15:58 <BlueMatt> rusty: re: all-0s, I guess I'm still vaguely of the thinking that reconnect loops absolutely suck, and we should stop throwing our hands up and assuming they're ok.
