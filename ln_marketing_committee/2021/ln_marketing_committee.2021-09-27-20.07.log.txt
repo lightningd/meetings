@@ -74,3 +74,6 @@
 20:26:32 <BlueMatt> roasbeef: I dont think I filed an issue? but, in my case its not a tor or mobile issue, its just lnd ignoring pings, cause its clearnet and actual pings are fine
 20:26:44 <BlueMatt> or lnd being blocked doing other things, i dunno
 20:26:56 <roasbeef> there was some other issue on teh RL repo, where someone found that RL was disconnecting from lnd peers due to some like queueing thing...would need to go find it
+20:27:40 <roasbeef> we respond to pings right away and don't add them to some processing queue, I think we was something related to like initial graph download and pings at the same time or the idle conn timer, can go find the link later
+20:27:49 <t-bast> There is more rationale about #912 on the ML, Joost clearly laid out how that can be used to create invoices without storing anything until it's paid
+20:27:53 <BlueMatt> roasbeef: https://github.com/lightningnetwork/lnd/issues/4006 you mean? that's not an RL bug, but we've now got explicit code to handle it just like c-lightning does....it'd be really nice if y'all fixed it to be spec-compliant
