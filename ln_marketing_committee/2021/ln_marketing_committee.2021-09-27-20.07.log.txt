@@ -143,3 +143,8 @@
 20:41:20 <t-bast> rusty: that's on my for putting only 32 bytes there!
 20:41:30 <t-bast> I'll offer Joost a beer to make up for this
 20:41:34 <roasbeef> ariard: they set an even bit, if they can't pay it, hopefully the wallet bubbles it up to them
+20:41:51 <rusty> ariard: at some point, it has to be forced.  Until then it's unusable.
+20:42:03 <cdecker[m]> Exactly
+20:42:05 <rusty> Long transition, but "the second best time is today"
+20:42:07 <ariard> rusty: i see, so we deploy-and-wait?
+20:42:29 <rusty> ariard: yeah.  I wish we had a wallet compatibility matrix for these things :(
