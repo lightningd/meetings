@@ -202,3 +202,8 @@
 20:53:47 <ariard> let's move on ?
 20:53:58 <joostjgr> cdecker,rusty: could encrypt, but in the scheme that i described in the ml post, the preimage is based on a H(receiver_secret | payment_meta). So if the sender would modify the meta, the preimage cannot be reproduced anymore receiver-side
 20:54:24 <BlueMatt> ack merge 908
+20:55:02 <rusty> ack 908
+20:55:06 <ariard> #topic #894
+20:55:31 <BlueMatt> we merged the pr to fully comply with this this morning.
+20:55:37 <t-bast> Nice!
+20:55:51 <t-bast> I have the PR pending on the eclair side, waiting for the spec PR to be accepted
