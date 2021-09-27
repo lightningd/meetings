@@ -100,3 +100,6 @@
 20:32:38 <roasbeef> I think the section where it adds the feature bit for the new thing itself is wrong though? just has 9 there, whereas I think it only needs to be inthe invoice (or maybe not at all?)
 20:32:59 <t-bast> roasbeef: that's what 9 is, isn't it? Feature bit only in invoice?
 20:33:15 <ariard> roasbeef: agree you assume interactivity with the recipient to learn the payload field
+20:33:59 <t-bast> roasbeef: the way I'd use it is that I would set it mandatory in my stateless invoices, since I'll *need* the payer to include it for the payment to succeed
+20:34:00 <cdecker[m]> Colliding featurebits?...
+20:34:05 <ariard> like yes we only need the feature bit in the invoice, nowhere else ?
