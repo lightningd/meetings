@@ -63,3 +63,10 @@
 20:24:22 <mschmoock> just wanted to note repreating a ping may result in spam on the other side when there was TCP jam
 20:24:24 <ariard> oky, so let's end up with both 911 and 917 as it offers more flexibility to node operators?
 20:25:00 <BlueMatt> pending further discussion and implementaiton of course, but, I'm fine with both.
+20:25:08 <mschmoock> we could prioritize 917 as its simpler
+20:25:15 <t-bast> ACK
+20:25:17 <mschmoock> well both are simple
+20:25:37 <ariard> #topic #912
+20:25:48 <roasbeef> BlueMatt: yeh I saw that issue, we had really low values there, but then raied it a ton, once we started testing from diff locations, throw in tor/mobile, etc, etc
+20:25:56 <cdecker[m]> ACK, it also takes the longest to bear fruit
+20:26:01 <roasbeef> generally the timeouts prob need to be longer than you anticipate is what we've leanred over the years
