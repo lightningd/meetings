@@ -306,3 +306,7 @@
 21:22:17 <roasbeef> rusty: +1
 21:22:18 <ariard> roasbeef: mo repos can have different maintainers ?
 21:22:18 <rusty> t-bast: naah, we just give ryanthegentry the keys,
+21:22:32 <roasbeef> ariard: yeh  needs to be boostrapped vs going w/ what's already bootstrapped
+21:22:41 <ryanthegentry> 😈
+21:22:47 <roasbeef> not like we have some issue w/ too many PRs landing quickly in the BOLT repo as is ;)
+21:23:20 <ariard> roasbeef: with that reasoning BIPs could have be used few years ago :) ?
