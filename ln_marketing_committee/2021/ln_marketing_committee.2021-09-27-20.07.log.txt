@@ -1,0 +1,5 @@
+20:07:38 <ariard> #startmeeting LN marketing committee
+20:07:38 <lndev-bot> Meeting started Mon Sep 27 20:07:38 2021 UTC and is due to finish in 60 minutes.  The chair is ariard. Information about MeetBot at http://wiki.debian.org/MeetBot.
+20:07:38 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+20:07:38 <lndev-bot> The meeting name has been set to 'ln_marketing_committee'
+20:07:40 <t-bast> Please diverge from the item order in the issue!
