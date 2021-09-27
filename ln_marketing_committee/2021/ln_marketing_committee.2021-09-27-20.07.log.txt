@@ -123,3 +123,12 @@
 20:38:31 <rusty> roasbeef: even feature bit they don't understand
 20:38:56 <t-bast> roasbeef: no, as a payer you don't put anything in there, you just copy what's inside the invoice into the final payload you'll send to the recipient
 20:39:25 <t-bast> roasbeef: the payer doesn't choose what to put in that field, it's like payment_secret, he just pastes what was in the invoice
+20:39:42 <ariard> t-bast: though you will need to encode both `payment_secret` and `payment_metadata` as you don't know if the sender support the latter one ?
+20:39:48 <roasbeef> yeh even bit
+20:39:51 <ariard> at least for a while
+20:40:05 <rusty> ariard: no, if they specified metadata they know what they're doing.
+20:40:13 <cdecker[m]> Should be optional for the transitory time until senders commonly support it
+20:40:18 <roasbeef> t-bast: yes, but I mean how do they know what to copy into where as the payer
+20:40:31 <roasbeef> understood the receiver is what's populating the field
+20:40:33 <t-bast> roasbeef: gotcha, then it's because it will be a mandatory feature bit in the invoice
+20:40:33 <rusty> AFAICT this is a generalized payment_secret in fact.
