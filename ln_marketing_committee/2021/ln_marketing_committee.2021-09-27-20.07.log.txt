@@ -132,3 +132,14 @@
 20:40:31 <roasbeef> understood the receiver is what's populating the field
 20:40:33 <t-bast> roasbeef: gotcha, then it's because it will be a mandatory feature bit in the invoice
 20:40:33 <rusty> AFAICT this is a generalized payment_secret in fact.
+20:40:43 <cdecker[m]> Otherwise we end up with two QR codes everywhere, one with and one without the data
+20:40:54 <roasbeef> ahh ok so we're saying there's always a _specific_ metadata TLV we're using right?
+20:40:57 <roasbeef> so it's universal
+20:40:58 <t-bast> rusty: exactly, it feels like we could have done a variable-size payment_secret...it would have been more future-prof
+20:41:14 <roasbeef> ok totally makes ense now
+20:41:14 <ariard> rusty: how the recipient who is issuing the invoice can know that the invoice reader understands the new field?
+20:41:15 <rusty> t-bast: yeah, lesson learned.
+20:41:15 <roasbeef> sense*
+20:41:20 <t-bast> rusty: that's on my for putting only 32 bytes there!
+20:41:30 <t-bast> I'll offer Joost a beer to make up for this
+20:41:34 <roasbeef> ariard: they set an even bit, if they can't pay it, hopefully the wallet bubbles it up to them
