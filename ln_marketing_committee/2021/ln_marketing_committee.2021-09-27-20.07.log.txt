@@ -327,3 +327,8 @@
 21:27:36 <t-bast> _niftynei: thinking outside the box
 21:28:03 <cdecker[m]> The more I think about it the less I like re-using the same repo, separate repo and bootstrap with us as initial reviewers
 21:28:03 <roasbeef> same repo lets us also keep that git history in place, re something moving from bLIP to BOLT in a single commit
+21:28:40 <roasbeef> cdecker[m]: +1, no need to boostrap a new set of ppl, we haven't had any sort of like bitcoin.org issues w/ teh current set of maintainers (kek)
+21:28:52 <cdecker[m]> ..., I vote for separate repos ... (damn mobile keyboard)
+21:29:09 <ariard> roasbeef: the reverse argument, it would let a new set of ppl emerge ?
+21:29:16 <roasbeef> ok lets go w/ cdecker[m] first statement ;)
+21:29:40 <rusty> OK hard timeout for me.  Feel free to keep arguing.  But roasbeef is right :)
