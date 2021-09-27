@@ -45,3 +45,10 @@
 20:21:03 <roasbeef> cdecker[m]: things are kiiiinda like that rn w/ how many nodes are tor only these days
 20:21:29 <cdecker[m]> No if you tell me I'm seeing you as x.y.z and then you use that in your ann it still means you're unrachable
 20:21:50 <rusty> We already have a local addr filter for our auto-announce stuff, so this is pretty easy.  Oh, BTW we're moving to 15-45 second pings for all connections in next release, because ppl were complaining about Tor circuits breaking and them only finding out when trying to send an HTLC...
+20:22:17 <BlueMatt> we tried to move to 5 second pings, now all my lnd peers drop off regularly
+20:22:17 <BlueMatt> but c-lightning peers seem totally fine
+20:22:31 <BlueMatt> but I think we'll stick with 5 second pings, tbh
+20:22:33 <rusty> BlueMatt spec says once per minute, IIRC.
+20:22:38 <mschmoock> theres some spam limit on pings...
+20:22:47 <BlueMatt> i know it does, but we had the same problem as you, and even worse on mobile cause of ios limits....
+20:22:56 <rusty> - SHOULD NOT send `ping` messages more often than once every 30 seconds.
