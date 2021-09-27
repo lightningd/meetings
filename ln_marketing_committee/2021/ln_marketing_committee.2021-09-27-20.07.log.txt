@@ -20,3 +20,5 @@
 20:14:13 <BlueMatt> just means a node can auto-discover its addresses with zero configuration. eg if you configure tor but forget to configure your ln node, and then tell someone to connect to you on tor, *boom* your ln node is now configured
 20:14:25 <BlueMatt> which seems nifty, but, indeed, isnt exactly a headline features
 20:14:42 <t-bast> Oh ok, so you'd really put the onion address in there
+20:15:11 <BlueMatt> yea, just putting "I think I'm connecting to 10.X" isnt exactly useful :)
+20:15:51 <cdecker[m]> Or Tor will return 127.0.0.1 always :-)
