@@ -233,3 +233,12 @@
 21:01:27 <roasbeef> #2 sure ppl can add w/e they want there, but question is under what conditions is it "rejected"? if they say "I like bLIPs more for this", is that ok? how is that paragraph to be evaluated?
 21:01:46 <BlueMatt> my understanding of the current doc is that *nothing* in a blip gets "evaluated"
 21:01:50 <roasbeef> #3 same repo imo, just a sub-folder, then a single commit can "upgrade" something to a BOLT, and we keep all the same maintainers and don't need to boostrap a new set
+21:01:57 <rusty> Yeah, I'm happy if something begins as a BLIP and then everyone implements it and it becomes a must have and we promote it.  What harm?
+21:02:01 <BlueMatt> outside of "yep, you wrote the things the blip doc says you should write and its english/not obvious spam"
+21:02:11 <roasbeef> ok yeh sure
+21:02:14 <_niftynei> re #3 i think there's a small problem with acceptance criteria for the bolt repo (e.g. implementation and interop testing is well defined for the BOLT repo), a new repo and develop a new 'acceptance criteria' there
+21:02:22 <BlueMatt> rusty: dunno if anyone's disagreeing with that?
+21:02:23 <ryanthegentry> BlueMatt: +1
+21:02:40 <_niftynei> e.g. who's merging blips into the repo?
+21:02:53 <_niftynei> why not keep it as a PR until it's fully baked then, if  it's intended to be a bolt anyway?
+21:02:57 <ariard> on #3, i prefer a separate repo, otherwise I think we're giving the perception that blips have been actually reviwed and interop tested by LN devs
