@@ -300,3 +300,9 @@
 21:19:30 <_niftynei> it's possible that you'd need to change a feature bit later, as opposed to always changing them for the high experimental bit selection etc
 21:20:38 <ariard> yeah I don't have a strong opinion on blips 1) new BOLT or all-in-BOLT9
 21:21:16 <t-bast> If we do bLIPs in a separate repo, the reservation of feature bits / tlv / message types will also happen in the bLIP repo so point 1) would be moot
+21:21:31 <roasbeef> mo repos mo problems
+21:22:01 <rusty> blib/ subdir.
+21:22:03 <t-bast> I think we'd have more velocity with a separate repo TBH, which is more suited for bLIPs
+21:22:17 <roasbeef> rusty: +1
+21:22:18 <ariard> roasbeef: mo repos can have different maintainers ?
+21:22:18 <rusty> t-bast: naah, we just give ryanthegentry the keys,
