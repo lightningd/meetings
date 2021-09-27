@@ -310,3 +310,4 @@
 21:22:41 <ryanthegentry> 😈
 21:22:47 <roasbeef> not like we have some issue w/ too many PRs landing quickly in the BOLT repo as is ;)
 21:23:20 <ariard> roasbeef: with that reasoning BIPs could have be used few years ago :) ?
+21:23:30 <ariard> instead of starting BOLTs
