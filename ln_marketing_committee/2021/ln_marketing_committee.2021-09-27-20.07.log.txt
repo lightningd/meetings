@@ -22,3 +22,9 @@
 20:14:42 <t-bast> Oh ok, so you'd really put the onion address in there
 20:15:11 <BlueMatt> yea, just putting "I think I'm connecting to 10.X" isnt exactly useful :)
 20:15:51 <cdecker[m]> Or Tor will return 127.0.0.1 always :-)
+20:16:01 <BlueMatt> right or that
+20:16:01 <mschmoock> Okay, when we discover some new address supposedly of our node, whats the best strategy to use that? BlueMatt mentioned just to broadcast 'all' (maybe upt to a limit)
+20:16:18 <cdecker[m]> So needs to filter local addrs
+20:16:20 <BlueMatt> yea, i dunno, doesn't need to be in the spec imo.
+20:16:29 <BlueMatt> just "dont include local addresses" could be mentioned
+20:16:48 <BlueMatt> but nodes can figure out for themselves how they want to use the addresses provided, including them all is cool, trying to filter is cool too.
