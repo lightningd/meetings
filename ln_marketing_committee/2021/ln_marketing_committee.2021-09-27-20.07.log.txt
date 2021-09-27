@@ -252,3 +252,4 @@
 21:05:20 <_niftynei> are there welll defined criteria for when to merge a bLIP PR?
 21:05:24 <BlueMatt> if you cant do that, probably stop and make it a bolt pr :)
 21:05:36 <BlueMatt> _niftynei: when its gramatically english and not spam :)
+21:06:30 <_niftynei> if there's two distinct tracks for merging, seems like a great reason to keep them in a separate repo imo
