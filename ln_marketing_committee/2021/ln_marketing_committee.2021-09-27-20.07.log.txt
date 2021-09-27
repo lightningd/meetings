@@ -200,3 +200,5 @@
 20:53:26 <lnd-bot> [13lightning-rfc] 15t-bast pushed 1 commit to 06bitcoin-amount-restrictions: 02https://github.com/lightningnetwork/lightning-rfc/compare/8ebf0c58aa93...40d5cb4a732a
 20:53:26 <lnd-bot> 13lightning-rfc/06bitcoin-amount-restrictions 1440d5cb4 15t-bast: fixup! Restrict bitcoin amounts
 20:53:47 <ariard> let's move on ?
+20:53:58 <joostjgr> cdecker,rusty: could encrypt, but in the scheme that i described in the ml post, the preimage is based on a H(receiver_secret | payment_meta). So if the sender would modify the meta, the preimage cannot be reproduced anymore receiver-side
+20:54:24 <BlueMatt> ack merge 908
