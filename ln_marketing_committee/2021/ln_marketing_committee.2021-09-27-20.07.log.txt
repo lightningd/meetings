@@ -52,3 +52,9 @@
 20:22:38 <mschmoock> theres some spam limit on pings...
 20:22:47 <BlueMatt> i know it does, but we had the same problem as you, and even worse on mobile cause of ios limits....
 20:22:56 <rusty> - SHOULD NOT send `ping` messages more often than once every 30 seconds.
+20:23:13 <BlueMatt> maybe we should drop that, that's not really practical on mobile, especially ios
+20:23:22 <mschmoock> (and should not send another ping when the pong has not been received)
+20:23:23 <BlueMatt> I'll follow up, I had forgotten that was there, thanks
+20:23:32 <rusty> BlueMatt: +1
+20:23:35 <BlueMatt> mschmoock: well that's easy, we just disconnect if the pong wasn't received!
+20:23:58 <mschmoock> sure
