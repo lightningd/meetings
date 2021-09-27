@@ -253,3 +253,10 @@
 21:05:24 <BlueMatt> if you cant do that, probably stop and make it a bolt pr :)
 21:05:36 <BlueMatt> _niftynei: when its gramatically english and not spam :)
 21:06:30 <_niftynei> if there's two distinct tracks for merging, seems like a great reason to keep them in a separate repo imo
+21:07:09 <cdecker[m]> Yeah, I'd prefer a separate repo as well
+21:07:10 <ariard> i agree, and bLIP acceptance might evolve with its own criterias with time and another set of maintainers
+21:07:10 <t-bast> I tend to agree
+21:07:20 <_niftynei> doesnt seem like this is a controversial opinion either re: separate repo or not, anyway didnt mean to divert the discussion
+21:07:26 <rusty> BTW, I prefer all my magic numbers in one place, so I'd prefer the TLV reservations and feature bits in bolt 9.  Even if it's a separate section which indicates draftiness.  We currently use PR titles to reserve them.
+21:07:36 <BlueMatt> ack rusty
+21:07:58 <rusty> (And there have been mistakes with this process, even, since it's racy).
