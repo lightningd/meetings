@@ -340,3 +340,8 @@
 21:30:52 <roasbeef> ariard: yeh they can participate w/ the same repo, they already know the lightning-rfc repo (which isn't called the BOLT repo btw ;) )
 21:31:02 <cdecker[m]> roasbeef: wow, that's the overstatement of the year
 21:31:36 <ariard> roasbeef: but they can also participate more easily in a separate repo as you don't have the cognitive overload of browsing thrugh issues
+21:31:47 <roasbeef> gotta go consume calories to keep my meat sack going
+21:31:53 <roasbeef> ariard: labels, gg
+21:31:58 <harding> It shouldn't count for much, but a vote from me for separate repos (as I mentioned on the ML months ago).
+21:32:05 <ariard> okay let's time out
+21:32:15 <ariard> #endmeeting

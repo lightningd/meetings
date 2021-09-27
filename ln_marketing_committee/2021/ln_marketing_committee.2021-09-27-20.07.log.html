@@ -1,0 +1,374 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">20:07:38</span><span class="nk"> &lt;ariard&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">LN marketing committee</span>
+<a name="l-2"></a><span class="tm">20:07:38</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Sep 27 20:07:38 2021 UTC and is due to finish in 60 minutes.  The chair is ariard. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">20:07:38</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">20:07:38</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'ln_marketing_committee'
+<a name="l-5"></a><span class="tm">20:07:40</span><span class="nk"> &lt;t-bast&gt;</span> Please diverge from the item order in the issue!
+<a name="l-6"></a><span class="tm">20:11:41</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">mschmoock:</span> iiuc it's either #911 or #917 ?
+<a name="l-7"></a><span class="tm">20:11:42</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm game for either. networking is hard, lots of issues with any option.
+<a name="l-8"></a><span class="tm">20:12:00</span><span class="nk"> &lt;mschmoock&gt;</span> well, lot of back and forth. I think 917 is better
+<a name="l-9"></a><span class="tm">20:12:00</span><span class="nk"> &lt;BlueMatt&gt;</span> honestly could do both, but at least 917 is probably a better first-pass imo if only because it means less setup on the admin end
+<a name="l-10"></a><span class="tm">20:12:27</span><span class="nk"> &lt;t-bast&gt;</span> I'd slightly prefer avoiding using DNS explicitly, so #917 for me, but I don't have a strong NACK on #911 though
+<a name="l-11"></a><span class="tm">20:12:29</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> had said concept ack on 917 and said he was gonna start coding :)
+<a name="l-12"></a><span class="tm">20:12:39</span><span class="nk"> &lt;mschmoock&gt;</span> is there any usage of #917 when using IPv6 addresses ? Is there something like IPv6 NAT??
+<a name="l-13"></a><span class="tm">20:12:53</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> yes, there is address mapping in v6
+<a name="l-14"></a><span class="tm">20:13:01</span><span class="nk"> &lt;BlueMatt&gt;</span> so i think it may be useful for v6 as well
+<a name="l-15"></a><span class="tm">20:13:06</span><span class="nk"> &lt;mschmoock&gt;</span> good
+<a name="l-16"></a><span class="tm">20:13:07</span><span class="nk"> &lt;BlueMatt&gt;</span> its probably also useful for tor
+<a name="l-17"></a><span class="tm">20:13:23</span><span class="nk"> &lt;BlueMatt&gt;</span> though somewhat less so
+<a name="l-18"></a><span class="tm">20:13:26</span><span class="nk"> &lt;t-bast&gt;</span> Can you detail why it's useful for tor?
+<a name="l-19"></a><span class="tm">20:14:09</span><span class="nk"> &lt;t-bast&gt;</span> To check the bridges used (bridge isn't the right term, is it)?
+<a name="l-20"></a><span class="tm">20:14:13</span><span class="nk"> &lt;BlueMatt&gt;</span> just means a node can auto-discover its addresses with zero configuration. eg if you configure tor but forget to configure your ln node, and then tell someone to connect to you on tor, *boom* your ln node is now configured
+<a name="l-21"></a><span class="tm">20:14:25</span><span class="nk"> &lt;BlueMatt&gt;</span> which seems nifty, but, indeed, isnt exactly a headline features
+<a name="l-22"></a><span class="tm">20:14:42</span><span class="nk"> &lt;t-bast&gt;</span> Oh ok, so you'd really put the onion address in there
+<a name="l-23"></a><span class="tm">20:15:11</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, just putting "I think I'm connecting to 10.X" isnt exactly useful :)
+<a name="l-24"></a><span class="tm">20:15:51</span><span class="nk"> &lt;cdecker[m]&gt;</span> Or Tor will return 127.0.0.1 always :-)
+<a name="l-25"></a><span class="tm">20:16:01</span><span class="nk"> &lt;BlueMatt&gt;</span> right or that
+<a name="l-26"></a><span class="tm">20:16:01</span><span class="nk"> &lt;mschmoock&gt;</span> Okay, when we discover some new address supposedly of our node, whats the best strategy to use that? BlueMatt mentioned just to broadcast 'all' (maybe upt to a limit)
+<a name="l-27"></a><span class="tm">20:16:18</span><span class="nk"> &lt;cdecker[m]&gt;</span> So needs to filter local addrs
+<a name="l-28"></a><span class="tm">20:16:20</span><span class="nk"> &lt;BlueMatt&gt;</span> yea, i dunno, doesn't need to be in the spec imo.
+<a name="l-29"></a><span class="tm">20:16:29</span><span class="nk"> &lt;BlueMatt&gt;</span> just "dont include local addresses" could be mentioned
+<a name="l-30"></a><span class="tm">20:16:48</span><span class="nk"> &lt;BlueMatt&gt;</span> but nodes can figure out for themselves how they want to use the addresses provided, including them all is cool, trying to filter is cool too.
+<a name="l-31"></a><span class="tm">20:16:57</span><span class="nk"> &lt;roasbeef&gt;</span> ye re #910, I think we just need more impls, we're working on one in the background, but also considering how the pubkey based routing proposal would also serve to simplify certain aspects of it
+<a name="l-32"></a><span class="tm">20:17:36</span><span class="nk"> &lt;roasbeef&gt;</span> made a comment on #917 that it doesn't really seem to be an alternative to #911: https://github.com/lightningnetwork/lightning-rfc/pull/917#issuecomment-928235635
+<a name="l-33"></a><span class="tm">20:18:18</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">BlueMatt:</span> by "dont iclude local addresses"  you mean more than the note about pricate addresses I already added?
+<a name="l-34"></a><span class="tm">20:18:34</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> yes, but I hadnt realized you'd done that already :)
+<a name="l-35"></a><span class="tm">20:18:44</span><span class="nk"> &lt;mschmoock&gt;</span> k
+<a name="l-36"></a><span class="tm">20:18:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> true, both could potentially be used for different purposes
+<a name="l-37"></a><span class="tm">20:19:10</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yeh the DNS thing seems really useful for ppl managing automated fleets of nodes
+<a name="l-38"></a><span class="tm">20:19:17</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">911/917:</span> Hmm, you'd need to open a port either way.  But I agree it's not really an alternative; people *do* run dyndns, and that works, using your peers to get your current address; it's probably harmless to do, but it's a bit weird.
+<a name="l-39"></a><span class="tm">20:19:28</span><span class="nk"> &lt;mschmoock&gt;</span> I have 911 half implemented. 917 is easy
+<a name="l-40"></a><span class="tm">20:19:30</span><span class="nk"> &lt;roasbeef&gt;</span> rn we have a setting where lnd will hit a DNS record and then advertise the new IP addr as a workaround, since we don't support DNS names within the node_ann
+<a name="l-41"></a><span class="tm">20:19:44</span><span class="nk"> &lt;roasbeef&gt;</span> since when we spin up a new node, we may not yet know what the reachable IP of it is gonna be
+<a name="l-42"></a><span class="tm">20:19:48</span><span class="nk"> &lt;cdecker[m]&gt;</span> We should mkae sure this doesnt end up with all NATed and unconnectable node anns
+<a name="l-43"></a><span class="tm">20:20:23</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> fwiw, bitcoin core uses "what my peer told me my ip address is" for advertisements to some extent and it works reasonably. of course its different in core cause you don't care if its "my" ip vs "a node's ip" but still
+<a name="l-44"></a><span class="tm">20:20:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> presumably ignoring local addresses suffices?
+<a name="l-45"></a><span class="tm">20:21:03</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> things are kiiiinda like that rn w/ how many nodes are tor only these days
+<a name="l-46"></a><span class="tm">20:21:29</span><span class="nk"> &lt;cdecker[m]&gt;</span> No if you tell me I'm seeing you as x.y.z and then you use that in your ann it still means you're unrachable
+<a name="l-47"></a><span class="tm">20:21:50</span><span class="nk"> &lt;rusty&gt;</span> We already have a local addr filter for our auto-announce stuff, so this is pretty easy.  Oh, BTW we're moving to 15-45 second pings for all connections in next release, because ppl were complaining about Tor circuits breaking and them only finding out when trying to send an HTLC...
+<a name="l-48"></a><span class="tm">20:22:17</span><span class="nk"> &lt;BlueMatt&gt;</span> we tried to move to 5 second pings, now all my lnd peers drop off regularly
+<a name="l-49"></a><span class="tm">20:22:17</span><span class="nk"> &lt;BlueMatt&gt;</span> but c-lightning peers seem totally fine
+<a name="l-50"></a><span class="tm">20:22:31</span><span class="nk"> &lt;BlueMatt&gt;</span> but I think we'll stick with 5 second pings, tbh
+<a name="l-51"></a><span class="tm">20:22:33</span><span class="nk"> &lt;rusty&gt;</span> BlueMatt spec says once per minute, IIRC.
+<a name="l-52"></a><span class="tm">20:22:38</span><span class="nk"> &lt;mschmoock&gt;</span> theres some spam limit on pings...
+<a name="l-53"></a><span class="tm">20:22:47</span><span class="nk"> &lt;BlueMatt&gt;</span> i know it does, but we had the same problem as you, and even worse on mobile cause of ios limits....
+<a name="l-54"></a><span class="tm">20:22:56</span><span class="nk"> &lt;rusty&gt;</span> - SHOULD NOT send `ping` messages more often than once every 30 seconds.
+<a name="l-55"></a><span class="tm">20:23:13</span><span class="nk"> &lt;BlueMatt&gt;</span> maybe we should drop that, that's not really practical on mobile, especially ios
+<a name="l-56"></a><span class="tm">20:23:22</span><span class="nk"> &lt;mschmoock&gt;</span> (and should not send another ping when the pong has not been received)
+<a name="l-57"></a><span class="tm">20:23:23</span><span class="nk"> &lt;BlueMatt&gt;</span> I'll follow up, I had forgotten that was there, thanks
+<a name="l-58"></a><span class="tm">20:23:32</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> +1
+<a name="l-59"></a><span class="tm">20:23:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> well that's easy, we just disconnect if the pong wasn't received!
+<a name="l-60"></a><span class="tm">20:23:58</span><span class="nk"> &lt;mschmoock&gt;</span> sure
+<a name="l-61"></a><span class="tm">20:24:18</span><span class="nk"> &lt;BlueMatt&gt;</span> anyway, seems we're done with 917?
+<a name="l-62"></a><span class="tm">20:24:20</span><span class="nk"> &lt;BlueMatt&gt;</span> next topic?
+<a name="l-63"></a><span class="tm">20:24:22</span><span class="nk"> &lt;mschmoock&gt;</span> just wanted to note repreating a ping may result in spam on the other side when there was TCP jam
+<a name="l-64"></a><span class="tm">20:24:24</span><span class="nk"> &lt;ariard&gt;</span> oky, so let's end up with both 911 and 917 as it offers more flexibility to node operators?
+<a name="l-65"></a><span class="tm">20:25:00</span><span class="nk"> &lt;BlueMatt&gt;</span> pending further discussion and implementaiton of course, but, I'm fine with both.
+<a name="l-66"></a><span class="tm">20:25:08</span><span class="nk"> &lt;mschmoock&gt;</span> we could prioritize 917 as its simpler
+<a name="l-67"></a><span class="tm">20:25:15</span><span class="nk"> &lt;t-bast&gt;</span> ACK
+<a name="l-68"></a><span class="tm">20:25:17</span><span class="nk"> &lt;mschmoock&gt;</span> well both are simple
+<a name="l-69"></a><span class="tm">20:25:37</span><span class="nk"> &lt;ariard&gt;</span> <span class="topic">#topic </span><span class="topicline">#912</span>
+<a name="l-70"></a><span class="tm">20:25:48</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> yeh I saw that issue, we had really low values there, but then raied it a ton, once we started testing from diff locations, throw in tor/mobile, etc, etc
+<a name="l-71"></a><span class="tm">20:25:56</span><span class="nk"> &lt;cdecker[m]&gt;</span> ACK, it also takes the longest to bear fruit
+<a name="l-72"></a><span class="tm">20:26:01</span><span class="nk"> &lt;roasbeef&gt;</span> generally the timeouts prob need to be longer than you anticipate is what we've leanred over the years
+<a name="l-73"></a><span class="tm">20:26:30</span><span class="nk"> &lt;ariard&gt;</span> what's the state of ML discussion on 912 ?
+<a name="l-74"></a><span class="tm">20:26:32</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> I dont think I filed an issue? but, in my case its not a tor or mobile issue, its just lnd ignoring pings, cause its clearnet and actual pings are fine
+<a name="l-75"></a><span class="tm">20:26:44</span><span class="nk"> &lt;BlueMatt&gt;</span> or lnd being blocked doing other things, i dunno
+<a name="l-76"></a><span class="tm">20:26:56</span><span class="nk"> &lt;roasbeef&gt;</span> there was some other issue on teh RL repo, where someone found that RL was disconnecting from lnd peers due to some like queueing thing...would need to go find it
+<a name="l-77"></a><span class="tm">20:27:40</span><span class="nk"> &lt;roasbeef&gt;</span> we respond to pings right away and don't add them to some processing queue, I think we was something related to like initial graph download and pings at the same time or the idle conn timer, can go find the link later
+<a name="l-78"></a><span class="tm">20:27:49</span><span class="nk"> &lt;t-bast&gt;</span> There is more rationale about #912 on the ML, Joost clearly laid out how that can be used to create invoices without storing anything until it's paid
+<a name="l-79"></a><span class="tm">20:27:53</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> https://github.com/lightningnetwork/lnd/issues/4006 you mean? that's not an RL bug, but we've now got explicit code to handle it just like c-lightning does....it'd be really nice if y'all fixed it to be spec-compliant
+<a name="l-80"></a><span class="tm">20:28:11</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> no that's not it
+<a name="l-81"></a><span class="tm">20:28:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> we dont (materially) queue graph messages or pings? unless y'all just dump the whole graph into the send queue? In any case, I do not see this issue with c-lightning
+<a name="l-82"></a><span class="tm">20:28:42</span><span class="nk"> &lt;BlueMatt&gt;</span> and its rare enough that I dont care much
+<a name="l-83"></a><span class="tm">20:28:54</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> and you pointed it's coming for free with route blinding ?
+<a name="l-84"></a><span class="tm">20:28:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-September/003236.html</span>
+<a name="l-85"></a><span class="tm">20:29:13</span><span class="nk"> &lt;BlueMatt&gt;</span> anyway, on-topic... by "its free with route blinding" you just mean that you have ~the same feature in route blinding, no?
+<a name="l-86"></a><span class="tm">20:29:22</span><span class="nk"> &lt;BlueMatt&gt;</span> so its easy to land this pr and then use it in route blinding instead of a new field?
+<a name="l-87"></a><span class="tm">20:29:26</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> yep, in route blinding we already have an encrypted field that is provided by the final recipient that the sender must include in the final payload
+<a name="l-88"></a><span class="tm">20:29:40</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> so that can enable stateless invoices as well
+<a name="l-89"></a><span class="tm">20:30:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> it couldn't be used directly in route blinding, it has to be layered inside a different tlv stream, but it's easy to reuse code though
+<a name="l-90"></a><span class="tm">20:30:40</span><span class="nk"> &lt;BlueMatt&gt;</span> ah, ok
+<a name="l-91"></a><span class="tm">20:30:51</span><span class="nk"> &lt;t-bast&gt;</span> I was pointing it out, but route blinding isn't a reason to *not* do #912 now
+<a name="l-92"></a><span class="tm">20:31:10</span><span class="nk"> &lt;t-bast&gt;</span> too many negations in my sentence...
+<a name="l-93"></a><span class="tm">20:31:24</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">TL;DR:</span> #912 seems useful on its own :)
+<a name="l-94"></a><span class="tm">20:31:39</span><span class="nk"> &lt;BlueMatt&gt;</span> ok, cool
+<a name="l-95"></a><span class="tm">20:31:40</span><span class="nk"> &lt;BlueMatt&gt;</span> agreed
+<a name="l-96"></a><span class="tm">20:31:41</span><span class="nk"> &lt;BlueMatt&gt;</span> lets do it :)
+<a name="l-97"></a><span class="tm">20:31:44</span><span class="nk"> &lt;BlueMatt&gt;</span> implementations plz :)
+<a name="l-98"></a><span class="tm">20:31:55</span><span class="nk"> &lt;roasbeef&gt;</span> 912 is pretty straight forward, lets ppl add new things that the client can interpret, _maybe_ also needs a feature bit w.r.t critical use cases so a user can know: "ok you must put that thing in the metadata in the onion"
+<a name="l-99"></a><span class="tm">20:32:18</span><span class="nk"> &lt;ariard&gt;</span> okay and the size bound of the new field is only hop payload?
+<a name="l-100"></a><span class="tm">20:32:38</span><span class="nk"> &lt;roasbeef&gt;</span> I think the section where it adds the feature bit for the new thing itself is wrong though? just has 9 there, whereas I think it only needs to be inthe invoice (or maybe not at all?)
+<a name="l-101"></a><span class="tm">20:32:59</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> that's what 9 is, isn't it? Feature bit only in invoice?
+<a name="l-102"></a><span class="tm">20:33:15</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> agree you assume interactivity with the recipient to learn the payload field
+<a name="l-103"></a><span class="tm">20:33:59</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> the way I'd use it is that I would set it mandatory in my stateless invoices, since I'll *need* the payer to include it for the payment to succeed
+<a name="l-104"></a><span class="tm">20:34:00</span><span class="nk"> &lt;cdecker[m]&gt;</span> Colliding featurebits?...
+<a name="l-105"></a><span class="tm">20:34:05</span><span class="nk"> &lt;ariard&gt;</span> like yes we only need the feature bit in the invoice, nowhere else ?
+<a name="l-106"></a><span class="tm">20:34:27</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> ahh duhhh ok ignore me lol
+<a name="l-107"></a><span class="tm">20:34:32</span><span class="nk"> &lt;roasbeef&gt;</span> was expected a letter like the rest :p
+<a name="l-108"></a><span class="tm">20:34:36</span><span class="nk"> &lt;rusty&gt;</span> Yes, and this carries across trivially to bolt12, it's pretty easy.  We need to assign a number though.
+<a name="l-109"></a><span class="tm">20:35:04</span><span class="nk"> &lt;rusty&gt;</span> It's probably useless unless it's an even feature, right?  I mean, if it's optional why bother?
+<a name="l-110"></a><span class="tm">20:35:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> agreed, I don't see how it could be useful without being mandatory
+<a name="l-111"></a><span class="tm">20:36:08</span><span class="nk"> &lt;t-bast&gt;</span> We don't have a `9+` option like we have for `C+`/`C-` though
+<a name="l-112"></a><span class="tm">20:36:25</span><span class="nk"> &lt;ariard&gt;</span> Well sounds we'll introduce one ?
+<a name="l-113"></a><span class="tm">20:36:43</span><span class="nk"> &lt;rusty&gt;</span> Technically it's not mandatory.  It's just practically mandatory :)
+<a name="l-114"></a><span class="tm">20:36:45</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> you'd need another bit to force them to know that you want them to use the stateless derivation tho right?
+<a name="l-115"></a><span class="tm">20:37:05</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> the payer doesn't need to do/know anything
+<a name="l-116"></a><span class="tm">20:37:20</span><span class="nk"> &lt;cdecker[m]&gt;</span> Sort of supercedes payment_secrets though, so we can save some space again
+<a name="l-117"></a><span class="tm">20:37:21</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> the presence of the field is enough,th feature bit is just so old wallets reject it properly rather than wondering why it failed.
+<a name="l-118"></a><span class="tm">20:37:24</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> they just need to include this tlv in the final payload, all the logic happens at the recipient side
+<a name="l-119"></a><span class="tm">20:37:28</span><span class="nk"> &lt;lnd-bot&gt;</span> [13lightning-rfc] 15TheBlueMatt opened pull request #918: Drop ping sending rate-limit suggestion (06master...062021-09-drop-ping-rl) 02https://github.com/lightningnetwork/lightning-rfc/pull/918
+<a name="l-120"></a><span class="tm">20:38:01</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker[m]:</span> good point, the way Joost uses it makes the `payment_secret` redundant
+<a name="l-121"></a><span class="tm">20:38:25</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> t-bast how would they know they _must_ use it like that thuogh?
+<a name="l-122"></a><span class="tm">20:38:31</span><span class="nk"> &lt;roasbeef&gt;</span> since ppl can in theory put w/e data they ant in there?
+<a name="l-123"></a><span class="tm">20:38:31</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> even feature bit they don't understand
+<a name="l-124"></a><span class="tm">20:38:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> no, as a payer you don't put anything in there, you just copy what's inside the invoice into the final payload you'll send to the recipient
+<a name="l-125"></a><span class="tm">20:39:25</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> the payer doesn't choose what to put in that field, it's like payment_secret, he just pastes what was in the invoice
+<a name="l-126"></a><span class="tm">20:39:42</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> though you will need to encode both `payment_secret` and `payment_metadata` as you don't know if the sender support the latter one ?
+<a name="l-127"></a><span class="tm">20:39:48</span><span class="nk"> &lt;roasbeef&gt;</span> yeh even bit
+<a name="l-128"></a><span class="tm">20:39:51</span><span class="nk"> &lt;ariard&gt;</span> at least for a while
+<a name="l-129"></a><span class="tm">20:40:05</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> no, if they specified metadata they know what they're doing.
+<a name="l-130"></a><span class="tm">20:40:13</span><span class="nk"> &lt;cdecker[m]&gt;</span> Should be optional for the transitory time until senders commonly support it
+<a name="l-131"></a><span class="tm">20:40:18</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> yes, but I mean how do they know what to copy into where as the payer
+<a name="l-132"></a><span class="tm">20:40:31</span><span class="nk"> &lt;roasbeef&gt;</span> understood the receiver is what's populating the field
+<a name="l-133"></a><span class="tm">20:40:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> gotcha, then it's because it will be a mandatory feature bit in the invoice
+<a name="l-134"></a><span class="tm">20:40:33</span><span class="nk"> &lt;rusty&gt;</span> AFAICT this is a generalized payment_secret in fact.
+<a name="l-135"></a><span class="tm">20:40:43</span><span class="nk"> &lt;cdecker[m]&gt;</span> Otherwise we end up with two QR codes everywhere, one with and one without the data
+<a name="l-136"></a><span class="tm">20:40:54</span><span class="nk"> &lt;roasbeef&gt;</span> ahh ok so we're saying there's always a _specific_ metadata TLV we're using right?
+<a name="l-137"></a><span class="tm">20:40:57</span><span class="nk"> &lt;roasbeef&gt;</span> so it's universal
+<a name="l-138"></a><span class="tm">20:40:58</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> exactly, it feels like we could have done a variable-size payment_secret...it would have been more future-prof
+<a name="l-139"></a><span class="tm">20:41:14</span><span class="nk"> &lt;roasbeef&gt;</span> ok totally makes ense now
+<a name="l-140"></a><span class="tm">20:41:14</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> how the recipient who is issuing the invoice can know that the invoice reader understands the new field?
+<a name="l-141"></a><span class="tm">20:41:15</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yeah, lesson learned.
+<a name="l-142"></a><span class="tm">20:41:15</span><span class="nk"> &lt;roasbeef&gt;</span> sense*
+<a name="l-143"></a><span class="tm">20:41:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> that's on my for putting only 32 bytes there!
+<a name="l-144"></a><span class="tm">20:41:30</span><span class="nk"> &lt;t-bast&gt;</span> I'll offer Joost a beer to make up for this
+<a name="l-145"></a><span class="tm">20:41:34</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> they set an even bit, if they can't pay it, hopefully the wallet bubbles it up to them
+<a name="l-146"></a><span class="tm">20:41:51</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> at some point, it has to be forced.  Until then it's unusable.
+<a name="l-147"></a><span class="tm">20:42:03</span><span class="nk"> &lt;cdecker[m]&gt;</span> Exactly
+<a name="l-148"></a><span class="tm">20:42:05</span><span class="nk"> &lt;rusty&gt;</span> Long transition, but "the second best time is today"
+<a name="l-149"></a><span class="tm">20:42:07</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> i see, so we deploy-and-wait?
+<a name="l-150"></a><span class="tm">20:42:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> yeah.  I wish we had a wallet compatibility matrix for these things :(
+<a name="l-151"></a><span class="tm">20:42:53</span><span class="nk"> &lt;t-bast&gt;</span> Luckily the sender code is really trivial: grab a field from the invoice and put it inside a TLV, so hopefully it ships everywhere soon
+<a name="l-152"></a><span class="tm">20:43:07</span><span class="nk"> &lt;t-bast&gt;</span> Then in months/years we can enjoy this feature :)
+<a name="l-153"></a><span class="tm">20:43:15</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> and omit the payment secret, right?
+<a name="l-154"></a><span class="tm">20:43:31</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> yep, once the spec PR is updated to say that!
+<a name="l-155"></a><span class="tm">20:43:37</span><span class="nk"> &lt;cdecker[m]&gt;</span> No that needs to stay until migration completes
+<a name="l-156"></a><span class="tm">20:43:53</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">joost to update spec to point out this replaces the payment secret in the onion.</span>
+<a name="l-157"></a><span class="tm">20:44:01</span><span class="nk"> &lt;cdecker[m]&gt;</span> It's either secret or data, until data becomes compulsory
+<a name="l-158"></a><span class="tm">20:44:20</span><span class="nk"> &lt;BlueMatt&gt;</span> given we just made payment secret required, I dunno if it "replaces"?
+<a name="l-159"></a><span class="tm">20:44:20</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker[m]:</span> both must appear in BOLT11 invoice, but you MUST only send one in onion.
+<a name="l-160"></a><span class="tm">20:44:20</span><span class="nk"> &lt;cdecker[m]&gt;</span> Ah, both until data becomes compulsory
+<a name="l-161"></a><span class="tm">20:44:21</span><span class="nk"> &lt;BlueMatt&gt;</span> more that its a generalized form of
+<a name="l-162"></a><span class="tm">20:44:31</span><span class="nk"> &lt;roasbeef&gt;</span> payment secret can just stand on its own really, we already require it for all mpp stuff as is
+<a name="l-163"></a><span class="tm">20:44:35</span><span class="nk"> &lt;cdecker[m]&gt;</span> Correct, was talking about invoice
+<a name="l-164"></a><span class="tm">20:45:05</span><span class="nk"> &lt;ariard&gt;</span> okay more on this topic or we can move on?
+<a name="l-165"></a><span class="tm">20:45:07</span><span class="nk"> &lt;BlueMatt&gt;</span> what roasbeef said, why bother replacing? If you want more data, just add more data, you still probably need at least 32 bytes of random or payment-specific data either way
+<a name="l-166"></a><span class="tm">20:45:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">joost to grab feature bits for this</span>
+<a name="l-167"></a><span class="tm">20:45:20</span><span class="nk"> &lt;BlueMatt&gt;</span> its kinda awkward, but no reason to fight the backwards compatibility fight over it.
+<a name="l-168"></a><span class="tm">20:46:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> it's trivial to swap it out, so why do both?  I mean, MPP is unspeced so it can do whatever, but normal payments, seems a waste of space.
+<a name="l-169"></a><span class="tm">20:46:42</span><span class="nk"> &lt;rusty&gt;</span> (keysend MPP that is)
+<a name="l-170"></a><span class="tm">20:47:24</span><span class="nk"> &lt;BlueMatt&gt;</span> ah, ok, I misunderstood the context, sorry about that.
+<a name="l-171"></a><span class="tm">20:47:29</span><span class="nk"> &lt;BlueMatt&gt;</span> lets move on in any case?
+<a name="l-172"></a><span class="tm">20:47:35</span><span class="nk"> &lt;ariard&gt;</span> <span class="topic">#topic </span><span class="topicline">#908</span>
+<a name="l-173"></a><span class="tm">20:47:44</span><span class="nk"> &lt;ariard&gt;</span> https://github.com/lightningnetwork/lightning-rfc/pull/908
+<a name="l-174"></a><span class="tm">20:48:04</span><span class="nk"> &lt;BlueMatt&gt;</span> we've changed to "implement" this, so ack on our end
+<a name="l-175"></a><span class="tm">20:48:23</span><span class="nk"> &lt;ariard&gt;</span> Make it mandatory to encode bitcoin amounts compliant with the upper bound of 21M BTC
+<a name="l-176"></a><span class="tm">20:49:10</span><span class="nk"> &lt;t-bast&gt;</span> Otherwise people will accuse lightning-BTC to inflate the bitcoin supply
+<a name="l-177"></a><span class="tm">20:49:12</span><span class="nk"> &lt;rusty&gt;</span> Sure, why not.  We changed a few things to use channel capacity where we didn't care, for this reason.   I can add a wire checker to make sure.
+<a name="l-178"></a><span class="tm">20:49:59</span><span class="nk"> &lt;ariard&gt;</span> okay so good with #908, need for interops testing?
+<a name="l-179"></a><span class="tm">20:50:04</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">Typo:</span> /21 millions/21 million/ because english is weird.
+<a name="l-180"></a><span class="tm">20:50:18</span><span class="nk"> &lt;t-bast&gt;</span> We actually have a live interop testing, because eclair has always done that xD
+<a name="l-181"></a><span class="tm">20:50:29</span><span class="nk"> &lt;mschmoock&gt;</span> Some people use Lighning with different (non-bitcoin) networks. Should we change to working a bit to reflect that?
+<a name="l-182"></a><span class="tm">20:50:32</span><span class="nk"> &lt;ariard&gt;</span> Yeah it's just not merged on our side
+<a name="l-183"></a><span class="tm">20:50:35</span><span class="nk"> &lt;BlueMatt&gt;</span> heh, I'm fien taking it, then :)
+<a name="l-184"></a><span class="tm">20:50:47</span><span class="nk"> &lt;mschmoock&gt;</span> like "the maximum the underlying supports" ?
+<a name="l-185"></a><span class="tm">20:50:57</span><span class="nk"> &lt;BlueMatt&gt;</span> meh?
+<a name="l-186"></a><span class="tm">20:50:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> really, 21 million must stay singular??
+<a name="l-187"></a><span class="tm">20:50:59</span><span class="nk"> &lt;joostjgr&gt;</span> sorry, only entering the room now. quickly read back the discussion on payment metadata and merging with payment secret. one thing is that the payment secret also protects against probing. if payment metadata is something like 'beer', it isn't very secure. so with a single field, there should probably some guideline on how to populate it (enough randomness)
+<a name="l-188"></a><span class="tm">20:51:00</span><span class="nk"> &lt;mschmoock&gt;</span> :D
+<a name="l-189"></a><span class="tm">20:51:12</span><span class="nk"> &lt;BlueMatt&gt;</span> the BOLTs specify bitcoin-lightning, if you want to do something else, you can modify the BOLTs as required :)
+<a name="l-190"></a><span class="tm">20:51:42</span><span class="nk"> &lt;ariard&gt;</span> like some many things can get wrong if you use lightning on other networks and aren't specificed in the BOLTs
+<a name="l-191"></a><span class="tm">20:51:46</span><span class="nk"> &lt;cdecker[m]&gt;</span> Likely you'd encrypt the data for yourself joostjgr , wouldn't you?
+<a name="l-192"></a><span class="tm">20:52:04</span><span class="nk"> &lt;ariard&gt;</span> s/some/so/g
+<a name="l-193"></a><span class="tm">20:52:04</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">joostjgr:</span> yeah, I was assuming it was a signed blob.  How would it work without somehow encoding the preimage?
+<a name="l-194"></a><span class="tm">20:52:23</span><span class="nk"> &lt;mschmoock&gt;</span> also, isnt 0x000775f05a074000  (21mio) more than the actual maximum?
+<a name="l-195"></a><span class="tm">20:52:27</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">mschmoock:</span> yes.  Yes it is.
+<a name="l-196"></a><span class="tm">20:52:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">:shrug:</span> pedantics :p
+<a name="l-197"></a><span class="tm">20:52:41</span><span class="nk"> &lt;rusty&gt;</span> Because I lost at least 10,000 sats playing with lightning.
+<a name="l-198"></a><span class="tm">20:52:56</span><span class="nk"> &lt;t-bast&gt;</span> xD
+<a name="l-199"></a><span class="tm">20:53:07 </span><span class="nka">* BlueMatt</span> <span class="ac">shakes fists at OP_RETURN outputs</span>
+<a name="l-200"></a><span class="tm">20:53:26</span><span class="nk"> &lt;lnd-bot&gt;</span> [13lightning-rfc] 15t-bast pushed 1 commit to 06bitcoin-amount-restrictions: 02https://github.com/lightningnetwork/lightning-rfc/compare/8ebf0c58aa93...40d5cb4a732a
+<a name="l-201"></a><span class="tm">20:53:26</span><span class="nk"> &lt;lnd-bot&gt;</span> 13lightning-rfc/06bitcoin-amount-restrictions 1440d5cb4 15t-bast: fixup! Restrict bitcoin amounts
+<a name="l-202"></a><span class="tm">20:53:47</span><span class="nk"> &lt;ariard&gt;</span> let's move on ?
+<a name="l-203"></a><span class="tm">20:53:58</span><span class="nk"> &lt;joostjgr&gt;</span> <span class="hi">cdecker,rusty:</span> could encrypt, but in the scheme that i described in the ml post, the preimage is based on a H(receiver_secret | payment_meta). So if the sender would modify the meta, the preimage cannot be reproduced anymore receiver-side
+<a name="l-204"></a><span class="tm">20:54:24</span><span class="nk"> &lt;BlueMatt&gt;</span> ack merge 908
+<a name="l-205"></a><span class="tm">20:55:02</span><span class="nk"> &lt;rusty&gt;</span> ack 908
+<a name="l-206"></a><span class="tm">20:55:06</span><span class="nk"> &lt;ariard&gt;</span> <span class="topic">#topic </span><span class="topicline">#894</span>
+<a name="l-207"></a><span class="tm">20:55:31</span><span class="nk"> &lt;BlueMatt&gt;</span> we merged the pr to fully comply with this this morning.
+<a name="l-208"></a><span class="tm">20:55:37</span><span class="nk"> &lt;t-bast&gt;</span> Nice!
+<a name="l-209"></a><span class="tm">20:55:51</span><span class="nk"> &lt;t-bast&gt;</span> I have the PR pending on the eclair side, waiting for the spec PR to be accepted
+<a name="l-210"></a><span class="tm">20:55:54</span><span class="nk"> &lt;BlueMatt&gt;</span> I can put it on a public node if anyone wants to test
+<a name="l-211"></a><span class="tm">20:56:02</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">joostjgr:</span>  Thanks, I'm behind on ml.  OK, so decide if we want to replace payment secret or not, I guess maybe not?  But slightly more efficient if we do?
+<a name="l-212"></a><span class="tm">20:56:39</span><span class="nk"> &lt;ariard&gt;</span> yes we're good on our side
+<a name="l-213"></a><span class="tm">20:56:47</span><span class="nk"> &lt;t-bast&gt;</span> I blasted non-segwit out of existence in the last iteration of this PR, but implementations can of course continue supporting this for as long as they'd like, they just need to ensure they handle the potential edge case where they'd need to force-close
+<a name="l-214"></a><span class="tm">20:56:54</span><span class="nk"> &lt;rusty&gt;</span> Ack, will implement.
+<a name="l-215"></a><span class="tm">20:57:12</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well invoice creator gets to choose what to enforce
+<a name="l-216"></a><span class="tm">20:57:35</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker[m]:</span> 894?
+<a name="l-217"></a><span class="tm">20:57:35</span><span class="nk"> &lt;ariard&gt;</span> okay let's move on to next topic
+<a name="l-218"></a><span class="tm">20:57:57</span><span class="nk"> &lt;cdecker[m]&gt;</span> Was laggin, sorry, ignore me
+<a name="l-219"></a><span class="tm">20:58:04</span><span class="nk"> &lt;ariard&gt;</span> <span class="topic">#topic </span><span class="topicline">#884</span>
+<a name="l-220"></a><span class="tm">20:58:31</span><span class="nk"> &lt;ariard&gt;</span> blips-or-not-blips-that-is-the-question :)
+<a name="l-221"></a><span class="tm">20:58:35</span><span class="nk"> &lt;ryanthegentry&gt;</span> seems like 3 outstanding questions: 1) new BOLT for TLV/message type/etc. registry or adjust BOLT 9
+<a name="l-222"></a><span class="tm">20:58:55</span><span class="nk"> &lt;ryanthegentry&gt;</span> 2) require discussion of "not intended to be universal hence not BOLT" in bLIP
+<a name="l-223"></a><span class="tm">20:59:06</span><span class="nk"> &lt;ryanthegentry&gt;</span> 3) in lightning-rfc repo or new repo?
+<a name="l-224"></a><span class="tm">20:59:48</span><span class="nk"> &lt;ryanthegentry&gt;</span> my reading rn is consensus is 1) new BOLT 2) idk, new issue 3) start in lightning-rfc, move if people complain. Does that sound right?
+<a name="l-225"></a><span class="tm">20:59:49</span><span class="nk"> &lt;t-bast&gt;</span> My personal choice: 1) New BOLT 2) Don't mind 3) Small preferrence for new repo inside lightningnetwork org, but can live with them inside the BOLTs
+<a name="l-226"></a><span class="tm">20:59:59</span><span class="nk"> &lt;joostjgr&gt;</span> <span class="hi">rusty:</span> yes, i guess not replace. metadata is just an optional field without any security requirements
+<a name="l-227"></a><span class="tm">21:00:09</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#2 </span><span class="cmdline">is just "please write a paragraph discussing the tradeoffs in ux between this being common to everyone and not", so I dont really see why its a big deal aside from it being nice to make sure people think hard about such things. I've historically found "make someone write a pharagraph" is a really really effective way to ensure things are considered, whether you read what they wrote or not.</span>
+<a name="l-228"></a><span class="tm">21:00:14</span><span class="nk"> &lt;roasbeef&gt;</span> i'm cool w/ new BOLT for the registry/tlv stuff for bLIP, no strong feeling there
+<a name="l-229"></a><span class="tm">21:00:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="cmd">#3 </span><span class="cmdline">- i dont care</span>
+<a name="l-230"></a><span class="tm">21:00:28</span><span class="nk"> &lt;BlueMatt&gt;</span> and #1 i dont care lol
+<a name="l-231"></a><span class="tm">21:00:38</span><span class="nk"> &lt;ariard&gt;</span> my preference 1) new BOLT and 3) in a new repo
+<a name="l-232"></a><span class="tm">21:00:55</span><span class="nk"> &lt;ryanthegentry&gt;</span> any burning passion against 2)?
+<a name="l-233"></a><span class="tm">21:01:27</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="cmd">#2 </span><span class="cmdline">sure ppl can add w/e they want there, but question is under what conditions is it "rejected"? if they say "I like bLIPs more for this", is that ok? how is that paragraph to be evaluated?</span>
+<a name="l-234"></a><span class="tm">21:01:46</span><span class="nk"> &lt;BlueMatt&gt;</span> my understanding of the current doc is that *nothing* in a blip gets "evaluated"
+<a name="l-235"></a><span class="tm">21:01:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="cmd">#3 </span><span class="cmdline">same repo imo, just a sub-folder, then a single commit can "upgrade" something to a BOLT, and we keep all the same maintainers and don't need to boostrap a new set</span>
+<a name="l-236"></a><span class="tm">21:01:57</span><span class="nk"> &lt;rusty&gt;</span> Yeah, I'm happy if something begins as a BLIP and then everyone implements it and it becomes a must have and we promote it.  What harm?
+<a name="l-237"></a><span class="tm">21:02:01</span><span class="nk"> &lt;BlueMatt&gt;</span> outside of "yep, you wrote the things the blip doc says you should write and its english/not obvious spam"
+<a name="l-238"></a><span class="tm">21:02:11</span><span class="nk"> &lt;roasbeef&gt;</span> ok yeh sure
+<a name="l-239"></a><span class="tm">21:02:14</span><span class="nk"> &lt;_niftynei&gt;</span> re #3 i think there's a small problem with acceptance criteria for the bolt repo (e.g. implementation and interop testing is well defined for the BOLT repo), a new repo and develop a new 'acceptance criteria' there
+<a name="l-240"></a><span class="tm">21:02:22</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> dunno if anyone's disagreeing with that?
+<a name="l-241"></a><span class="tm">21:02:23</span><span class="nk"> &lt;ryanthegentry&gt;</span> <span class="hi">BlueMatt:</span> +1
+<a name="l-242"></a><span class="tm">21:02:40</span><span class="nk"> &lt;_niftynei&gt;</span> e.g. who's merging blips into the repo?
+<a name="l-243"></a><span class="tm">21:02:53</span><span class="nk"> &lt;_niftynei&gt;</span> why not keep it as a PR until it's fully baked then, if  it's intended to be a bolt anyway?
+<a name="l-244"></a><span class="tm">21:02:57</span><span class="nk"> &lt;ariard&gt;</span> on #3, i prefer a separate repo, otherwise I think we're giving the perception that blips have been actually reviwed and interop tested by LN devs
+<a name="l-245"></a><span class="tm">21:03:35</span><span class="nk"> &lt;_niftynei&gt;</span> like clearly there's some form of 'inclusion' that needs to be formed for the bLIP process that isn't the BOLT process (hence their development)
+<a name="l-246"></a><span class="tm">21:03:42</span><span class="nk"> &lt;ariard&gt;</span> and if it successful as a process, it's going to be a cognitive overload for contributors involved in BOLT but not desirous to follow on a regular basis the blips
+<a name="l-247"></a><span class="tm">21:04:24</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">_niftynei:</span> right, well that's why i suggested that bLIPs need to include some text that explains why you aren't targeting univeral deployment.
+<a name="l-248"></a><span class="tm">21:04:44</span><span class="nk"> &lt;_niftynei&gt;</span> 'bLIP acceptance' is a whole can of worms and it seems nice to cordon that off into its own project immo
+<a name="l-249"></a><span class="tm">21:04:53</span><span class="nk"> &lt;BlueMatt&gt;</span> its not an "acceptance" criteria
+<a name="l-250"></a><span class="tm">21:04:57</span><span class="nk"> &lt;BlueMatt&gt;</span> cause, indeed, thats a can of worms
+<a name="l-251"></a><span class="tm">21:05:16</span><span class="nk"> &lt;BlueMatt&gt;</span> but you're required to write down in enlish why this bLIP is *not* being targeted at "most nodes implement this"
+<a name="l-252"></a><span class="tm">21:05:20</span><span class="nk"> &lt;_niftynei&gt;</span> are there welll defined criteria for when to merge a bLIP PR?
+<a name="l-253"></a><span class="tm">21:05:24</span><span class="nk"> &lt;BlueMatt&gt;</span> if you cant do that, probably stop and make it a bolt pr :)
+<a name="l-254"></a><span class="tm">21:05:36</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">_niftynei:</span> when its gramatically english and not spam :)
+<a name="l-255"></a><span class="tm">21:06:30</span><span class="nk"> &lt;_niftynei&gt;</span> if there's two distinct tracks for merging, seems like a great reason to keep them in a separate repo imo
+<a name="l-256"></a><span class="tm">21:07:09</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yeah, I'd prefer a separate repo as well
+<a name="l-257"></a><span class="tm">21:07:10</span><span class="nk"> &lt;ariard&gt;</span> i agree, and bLIP acceptance might evolve with its own criterias with time and another set of maintainers
+<a name="l-258"></a><span class="tm">21:07:10</span><span class="nk"> &lt;t-bast&gt;</span> I tend to agree
+<a name="l-259"></a><span class="tm">21:07:20</span><span class="nk"> &lt;_niftynei&gt;</span> doesnt seem like this is a controversial opinion either re: separate repo or not, anyway didnt mean to divert the discussion
+<a name="l-260"></a><span class="tm">21:07:26</span><span class="nk"> &lt;rusty&gt;</span> BTW, I prefer all my magic numbers in one place, so I'd prefer the TLV reservations and feature bits in bolt 9.  Even if it's a separate section which indicates draftiness.  We currently use PR titles to reserve them.
+<a name="l-261"></a><span class="tm">21:07:36</span><span class="nk"> &lt;BlueMatt&gt;</span> ack rusty
+<a name="l-262"></a><span class="tm">21:07:58</span><span class="nk"> &lt;rusty&gt;</span> (And there have been mistakes with this process, even, since it's racy).
+<a name="l-263"></a><span class="tm">21:08:24</span><span class="nk"> &lt;t-bast&gt;</span> the PR title reservation is horrible btw, I preferred when we'd just choose the feature bits when actually merging, and used temporary ones in a high range until it was merged...
+<a name="l-264"></a><span class="tm">21:08:27</span><span class="nk"> &lt;rusty&gt;</span> Oh, BTW, cdecker[m] noticed someone setting feature bit 32,000-something in a node announce...
+<a name="l-265"></a><span class="tm">21:08:50</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yeah that was a 4.1kB node announcement :-)
+<a name="l-266"></a><span class="tm">21:08:54</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> painful transition for experimental features though....
+<a name="l-267"></a><span class="tm">21:09:21</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> why? You simply accept two feature bits for a given feature
+<a name="l-268"></a><span class="tm">21:09:31</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> and can keep advertizing both for a while
+<a name="l-269"></a><span class="tm">21:09:47</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> but now we have the how-do-I-assign-the-first-feature problem...
+<a name="l-270"></a><span class="tm">21:10:02</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> and it's likely that the final version that gets merged may have slightly diverged from the experimental one, which makes it easy to keep them separate and working
+<a name="l-271"></a><span class="tm">21:10:07</span><span class="nk"> &lt;rusty&gt;</span> ... leading us to reserve them in the initial PR title?
+<a name="l-272"></a><span class="tm">21:10:26</span><span class="nk"> &lt;_niftynei&gt;</span> i like being able to search the PRs for 'feature bit' to figure out what's been reserved
+<a name="l-273"></a><span class="tm">21:10:31</span><span class="nk"> &lt;_niftynei&gt;</span> fwiw
+<a name="l-274"></a><span class="tm">21:10:54</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> you don't need to, only when doing cross-compat tests, where someone will need to talk to you anyway to know how to test your impl, so you can tell them "I have a node over there and I use feature bit XXX"
+<a name="l-275"></a><span class="tm">21:11:21</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">_niftynei:</span> when it gets to the end of the process outlined in the "defining" bLIP doc (re when its merged)
+<a name="l-276"></a><span class="tm">21:11:29</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> except we've had experimental options for over two years, e.g. blinded HTLCs :(
+<a name="l-277"></a><span class="tm">21:11:47</span><span class="nk"> &lt;roasbeef&gt;</span> +1 for bits or w/e in one place, can coin flip it as far as I'm concerned tho lol
+<a name="l-278"></a><span class="tm">21:12:00</span><span class="nk"> &lt;BlueMatt&gt;</span> ack roasbeef
+<a name="l-279"></a><span class="tm">21:12:29</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> heh WTB sparse feature bit encoding :p
+<a name="l-280"></a><span class="tm">21:12:29</span><span class="nk"> &lt;BlueMatt&gt;</span> lets do it by just putting a txt file on a random host we all telnet into
+<a name="l-281"></a><span class="tm">21:12:31</span><span class="nk"> &lt;roasbeef&gt;</span> kek
+<a name="l-282"></a><span class="tm">21:12:32</span><span class="nk"> &lt;BlueMatt&gt;</span> EDIT_THIS_FOR_FEATURE_RESERVATIONS.txt
+<a name="l-283"></a><span class="tm">21:12:39</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> I've had trampoline for more than that using an experimental feature bit xD, and I'm glad I did because the final version will likely be a bit different and I'll need to support both during the transition
+<a name="l-284"></a><span class="tm">21:13:55</span><span class="nk"> &lt;roasbeef&gt;</span> totally diff topic but have been thinking about trampoline more lately and how to go about answering some of the open deployment questions in my mind (how the nodes are discveroed/selected, latency+fee impacts, how to propagate back failure info, if nodes will retry _within_ the network themselves or not, etc)
+<a name="l-285"></a><span class="tm">21:14:40</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> what happens if during the spec review we find that we want to make a breaking change to the proposed onion message for example? You'll have a harder time keeping existing code compatible if you need to keep the same feature bit, don't you?
+<a name="l-286"></a><span class="tm">21:15:21</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> neat, I'd love to chat about all this!
+<a name="l-287"></a><span class="tm">21:15:22</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yes, but feature bits can always be reassigned, worst-case.  In practice it's been less hassle than the system we had before.
+<a name="l-288"></a><span class="tm">21:15:29</span><span class="nk"> &lt;_niftynei&gt;</span> (worth pointing out we're struggling with acceptance criteria for blip 1 as is... if it was in its own repo we wouldn't have to worry much about what needs to be done to merge it here )
+<a name="l-289"></a><span class="tm">21:15:31</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> diff bit maybe? I guess depends on if w/e is out there will continue doing so, or if there was a small window like non-zero fee anchors and we weren't too concerned about it
+<a name="l-290"></a><span class="tm">21:15:51</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">_niftynei:</span> agreed!
+<a name="l-291"></a><span class="tm">21:16:07</span><span class="nk"> &lt;rusty&gt;</span> The idea was to reduce roadblocks, and it did that somewhat.
+<a name="l-292"></a><span class="tm">21:16:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty/roasbeef:</span> I'm not necessarily saying we should change back, but wanted to highlight why I'm still uneasy with the PR title reservation
+<a name="l-293"></a><span class="tm">21:17:10</span><span class="nk"> &lt;t-bast&gt;</span> But sorry for hijacking the bLIP thread, let's resume!
+<a name="l-294"></a><span class="tm">21:18:03</span><span class="nk"> &lt;roasbeef&gt;</span> are we struggling w/ it? in the diff it describes what "acceptance" is there
+<a name="l-295"></a><span class="tm">21:18:23</span><span class="nk"> &lt;_niftynei&gt;</span> in some sense, all feature bits are experimental until implemented/merged; in the current process we're optimistically using low bits for experimental features
+<a name="l-296"></a><span class="tm">21:18:23</span><span class="nk"> &lt;roasbeef&gt;</span> basically just some min criteria, "doesn't do anything bad, etc"
+<a name="l-297"></a><span class="tm">21:18:30</span><span class="nk"> &lt;BlueMatt&gt;</span> I hae to run, sorry folks. roasbeef: as a follow up, if you could dig up the aforementioned indication that maybe ldk peers were not able to stay connected with lnd I'd greatly appreciate it. I'm not aware of any inconsistency today, aside from eg lnd running on RPIs seems to sometimes not want to respond to pings in a timely manner.
+<a name="l-298"></a><span class="tm">21:18:33</span><span class="nk"> &lt;rusty&gt;</span> Remember kids, features 100+ are for playing with!  1000+ is not to escape onto mainnet please!
+<a name="l-299"></a><span class="tm">21:18:59</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">roasbeef:</span> "don't be stupid" requirement?  I like it!
+<a name="l-300"></a><span class="tm">21:19:30</span><span class="nk"> &lt;_niftynei&gt;</span> it's possible that you'd need to change a feature bit later, as opposed to always changing them for the high experimental bit selection etc
+<a name="l-301"></a><span class="tm">21:20:38</span><span class="nk"> &lt;ariard&gt;</span> yeah I don't have a strong opinion on blips 1) new BOLT or all-in-BOLT9
+<a name="l-302"></a><span class="tm">21:21:16</span><span class="nk"> &lt;t-bast&gt;</span> If we do bLIPs in a separate repo, the reservation of feature bits / tlv / message types will also happen in the bLIP repo so point 1) would be moot
+<a name="l-303"></a><span class="tm">21:21:31</span><span class="nk"> &lt;roasbeef&gt;</span> mo repos mo problems
+<a name="l-304"></a><span class="tm">21:22:01</span><span class="nk"> &lt;rusty&gt;</span> blib/ subdir.
+<a name="l-305"></a><span class="tm">21:22:03</span><span class="nk"> &lt;t-bast&gt;</span> I think we'd have more velocity with a separate repo TBH, which is more suited for bLIPs
+<a name="l-306"></a><span class="tm">21:22:17</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> +1
+<a name="l-307"></a><span class="tm">21:22:18</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> mo repos can have different maintainers ?
+<a name="l-308"></a><span class="tm">21:22:18</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> naah, we just give ryanthegentry the keys,
+<a name="l-309"></a><span class="tm">21:22:32</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh  needs to be boostrapped vs going w/ what's already bootstrapped
+<a name="l-310"></a><span class="tm">21:22:41</span><span class="nk"> &lt;ryanthegentry&gt;</span> 😈
+<a name="l-311"></a><span class="tm">21:22:47</span><span class="nk"> &lt;roasbeef&gt;</span> not like we have some issue w/ too many PRs landing quickly in the BOLT repo as is ;)
+<a name="l-312"></a><span class="tm">21:23:20</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> with that reasoning BIPs could have be used few years ago :) ?
+<a name="l-313"></a><span class="tm">21:23:30</span><span class="nk"> &lt;ariard&gt;</span> instead of starting BOLTs
+<a name="l-314"></a><span class="tm">21:24:29</span><span class="nk"> &lt;roasbeef&gt;</span> nah imo, was still a good idea to do BOLTs first, smaller group of ppl could move quickly amongst ourselves to build out all the critical early stuff not having luke-jr be the arbiter of everything
+<a name="l-315"></a><span class="tm">21:24:29</span><span class="nk"> &lt;ariard&gt;</span> though I think the blessing perception point still holds, accepting the blips in the same repo that's at least a janitorial work on our side which could be interpreted as a low-ack
+<a name="l-316"></a><span class="tm">21:24:30</span><span class="nk"> &lt;roasbeef&gt;</span> bolts have also prob changed more than any existing BIP as well
+<a name="l-317"></a><span class="tm">21:24:57</span><span class="nk"> &lt;_niftynei&gt;</span> ... why are bLIPs not BIPs again?? :P
+<a name="l-318"></a><span class="tm">21:24:59</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> but we can apply the same argument, a smaller groups of blips editors will move faster than the whole set of BOLTs devs
+<a name="l-319"></a><span class="tm">21:25:42</span><span class="nk"> &lt;roasbeef&gt;</span> they're diff processes tho, bLIPs don't have the "2 impls" rule as an example
+<a name="l-320"></a><span class="tm">21:26:28</span><span class="nk"> &lt;ariard&gt;</span> so if they have different rules better to have them in separate repos as it's clearer for any observers that they're different things?
+<a name="l-321"></a><span class="tm">21:26:31</span><span class="nk"> &lt;roasbeef&gt;</span> can just re-use what we have (blip/ subdir as rusty suggested) vs bootstrapping a new repo
+<a name="l-322"></a><span class="tm">21:26:49</span><span class="nk"> &lt;roasbeef&gt;</span> they way I see it, bLIPs are under the BOLT umbrella, so subdir makes sense
+<a name="l-323"></a><span class="tm">21:27:14</span><span class="nk"> &lt;ariard&gt;</span> i'm nack on that, the way I see it bLIPs are a new process of its own
+<a name="l-324"></a><span class="tm">21:27:14</span><span class="nk"> &lt;roasbeef&gt;</span> I guess ppl can mirror in some new one if they really wanna, or something something git sub mobule idk
+<a name="l-325"></a><span class="tm">21:27:16</span><span class="nk"> &lt;_niftynei&gt;</span> what about a ...git submodule
+<a name="l-326"></a><span class="tm">21:27:19</span><span class="nk"> &lt;roasbeef&gt;</span> kek
+<a name="l-327"></a><span class="tm">21:27:36</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">_niftynei:</span> thinking outside the box
+<a name="l-328"></a><span class="tm">21:28:03</span><span class="nk"> &lt;cdecker[m]&gt;</span> The more I think about it the less I like re-using the same repo, separate repo and bootstrap with us as initial reviewers
+<a name="l-329"></a><span class="tm">21:28:03</span><span class="nk"> &lt;roasbeef&gt;</span> same repo lets us also keep that git history in place, re something moving from bLIP to BOLT in a single commit
+<a name="l-330"></a><span class="tm">21:28:40</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> +1, no need to boostrap a new set of ppl, we haven't had any sort of like bitcoin.org issues w/ teh current set of maintainers (kek)
+<a name="l-331"></a><span class="tm">21:28:52</span><span class="nk"> &lt;cdecker[m]&gt;</span> ..., I vote for separate repos ... (damn mobile keyboard)
+<a name="l-332"></a><span class="tm">21:29:09</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> the reverse argument, it would let a new set of ppl emerge ?
+<a name="l-333"></a><span class="tm">21:29:16</span><span class="nk"> &lt;roasbeef&gt;</span> ok lets go w/ cdecker[m] first statement ;)
+<a name="l-334"></a><span class="tm">21:29:40</span><span class="nk"> &lt;rusty&gt;</span> OK hard timeout for me.  Feel free to keep arguing.  But roasbeef is right :)
+<a name="l-335"></a><span class="tm">21:29:41</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> who would that be? idk I wouldn't underestimte all the extra administrative stuff you'd add in there w/ a new repo
+<a name="l-336"></a><span class="tm">21:30:13</span><span class="nk"> &lt;cdecker[m]&gt;</span> Gotta go too, it's been fun ^^
+<a name="l-337"></a><span class="tm">21:30:14</span><span class="nk"> &lt;roasbeef&gt;</span> it's like trying to make a new PoV chain ;)
+<a name="l-338"></a><span class="tm">21:30:19</span><span class="nk"> &lt;roasbeef&gt;</span> PoW chain*
+<a name="l-339"></a><span class="tm">21:30:24</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> new folks from the wider LN ecosystem? dunno hard to see them before they show up
+<a name="l-340"></a><span class="tm">21:30:52</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> yeh they can participate w/ the same repo, they already know the lightning-rfc repo (which isn't called the BOLT repo btw ;) )
+<a name="l-341"></a><span class="tm">21:31:02</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">roasbeef:</span> wow, that's the overstatement of the year
+<a name="l-342"></a><span class="tm">21:31:36</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">roasbeef:</span> but they can also participate more easily in a separate repo as you don't have the cognitive overload of browsing thrugh issues
+<a name="l-343"></a><span class="tm">21:31:47</span><span class="nk"> &lt;roasbeef&gt;</span> gotta go consume calories to keep my meat sack going
+<a name="l-344"></a><span class="tm">21:31:53</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">ariard:</span> labels, gg
+<a name="l-345"></a><span class="tm">21:31:58</span><span class="nk"> &lt;harding&gt;</span> It shouldn't count for much, but a vote from me for separate repos (as I mentioned on the ML months ago).
+<a name="l-346"></a><span class="tm">21:32:05</span><span class="nk"> &lt;ariard&gt;</span> okay let's time out
+<a name="l-347"></a><span class="tm">21:32:15</span><span class="nk"> &lt;ariard&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>
