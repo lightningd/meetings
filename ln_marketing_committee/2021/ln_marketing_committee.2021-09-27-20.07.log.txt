@@ -289,3 +289,5 @@
 21:15:31 <roasbeef> t-bast: diff bit maybe? I guess depends on if w/e is out there will continue doing so, or if there was a small window like non-zero fee anchors and we weren't too concerned about it
 21:15:51 <t-bast> _niftynei: agreed!
 21:16:07 <rusty> The idea was to reduce roadblocks, and it did that somewhat.
+21:16:47 <t-bast> rusty/roasbeef: I'm not necessarily saying we should change back, but wanted to highlight why I'm still uneasy with the PR title reservation
+21:17:10 <t-bast> But sorry for hijacking the bLIP thread, let's resume!
