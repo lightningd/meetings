@@ -332,3 +332,8 @@
 21:29:09 <ariard> roasbeef: the reverse argument, it would let a new set of ppl emerge ?
 21:29:16 <roasbeef> ok lets go w/ cdecker[m] first statement ;)
 21:29:40 <rusty> OK hard timeout for me.  Feel free to keep arguing.  But roasbeef is right :)
+21:29:41 <roasbeef> ariard: who would that be? idk I wouldn't underestimte all the extra administrative stuff you'd add in there w/ a new repo
+21:30:13 <cdecker[m]> Gotta go too, it's been fun ^^
+21:30:14 <roasbeef> it's like trying to make a new PoV chain ;)
+21:30:19 <roasbeef> PoW chain*
+21:30:24 <ariard> roasbeef: new folks from the wider LN ecosystem? dunno hard to see them before they show up
