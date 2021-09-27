@@ -316,3 +316,5 @@
 21:24:30 <roasbeef> bolts have also prob changed more than any existing BIP as well
 21:24:57 <_niftynei> ... why are bLIPs not BIPs again?? :P
 21:24:59 <ariard> roasbeef: but we can apply the same argument, a smaller groups of blips editors will move faster than the whole set of BOLTs devs
+21:25:42 <roasbeef> they're diff processes tho, bLIPs don't have the "2 impls" rule as an example
+21:26:28 <ariard> so if they have different rules better to have them in separate repos as it's clearer for any observers that they're different things?
