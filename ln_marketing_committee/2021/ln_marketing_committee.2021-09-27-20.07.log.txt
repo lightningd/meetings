@@ -77,3 +77,8 @@
 20:27:40 <roasbeef> we respond to pings right away and don't add them to some processing queue, I think we was something related to like initial graph download and pings at the same time or the idle conn timer, can go find the link later
 20:27:49 <t-bast> There is more rationale about #912 on the ML, Joost clearly laid out how that can be used to create invoices without storing anything until it's paid
 20:27:53 <BlueMatt> roasbeef: https://github.com/lightningnetwork/lnd/issues/4006 you mean? that's not an RL bug, but we've now got explicit code to handle it just like c-lightning does....it'd be really nice if y'all fixed it to be spec-compliant
+20:28:11 <roasbeef> BlueMatt: no that's not it
+20:28:35 <BlueMatt> roasbeef: we dont (materially) queue graph messages or pings? unless y'all just dump the whole graph into the send queue? In any case, I do not see this issue with c-lightning
+20:28:42 <BlueMatt> and its rare enough that I dont care much
+20:28:54 <ariard> t-bast: and you pointed it's coming for free with route blinding ?
+20:28:56 <t-bast> #link https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-September/003236.html
