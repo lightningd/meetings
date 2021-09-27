@@ -272,3 +272,7 @@
 21:10:26 <_niftynei> i like being able to search the PRs for 'feature bit' to figure out what's been reserved
 21:10:31 <_niftynei> fwiw
 21:10:54 <t-bast> rusty: you don't need to, only when doing cross-compat tests, where someone will need to talk to you anyway to know how to test your impl, so you can tell them "I have a node over there and I use feature bit XXX"
+21:11:21 <roasbeef> _niftynei: when it gets to the end of the process outlined in the "defining" bLIP doc (re when its merged)
+21:11:29 <rusty> t-bast: except we've had experimental options for over two years, e.g. blinded HTLCs :(
+21:11:47 <roasbeef> +1 for bits or w/e in one place, can coin flip it as far as I'm concerned tho lol
+21:12:00 <BlueMatt> ack roasbeef
