@@ -195,3 +195,8 @@
 20:52:27 <rusty> mschmoock: yes.  Yes it is.
 20:52:41 <BlueMatt> :shrug: pedantics :p
 20:52:41 <rusty> Because I lost at least 10,000 sats playing with lightning.
+20:52:56 <t-bast> xD
+20:53:07 * BlueMatt shakes fists at OP_RETURN outputs
+20:53:26 <lnd-bot> [13lightning-rfc] 15t-bast pushed 1 commit to 06bitcoin-amount-restrictions: 02https://github.com/lightningnetwork/lightning-rfc/compare/8ebf0c58aa93...40d5cb4a732a
+20:53:26 <lnd-bot> 13lightning-rfc/06bitcoin-amount-restrictions 1440d5cb4 15t-bast: fixup! Restrict bitcoin amounts
+20:53:47 <ariard> let's move on ?
