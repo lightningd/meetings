@@ -276,3 +276,8 @@
 21:11:29 <rusty> t-bast: except we've had experimental options for over two years, e.g. blinded HTLCs :(
 21:11:47 <roasbeef> +1 for bits or w/e in one place, can coin flip it as far as I'm concerned tho lol
 21:12:00 <BlueMatt> ack roasbeef
+21:12:29 <roasbeef> cdecker[m]: heh WTB sparse feature bit encoding :p
+21:12:29 <BlueMatt> lets do it by just putting a txt file on a random host we all telnet into
+21:12:31 <roasbeef> kek
+21:12:32 <BlueMatt> EDIT_THIS_FOR_FEATURE_RESERVATIONS.txt
+21:12:39 <t-bast> rusty: I've had trampoline for more than that using an experimental feature bit xD, and I'm glad I did because the final version will likely be a bit different and I'll need to support both during the transition
