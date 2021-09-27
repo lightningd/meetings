@@ -82,3 +82,7 @@
 20:28:42 <BlueMatt> and its rare enough that I dont care much
 20:28:54 <ariard> t-bast: and you pointed it's coming for free with route blinding ?
 20:28:56 <t-bast> #link https://lists.linuxfoundation.org/pipermail/lightning-dev/2021-September/003236.html
+20:29:13 <BlueMatt> anyway, on-topic... by "its free with route blinding" you just mean that you have ~the same feature in route blinding, no?
+20:29:22 <BlueMatt> so its easy to land this pr and then use it in route blinding instead of a new field?
+20:29:26 <t-bast> ariard: yep, in route blinding we already have an encrypted field that is provided by the final recipient that the sender must include in the final payload
+20:29:40 <t-bast> ariard: so that can enable stateless invoices as well
