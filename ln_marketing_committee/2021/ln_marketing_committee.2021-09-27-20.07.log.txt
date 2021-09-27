@@ -291,3 +291,4 @@
 21:16:07 <rusty> The idea was to reduce roadblocks, and it did that somewhat.
 21:16:47 <t-bast> rusty/roasbeef: I'm not necessarily saying we should change back, but wanted to highlight why I'm still uneasy with the PR title reservation
 21:17:10 <t-bast> But sorry for hijacking the bLIP thread, let's resume!
+21:18:03 <roasbeef> are we struggling w/ it? in the diff it describes what "acceptance" is there
