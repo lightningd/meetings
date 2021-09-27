@@ -292,3 +292,8 @@
 21:16:47 <t-bast> rusty/roasbeef: I'm not necessarily saying we should change back, but wanted to highlight why I'm still uneasy with the PR title reservation
 21:17:10 <t-bast> But sorry for hijacking the bLIP thread, let's resume!
 21:18:03 <roasbeef> are we struggling w/ it? in the diff it describes what "acceptance" is there
+21:18:23 <_niftynei> in some sense, all feature bits are experimental until implemented/merged; in the current process we're optimistically using low bits for experimental features
+21:18:23 <roasbeef> basically just some min criteria, "doesn't do anything bad, etc"
+21:18:30 <BlueMatt> I hae to run, sorry folks. roasbeef: as a follow up, if you could dig up the aforementioned indication that maybe ldk peers were not able to stay connected with lnd I'd greatly appreciate it. I'm not aware of any inconsistency today, aside from eg lnd running on RPIs seems to sometimes not want to respond to pings in a timely manner.
+21:18:33 <rusty> Remember kids, features 100+ are for playing with!  1000+ is not to escape onto mainnet please!
+21:18:59 <rusty> roasbeef: "don't be stupid" requirement?  I like it!
