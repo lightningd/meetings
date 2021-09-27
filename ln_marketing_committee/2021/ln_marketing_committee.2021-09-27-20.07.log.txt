@@ -248,3 +248,7 @@
 21:04:44 <_niftynei> 'bLIP acceptance' is a whole can of worms and it seems nice to cordon that off into its own project immo
 21:04:53 <BlueMatt> its not an "acceptance" criteria
 21:04:57 <BlueMatt> cause, indeed, thats a can of worms
+21:05:16 <BlueMatt> but you're required to write down in enlish why this bLIP is *not* being targeted at "most nodes implement this"
+21:05:20 <_niftynei> are there welll defined criteria for when to merge a bLIP PR?
+21:05:24 <BlueMatt> if you cant do that, probably stop and make it a bolt pr :)
+21:05:36 <BlueMatt> _niftynei: when its gramatically english and not spam :)
