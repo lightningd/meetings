@@ -16,3 +16,7 @@
 20:13:07 <BlueMatt> its probably also useful for tor
 20:13:23 <BlueMatt> though somewhat less so
 20:13:26 <t-bast> Can you detail why it's useful for tor?
+20:14:09 <t-bast> To check the bridges used (bridge isn't the right term, is it)?
+20:14:13 <BlueMatt> just means a node can auto-discover its addresses with zero configuration. eg if you configure tor but forget to configure your ln node, and then tell someone to connect to you on tor, *boom* your ln node is now configured
+20:14:25 <BlueMatt> which seems nifty, but, indeed, isnt exactly a headline features
+20:14:42 <t-bast> Oh ok, so you'd really put the onion address in there
