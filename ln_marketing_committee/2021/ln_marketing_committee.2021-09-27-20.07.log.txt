@@ -42,3 +42,6 @@
 20:19:48 <cdecker[m]> We should mkae sure this doesnt end up with all NATed and unconnectable node anns
 20:20:23 <BlueMatt> rusty: fwiw, bitcoin core uses "what my peer told me my ip address is" for advertisements to some extent and it works reasonably. of course its different in core cause you don't care if its "my" ip vs "a node's ip" but still
 20:20:47 <BlueMatt> cdecker[m]: presumably ignoring local addresses suffices?
+20:21:03 <roasbeef> cdecker[m]: things are kiiiinda like that rn w/ how many nodes are tor only these days
+20:21:29 <cdecker[m]> No if you tell me I'm seeing you as x.y.z and then you use that in your ann it still means you're unrachable
+20:21:50 <rusty> We already have a local addr filter for our auto-announce stuff, so this is pretty easy.  Oh, BTW we're moving to 15-45 second pings for all connections in next release, because ppl were complaining about Tor circuits breaking and them only finding out when trying to send an HTLC...
