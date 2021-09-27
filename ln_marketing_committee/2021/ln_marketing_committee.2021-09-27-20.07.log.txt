@@ -189,3 +189,9 @@
 20:51:12 <BlueMatt> the BOLTs specify bitcoin-lightning, if you want to do something else, you can modify the BOLTs as required :)
 20:51:42 <ariard> like some many things can get wrong if you use lightning on other networks and aren't specificed in the BOLTs
 20:51:46 <cdecker[m]> Likely you'd encrypt the data for yourself joostjgr , wouldn't you?
+20:52:04 <ariard> s/some/so/g
+20:52:04 <rusty> joostjgr: yeah, I was assuming it was a signed blob.  How would it work without somehow encoding the preimage?
+20:52:23 <mschmoock> also, isnt 0x000775f05a074000  (21mio) more than the actual maximum?
+20:52:27 <rusty> mschmoock: yes.  Yes it is.
+20:52:41 <BlueMatt> :shrug: pedantics :p
+20:52:41 <rusty> Because I lost at least 10,000 sats playing with lightning.
