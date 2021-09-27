@@ -211,3 +211,7 @@
 20:56:02 <rusty> joostjgr:  Thanks, I'm behind on ml.  OK, so decide if we want to replace payment secret or not, I guess maybe not?  But slightly more efficient if we do?
 20:56:39 <ariard> yes we're good on our side
 20:56:47 <t-bast> I blasted non-segwit out of existence in the last iteration of this PR, but implementations can of course continue supporting this for as long as they'd like, they just need to ensure they handle the potential edge case where they'd need to force-close
+20:56:54 <rusty> Ack, will implement.
+20:57:12 <cdecker[m]> Well invoice creator gets to choose what to enforce
+20:57:35 <rusty> cdecker[m]: 894?
+20:57:35 <ariard> okay let's move on to next topic
