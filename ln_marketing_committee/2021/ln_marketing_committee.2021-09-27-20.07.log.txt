@@ -153,3 +153,11 @@
 20:43:15 <rusty> t-bast: and omit the payment secret, right?
 20:43:31 <t-bast> rusty: yep, once the spec PR is updated to say that!
 20:43:37 <cdecker[m]> No that needs to stay until migration completes
+20:43:53 <rusty> #action joost to update spec to point out this replaces the payment secret in the onion.
+20:44:01 <cdecker[m]> It's either secret or data, until data becomes compulsory
+20:44:20 <BlueMatt> given we just made payment secret required, I dunno if it "replaces"?
+20:44:20 <rusty> cdecker[m]: both must appear in BOLT11 invoice, but you MUST only send one in onion.
+20:44:20 <cdecker[m]> Ah, both until data becomes compulsory
+20:44:21 <BlueMatt> more that its a generalized form of
+20:44:31 <roasbeef> payment secret can just stand on its own really, we already require it for all mpp stuff as is
+20:44:35 <cdecker[m]> Correct, was talking about invoice
