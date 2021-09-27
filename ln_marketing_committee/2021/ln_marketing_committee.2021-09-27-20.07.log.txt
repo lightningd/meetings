@@ -223,3 +223,9 @@
 20:59:06 <ryanthegentry> 3) in lightning-rfc repo or new repo?
 20:59:48 <ryanthegentry> my reading rn is consensus is 1) new BOLT 2) idk, new issue 3) start in lightning-rfc, move if people complain. Does that sound right?
 20:59:49 <t-bast> My personal choice: 1) New BOLT 2) Don't mind 3) Small preferrence for new repo inside lightningnetwork org, but can live with them inside the BOLTs
+20:59:59 <joostjgr> rusty: yes, i guess not replace. metadata is just an optional field without any security requirements
+21:00:09 <BlueMatt> #2 is just "please write a paragraph discussing the tradeoffs in ux between this being common to everyone and not", so I dont really see why its a big deal aside from it being nice to make sure people think hard about such things. I've historically found "make someone write a pharagraph" is a really really effective way to ensure things are considered, whether you read what they wrote or not.
+21:00:14 <roasbeef> i'm cool w/ new BOLT for the registry/tlv stuff for bLIP, no strong feeling there
+21:00:15 <BlueMatt> #3 - i dont care
+21:00:28 <BlueMatt> and #1 i dont care lol
+21:00:38 <ariard> my preference 1) new BOLT and 3) in a new repo
