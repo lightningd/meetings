@@ -58,3 +58,8 @@
 20:23:32 <rusty> BlueMatt: +1
 20:23:35 <BlueMatt> mschmoock: well that's easy, we just disconnect if the pong wasn't received!
 20:23:58 <mschmoock> sure
+20:24:18 <BlueMatt> anyway, seems we're done with 917?
+20:24:20 <BlueMatt> next topic?
+20:24:22 <mschmoock> just wanted to note repreating a ping may result in spam on the other side when there was TCP jam
+20:24:24 <ariard> oky, so let's end up with both 911 and 917 as it offers more flexibility to node operators?
+20:25:00 <BlueMatt> pending further discussion and implementaiton of course, but, I'm fine with both.
