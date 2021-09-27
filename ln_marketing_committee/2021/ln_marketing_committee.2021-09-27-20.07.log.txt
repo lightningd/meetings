@@ -337,3 +337,6 @@
 21:30:14 <roasbeef> it's like trying to make a new PoV chain ;)
 21:30:19 <roasbeef> PoW chain*
 21:30:24 <ariard> roasbeef: new folks from the wider LN ecosystem? dunno hard to see them before they show up
+21:30:52 <roasbeef> ariard: yeh they can participate w/ the same repo, they already know the lightning-rfc repo (which isn't called the BOLT repo btw ;) )
+21:31:02 <cdecker[m]> roasbeef: wow, that's the overstatement of the year
+21:31:36 <ariard> roasbeef: but they can also participate more easily in a separate repo as you don't have the cognitive overload of browsing thrugh issues
