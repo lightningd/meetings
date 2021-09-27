@@ -89,3 +89,10 @@
 20:30:20 <t-bast> BlueMatt: it couldn't be used directly in route blinding, it has to be layered inside a different tlv stream, but it's easy to reuse code though
 20:30:40 <BlueMatt> ah, ok
 20:30:51 <t-bast> I was pointing it out, but route blinding isn't a reason to *not* do #912 now
+20:31:10 <t-bast> too many negations in my sentence...
+20:31:24 <t-bast> TL;DR: #912 seems useful on its own :)
+20:31:39 <BlueMatt> ok, cool
+20:31:40 <BlueMatt> agreed
+20:31:41 <BlueMatt> lets do it :)
+20:31:44 <BlueMatt> implementations plz :)
+20:31:55 <roasbeef> 912 is pretty straight forward, lets ppl add new things that the client can interpret, _maybe_ also needs a feature bit w.r.t critical use cases so a user can know: "ok you must put that thing in the metadata in the onion"
