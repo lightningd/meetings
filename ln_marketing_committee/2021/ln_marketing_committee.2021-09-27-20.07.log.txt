@@ -298,3 +298,5 @@
 21:18:33 <rusty> Remember kids, features 100+ are for playing with!  1000+ is not to escape onto mainnet please!
 21:18:59 <rusty> roasbeef: "don't be stupid" requirement?  I like it!
 21:19:30 <_niftynei> it's possible that you'd need to change a feature bit later, as opposed to always changing them for the high experimental bit selection etc
+21:20:38 <ariard> yeah I don't have a strong opinion on blips 1) new BOLT or all-in-BOLT9
+21:21:16 <t-bast> If we do bLIPs in a separate repo, the reservation of feature bits / tlv / message types will also happen in the bLIP repo so point 1) would be moot
