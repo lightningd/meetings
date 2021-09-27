@@ -148,3 +148,8 @@
 20:42:05 <rusty> Long transition, but "the second best time is today"
 20:42:07 <ariard> rusty: i see, so we deploy-and-wait?
 20:42:29 <rusty> ariard: yeah.  I wish we had a wallet compatibility matrix for these things :(
+20:42:53 <t-bast> Luckily the sender code is really trivial: grab a field from the invoice and put it inside a TLV, so hopefully it ships everywhere soon
+20:43:07 <t-bast> Then in months/years we can enjoy this feature :)
+20:43:15 <rusty> t-bast: and omit the payment secret, right?
+20:43:31 <t-bast> rusty: yep, once the spec PR is updated to say that!
+20:43:37 <cdecker[m]> No that needs to stay until migration completes
