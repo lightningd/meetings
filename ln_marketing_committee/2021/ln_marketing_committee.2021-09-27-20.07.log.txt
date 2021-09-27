@@ -325,3 +325,5 @@
 21:27:16 <_niftynei> what about a ...git submodule
 21:27:19 <roasbeef> kek
 21:27:36 <t-bast> _niftynei: thinking outside the box
+21:28:03 <cdecker[m]> The more I think about it the less I like re-using the same repo, separate repo and bootstrap with us as initial reviewers
+21:28:03 <roasbeef> same repo lets us also keep that git history in place, re something moving from bLIP to BOLT in a single commit
