@@ -161,3 +161,7 @@
 20:44:21 <BlueMatt> more that its a generalized form of
 20:44:31 <roasbeef> payment secret can just stand on its own really, we already require it for all mpp stuff as is
 20:44:35 <cdecker[m]> Correct, was talking about invoice
+20:45:05 <ariard> okay more on this topic or we can move on?
+20:45:07 <BlueMatt> what roasbeef said, why bother replacing? If you want more data, just add more data, you still probably need at least 32 bytes of random or payment-specific data either way
+20:45:15 <t-bast> #action joost to grab feature bits for this
+20:45:20 <BlueMatt> its kinda awkward, but no reason to fight the backwards compatibility fight over it.
