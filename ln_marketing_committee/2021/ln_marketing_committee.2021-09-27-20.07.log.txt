@@ -219,3 +219,7 @@
 20:58:04 <ariard> #topic #884
 20:58:31 <ariard> blips-or-not-blips-that-is-the-question :)
 20:58:35 <ryanthegentry> seems like 3 outstanding questions: 1) new BOLT for TLV/message type/etc. registry or adjust BOLT 9
+20:58:55 <ryanthegentry> 2) require discussion of "not intended to be universal hence not BOLT" in bLIP
+20:59:06 <ryanthegentry> 3) in lightning-rfc repo or new repo?
+20:59:48 <ryanthegentry> my reading rn is consensus is 1) new BOLT 2) idk, new issue 3) start in lightning-rfc, move if people complain. Does that sound right?
+20:59:49 <t-bast> My personal choice: 1) New BOLT 2) Don't mind 3) Small preferrence for new repo inside lightningnetwork org, but can live with them inside the BOLTs
