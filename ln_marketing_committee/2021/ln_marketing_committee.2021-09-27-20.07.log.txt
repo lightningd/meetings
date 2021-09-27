@@ -268,3 +268,7 @@
 21:09:31 <t-bast> rusty: and can keep advertizing both for a while
 21:09:47 <rusty> t-bast: but now we have the how-do-I-assign-the-first-feature problem...
 21:10:02 <t-bast> rusty: and it's likely that the final version that gets merged may have slightly diverged from the experimental one, which makes it easy to keep them separate and working
+21:10:07 <rusty> ... leading us to reserve them in the initial PR title?
+21:10:26 <_niftynei> i like being able to search the PRs for 'feature bit' to figure out what's been reserved
+21:10:31 <_niftynei> fwiw
+21:10:54 <t-bast> rusty: you don't need to, only when doing cross-compat tests, where someone will need to talk to you anyway to know how to test your impl, so you can tell them "I have a node over there and I use feature bit XXX"
