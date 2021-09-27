@@ -119,3 +119,7 @@
 20:37:28 <lnd-bot> [13lightning-rfc] 15TheBlueMatt opened pull request #918: Drop ping sending rate-limit suggestion (06master...062021-09-drop-ping-rl) 02https://github.com/lightningnetwork/lightning-rfc/pull/918
 20:38:01 <t-bast> cdecker[m]: good point, the way Joost uses it makes the `payment_secret` redundant
 20:38:25 <roasbeef> rusty: t-bast how would they know they _must_ use it like that thuogh?
+20:38:31 <roasbeef> since ppl can in theory put w/e data they ant in there?
+20:38:31 <rusty> roasbeef: even feature bit they don't understand
+20:38:56 <t-bast> roasbeef: no, as a payer you don't put anything in there, you just copy what's inside the invoice into the final payload you'll send to the recipient
+20:39:25 <t-bast> roasbeef: the payer doesn't choose what to put in that field, it's like payment_secret, he just pastes what was in the invoice
