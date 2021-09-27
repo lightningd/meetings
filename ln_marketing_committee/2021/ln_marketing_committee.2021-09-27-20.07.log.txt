@@ -110,3 +110,9 @@
 20:35:52 <t-bast> rusty: agreed, I don't see how it could be useful without being mandatory
 20:36:08 <t-bast> We don't have a `9+` option like we have for `C+`/`C-` though
 20:36:25 <ariard> Well sounds we'll introduce one ?
+20:36:43 <rusty> Technically it's not mandatory.  It's just practically mandatory :)
+20:36:45 <roasbeef> t-bast: you'd need another bit to force them to know that you want them to use the stateless derivation tho right?
+20:37:05 <t-bast> roasbeef: the payer doesn't need to do/know anything
+20:37:20 <cdecker[m]> Sort of supercedes payment_secrets though, so we can save some space again
+20:37:21 <rusty> roasbeef: the presence of the field is enough,th feature bit is just so old wallets reject it properly rather than wondering why it failed.
+20:37:24 <t-bast> roasbeef: they just need to include this tlv in the final payload, all the logic happens at the recipient side
