@@ -103,3 +103,7 @@
 20:33:59 <t-bast> roasbeef: the way I'd use it is that I would set it mandatory in my stateless invoices, since I'll *need* the payer to include it for the payment to succeed
 20:34:00 <cdecker[m]> Colliding featurebits?...
 20:34:05 <ariard> like yes we only need the feature bit in the invoice, nowhere else ?
+20:34:27 <roasbeef> t-bast: ahh duhhh ok ignore me lol
+20:34:32 <roasbeef> was expected a letter like the rest :p
+20:34:36 <rusty> Yes, and this carries across trivially to bolt12, it's pretty easy.  We need to assign a number though.
+20:35:04 <rusty> It's probably useless unless it's an even feature, right?  I mean, if it's optional why bother?
