@@ -242,3 +242,5 @@
 21:02:40 <_niftynei> e.g. who's merging blips into the repo?
 21:02:53 <_niftynei> why not keep it as a PR until it's fully baked then, if  it's intended to be a bolt anyway?
 21:02:57 <ariard> on #3, i prefer a separate repo, otherwise I think we're giving the perception that blips have been actually reviwed and interop tested by LN devs
+21:03:35 <_niftynei> like clearly there's some form of 'inclusion' that needs to be formed for the bLIP process that isn't the BOLT process (hence their development)
+21:03:42 <ariard> and if it successful as a process, it's going to be a cognitive overload for contributors involved in BOLT but not desirous to follow on a regular basis the blips
