@@ -165,3 +165,5 @@
 20:45:07 <BlueMatt> what roasbeef said, why bother replacing? If you want more data, just add more data, you still probably need at least 32 bytes of random or payment-specific data either way
 20:45:15 <t-bast> #action joost to grab feature bits for this
 20:45:20 <BlueMatt> its kinda awkward, but no reason to fight the backwards compatibility fight over it.
+20:46:29 <rusty> BlueMatt: it's trivial to swap it out, so why do both?  I mean, MPP is unspeced so it can do whatever, but normal payments, seems a waste of space.
+20:46:42 <rusty> (keysend MPP that is)
