@@ -175,3 +175,10 @@
 20:48:23 <ariard> Make it mandatory to encode bitcoin amounts compliant with the upper bound of 21M BTC
 20:49:10 <t-bast> Otherwise people will accuse lightning-BTC to inflate the bitcoin supply
 20:49:12 <rusty> Sure, why not.  We changed a few things to use channel capacity where we didn't care, for this reason.   I can add a wire checker to make sure.
+20:49:59 <ariard> okay so good with #908, need for interops testing?
+20:50:04 <rusty> Typo: /21 millions/21 million/ because english is weird.
+20:50:18 <t-bast> We actually have a live interop testing, because eclair has always done that xD
+20:50:29 <mschmoock> Some people use Lighning with different (non-bitcoin) networks. Should we change to working a bit to reflect that?
+20:50:32 <ariard> Yeah it's just not merged on our side
+20:50:35 <BlueMatt> heh, I'm fien taking it, then :)
+20:50:47 <mschmoock> like "the maximum the underlying supports" ?
