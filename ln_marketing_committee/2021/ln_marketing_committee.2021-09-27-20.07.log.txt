@@ -86,3 +86,6 @@
 20:29:22 <BlueMatt> so its easy to land this pr and then use it in route blinding instead of a new field?
 20:29:26 <t-bast> ariard: yep, in route blinding we already have an encrypted field that is provided by the final recipient that the sender must include in the final payload
 20:29:40 <t-bast> ariard: so that can enable stateless invoices as well
+20:30:20 <t-bast> BlueMatt: it couldn't be used directly in route blinding, it has to be layered inside a different tlv stream, but it's easy to reuse code though
+20:30:40 <BlueMatt> ah, ok
+20:30:51 <t-bast> I was pointing it out, but route blinding isn't a reason to *not* do #912 now
