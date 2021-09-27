@@ -96,3 +96,7 @@
 20:31:41 <BlueMatt> lets do it :)
 20:31:44 <BlueMatt> implementations plz :)
 20:31:55 <roasbeef> 912 is pretty straight forward, lets ppl add new things that the client can interpret, _maybe_ also needs a feature bit w.r.t critical use cases so a user can know: "ok you must put that thing in the metadata in the onion"
+20:32:18 <ariard> okay and the size bound of the new field is only hop payload?
+20:32:38 <roasbeef> I think the section where it adds the feature bit for the new thing itself is wrong though? just has 9 there, whereas I think it only needs to be inthe invoice (or maybe not at all?)
+20:32:59 <t-bast> roasbeef: that's what 9 is, isn't it? Feature bit only in invoice?
+20:33:15 <ariard> roasbeef: agree you assume interactivity with the recipient to learn the payload field
