@@ -173,3 +173,5 @@
 20:47:44 <ariard> https://github.com/lightningnetwork/lightning-rfc/pull/908
 20:48:04 <BlueMatt> we've changed to "implement" this, so ack on our end
 20:48:23 <ariard> Make it mandatory to encode bitcoin amounts compliant with the upper bound of 21M BTC
+20:49:10 <t-bast> Otherwise people will accuse lightning-BTC to inflate the bitcoin supply
+20:49:12 <rusty> Sure, why not.  We changed a few things to use channel capacity where we didn't care, for this reason.   I can add a wire checker to make sure.
