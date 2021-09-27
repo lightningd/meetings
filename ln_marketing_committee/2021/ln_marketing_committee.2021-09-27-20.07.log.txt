@@ -283,3 +283,9 @@
 21:12:39 <t-bast> rusty: I've had trampoline for more than that using an experimental feature bit xD, and I'm glad I did because the final version will likely be a bit different and I'll need to support both during the transition
 21:13:55 <roasbeef> totally diff topic but have been thinking about trampoline more lately and how to go about answering some of the open deployment questions in my mind (how the nodes are discveroed/selected, latency+fee impacts, how to propagate back failure info, if nodes will retry _within_ the network themselves or not, etc)
 21:14:40 <t-bast> rusty: what happens if during the spec review we find that we want to make a breaking change to the proposed onion message for example? You'll have a harder time keeping existing code compatible if you need to keep the same feature bit, don't you?
+21:15:21 <t-bast> roasbeef: neat, I'd love to chat about all this!
+21:15:22 <rusty> t-bast: yes, but feature bits can always be reassigned, worst-case.  In practice it's been less hassle than the system we had before.
+21:15:29 <_niftynei> (worth pointing out we're struggling with acceptance criteria for blip 1 as is... if it was in its own repo we wouldn't have to worry much about what needs to be done to merge it here )
+21:15:31 <roasbeef> t-bast: diff bit maybe? I guess depends on if w/e is out there will continue doing so, or if there was a small window like non-zero fee anchors and we weren't too concerned about it
+21:15:51 <t-bast> _niftynei: agreed!
+21:16:07 <rusty> The idea was to reduce roadblocks, and it did that somewhat.
