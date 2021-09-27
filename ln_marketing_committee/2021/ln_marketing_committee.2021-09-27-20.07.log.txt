@@ -171,3 +171,5 @@
 20:47:29 <BlueMatt> lets move on in any case?
 20:47:35 <ariard> #topic #908
 20:47:44 <ariard> https://github.com/lightningnetwork/lightning-rfc/pull/908
+20:48:04 <BlueMatt> we've changed to "implement" this, so ack on our end
+20:48:23 <ariard> Make it mandatory to encode bitcoin amounts compliant with the upper bound of 21M BTC
