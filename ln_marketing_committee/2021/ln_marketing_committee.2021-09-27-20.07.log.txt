@@ -107,3 +107,6 @@
 20:34:32 <roasbeef> was expected a letter like the rest :p
 20:34:36 <rusty> Yes, and this carries across trivially to bolt12, it's pretty easy.  We need to assign a number though.
 20:35:04 <rusty> It's probably useless unless it's an even feature, right?  I mean, if it's optional why bother?
+20:35:52 <t-bast> rusty: agreed, I don't see how it could be useful without being mandatory
+20:36:08 <t-bast> We don't have a `9+` option like we have for `C+`/`C-` though
+20:36:25 <ariard> Well sounds we'll introduce one ?
