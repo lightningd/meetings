@@ -215,3 +215,7 @@
 20:57:12 <cdecker[m]> Well invoice creator gets to choose what to enforce
 20:57:35 <rusty> cdecker[m]: 894?
 20:57:35 <ariard> okay let's move on to next topic
+20:57:57 <cdecker[m]> Was laggin, sorry, ignore me
+20:58:04 <ariard> #topic #884
+20:58:31 <ariard> blips-or-not-blips-that-is-the-question :)
+20:58:35 <ryanthegentry> seems like 3 outstanding questions: 1) new BOLT for TLV/message type/etc. registry or adjust BOLT 9
