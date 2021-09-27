@@ -34,3 +34,9 @@
 20:18:34 <BlueMatt> mschmoock: yes, but I hadnt realized you'd done that already :)
 20:18:44 <mschmoock> k
 20:18:47 <t-bast> roasbeef: true, both could potentially be used for different purposes
+20:19:10 <roasbeef> t-bast: yeh the DNS thing seems really useful for ppl managing automated fleets of nodes
+20:19:17 <rusty> 911/917: Hmm, you'd need to open a port either way.  But I agree it's not really an alternative; people *do* run dyndns, and that works, using your peers to get your current address; it's probably harmless to do, but it's a bit weird.
+20:19:28 <mschmoock> I have 911 half implemented. 917 is easy
+20:19:30 <roasbeef> rn we have a setting where lnd will hit a DNS record and then advertise the new IP addr as a workaround, since we don't support DNS names within the node_ann
+20:19:44 <roasbeef> since when we spin up a new node, we may not yet know what the reachable IP of it is gonna be
+20:19:48 <cdecker[m]> We should mkae sure this doesnt end up with all NATed and unconnectable node anns
