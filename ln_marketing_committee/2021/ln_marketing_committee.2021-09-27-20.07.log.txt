@@ -229,3 +229,7 @@
 21:00:15 <BlueMatt> #3 - i dont care
 21:00:28 <BlueMatt> and #1 i dont care lol
 21:00:38 <ariard> my preference 1) new BOLT and 3) in a new repo
+21:00:55 <ryanthegentry> any burning passion against 2)?
+21:01:27 <roasbeef> #2 sure ppl can add w/e they want there, but question is under what conditions is it "rejected"? if they say "I like bLIPs more for this", is that ok? how is that paragraph to be evaluated?
+21:01:46 <BlueMatt> my understanding of the current doc is that *nothing* in a blip gets "evaluated"
+21:01:50 <roasbeef> #3 same repo imo, just a sub-folder, then a single commit can "upgrade" something to a BOLT, and we keep all the same maintainers and don't need to boostrap a new set
