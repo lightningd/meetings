@@ -5,3 +5,8 @@
 20:07:40 <t-bast> Please diverge from the item order in the issue!
 20:11:41 <ariard> mschmoock: iiuc it's either #911 or #917 ?
 20:11:42 <BlueMatt> I'm game for either. networking is hard, lots of issues with any option.
+20:12:00 <mschmoock> well, lot of back and forth. I think 917 is better
+20:12:00 <BlueMatt> honestly could do both, but at least 917 is probably a better first-pass imo if only because it means less setup on the admin end
+20:12:27 <t-bast> I'd slightly prefer avoiding using DNS explicitly, so #917 for me, but I don't have a strong NACK on #911 though
+20:12:29 <BlueMatt> t-bast: had said concept ack on 917 and said he was gonna start coding :)
+20:12:39 <mschmoock> is there any usage of #917 when using IPv6 addresses ? Is there something like IPv6 NAT??
