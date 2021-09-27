@@ -167,3 +167,7 @@
 20:45:20 <BlueMatt> its kinda awkward, but no reason to fight the backwards compatibility fight over it.
 20:46:29 <rusty> BlueMatt: it's trivial to swap it out, so why do both?  I mean, MPP is unspeced so it can do whatever, but normal payments, seems a waste of space.
 20:46:42 <rusty> (keysend MPP that is)
+20:47:24 <BlueMatt> ah, ok, I misunderstood the context, sorry about that.
+20:47:29 <BlueMatt> lets move on in any case?
+20:47:35 <ariard> #topic #908
+20:47:44 <ariard> https://github.com/lightningnetwork/lightning-rfc/pull/908
