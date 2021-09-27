@@ -10,3 +10,9 @@
 20:12:27 <t-bast> I'd slightly prefer avoiding using DNS explicitly, so #917 for me, but I don't have a strong NACK on #911 though
 20:12:29 <BlueMatt> t-bast: had said concept ack on 917 and said he was gonna start coding :)
 20:12:39 <mschmoock> is there any usage of #917 when using IPv6 addresses ? Is there something like IPv6 NAT??
+20:12:53 <BlueMatt> mschmoock: yes, there is address mapping in v6
+20:13:01 <BlueMatt> so i think it may be useful for v6 as well
+20:13:06 <mschmoock> good
+20:13:07 <BlueMatt> its probably also useful for tor
+20:13:23 <BlueMatt> though somewhat less so
+20:13:26 <t-bast> Can you detail why it's useful for tor?
