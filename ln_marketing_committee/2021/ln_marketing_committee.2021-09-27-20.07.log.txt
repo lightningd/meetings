@@ -281,3 +281,4 @@
 21:12:31 <roasbeef> kek
 21:12:32 <BlueMatt> EDIT_THIS_FOR_FEATURE_RESERVATIONS.txt
 21:12:39 <t-bast> rusty: I've had trampoline for more than that using an experimental feature bit xD, and I'm glad I did because the final version will likely be a bit different and I'll need to support both during the transition
+21:13:55 <roasbeef> totally diff topic but have been thinking about trampoline more lately and how to go about answering some of the open deployment questions in my mind (how the nodes are discveroed/selected, latency+fee impacts, how to propagate back failure info, if nodes will retry _within_ the network themselves or not, etc)
