@@ -28,3 +28,5 @@
 20:16:20 <BlueMatt> yea, i dunno, doesn't need to be in the spec imo.
 20:16:29 <BlueMatt> just "dont include local addresses" could be mentioned
 20:16:48 <BlueMatt> but nodes can figure out for themselves how they want to use the addresses provided, including them all is cool, trying to filter is cool too.
+20:16:57 <roasbeef> ye re #910, I think we just need more impls, we're working on one in the background, but also considering how the pubkey based routing proposal would also serve to simplify certain aspects of it
+20:17:36 <roasbeef> made a comment on #917 that it doesn't really seem to be an alternative to #911: https://github.com/lightningnetwork/lightning-rfc/pull/917#issuecomment-928235635
