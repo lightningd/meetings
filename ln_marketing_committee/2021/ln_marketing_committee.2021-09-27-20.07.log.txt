@@ -244,3 +244,7 @@
 21:02:57 <ariard> on #3, i prefer a separate repo, otherwise I think we're giving the perception that blips have been actually reviwed and interop tested by LN devs
 21:03:35 <_niftynei> like clearly there's some form of 'inclusion' that needs to be formed for the bLIP process that isn't the BOLT process (hence their development)
 21:03:42 <ariard> and if it successful as a process, it's going to be a cognitive overload for contributors involved in BOLT but not desirous to follow on a regular basis the blips
+21:04:24 <BlueMatt> _niftynei: right, well that's why i suggested that bLIPs need to include some text that explains why you aren't targeting univeral deployment.
+21:04:44 <_niftynei> 'bLIP acceptance' is a whole can of worms and it seems nice to cordon that off into its own project immo
+21:04:53 <BlueMatt> its not an "acceptance" criteria
+21:04:57 <BlueMatt> cause, indeed, thats a can of worms
