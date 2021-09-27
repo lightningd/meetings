@@ -182,3 +182,10 @@
 20:50:32 <ariard> Yeah it's just not merged on our side
 20:50:35 <BlueMatt> heh, I'm fien taking it, then :)
 20:50:47 <mschmoock> like "the maximum the underlying supports" ?
+20:50:57 <BlueMatt> meh?
+20:50:57 <t-bast> rusty: really, 21 million must stay singular??
+20:50:59 <joostjgr> sorry, only entering the room now. quickly read back the discussion on payment metadata and merging with payment secret. one thing is that the payment secret also protects against probing. if payment metadata is something like 'beer', it isn't very secure. so with a single field, there should probably some guideline on how to populate it (enough randomness)
+20:51:00 <mschmoock> :D
+20:51:12 <BlueMatt> the BOLTs specify bitcoin-lightning, if you want to do something else, you can modify the BOLTs as required :)
+20:51:42 <ariard> like some many things can get wrong if you use lightning on other networks and aren't specificed in the BOLTs
+20:51:46 <cdecker[m]> Likely you'd encrypt the data for yourself joostjgr , wouldn't you?
