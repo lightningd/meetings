@@ -318,3 +318,10 @@
 21:24:59 <ariard> roasbeef: but we can apply the same argument, a smaller groups of blips editors will move faster than the whole set of BOLTs devs
 21:25:42 <roasbeef> they're diff processes tho, bLIPs don't have the "2 impls" rule as an example
 21:26:28 <ariard> so if they have different rules better to have them in separate repos as it's clearer for any observers that they're different things?
+21:26:31 <roasbeef> can just re-use what we have (blip/ subdir as rusty suggested) vs bootstrapping a new repo
+21:26:49 <roasbeef> they way I see it, bLIPs are under the BOLT umbrella, so subdir makes sense
+21:27:14 <ariard> i'm nack on that, the way I see it bLIPs are a new process of its own
+21:27:14 <roasbeef> I guess ppl can mirror in some new one if they really wanna, or something something git sub mobule idk
+21:27:16 <_niftynei> what about a ...git submodule
+21:27:19 <roasbeef> kek
+21:27:36 <t-bast> _niftynei: thinking outside the box
