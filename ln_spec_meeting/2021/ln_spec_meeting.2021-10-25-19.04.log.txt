@@ -1,0 +1,436 @@
+19:04:48 <t-bast> #startmeeting LN Spec Meeting
+19:04:48 <lndev-bot> Meeting started Mon Oct 25 19:04:48 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+19:04:48 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+19:04:48 <lndev-bot> The meeting name has been set to 'ln_spec_meeting'
+19:04:49 <cdecker[m]> Since I'll not stick around till the end I probably shouldn't chair
+19:04:50 <roasbeef> ah yeh as we found out, the bot 2 weeks ago, the bot isn't fully autonomous ;)
+19:05:05 <t-bast> The bot is cdecker's puppet
+19:05:06 <crypt-iq> mechanical turk?
+19:05:19 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/issues/929
+19:05:27 <t-bast> #topic Moving to a new org
+19:05:37 <BlueMatt> cc roasbeef
+19:05:39 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/issues/925
+19:05:47 <cdecker[m]> Couple of people in the the video chat, but all decisions are to be taken in written form
+19:06:29 <roasbeef> can't join the chat rn, will prob hover there in the future as able to
+19:06:49 <t-bast> roasbeef could you give us rights on the lightning repo?
+19:06:59 <roasbeef> ok yeh re the org, mainly waiting for buy in from some of the other devs, seems we're all generally on board with it though?
+19:07:13 <t-bast> I don't think we've heard from rusty though
+19:07:16 <roasbeef> yeh
+19:07:28 <t-bast> does someone know if he's down with moving the repos there?
+19:07:33 <roasbeef> also Q of who should be made admin, was gonna add the "OG/lead dev" of the major impls, then let them take it from there
+19:07:49 <cdecker[m]> Rusty excuses himself, and likely won't be joining today
+19:08:07 <roasbeef> cdecker[m]: do you know how he feels about the general concept? I can reach out directyl as well if needed
+19:08:08 <ariard> sgtm as long as we have someone from each impl
+19:08:09 <BlueMatt> roasbeef: sgtm, we haven't had any issues with repo rights yet, lets not worry too much about it until its a problem :)
+19:09:39 <t-bast> So maybe let's wait for rusty to ACK on this, and we'll move then?
+19:09:43 <cdecker[m]> For reference, Lisa and I are happy with moving the the RFC repo, and this way around the import paths don't get screwed either
+19:09:49 <roasbeef> ok i'll reach out to him directly re that
+19:09:58 <cdecker[m]> Sounds good to me ^^
+19:10:11 <t-bast> thanks roasbeef, can you also ask him whether he'd like us to rename it to lightning/bolts or keep lightning-rfc?
+19:10:17 <roasbeef> yeh
+19:10:45 <t-bast> I like lightning/bolts and lightning/blips FWIW, but I can understand why some may want the more standard "RFC" naming
+19:11:16 <t-bast> #action roasbeef to ping rusty about org move, and initiate it if we're all on board with it
+19:12:04 <roasbeef> #903 next?
+19:12:21 <roasbeef> I see comments filled in there, I'll make sure to get to them this week
+19:12:32 <t-bast> Yep let's do that
+19:12:41 <t-bast> But I think it's just a call to action
+19:13:04 <t-bast> If you have some time to address the comments this week roasbeef, it's all good and we can move on to something else
+19:13:12 <t-bast> #topic Ping rate limitation
+19:13:13 <roasbeef> yeh should be able to
+19:13:18 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/918
+19:13:25 <t-bast> great, let's keep it on github then, thanks!
+19:13:39 <t-bast> BlueMatt proposed removing that limitation from the spec
+19:13:51 <t-bast> I think it makes sense
+19:13:52 <roasbeef> no strong feelings on thi sone myself, but at the same time don't see the harm in the current langauge
+19:13:57 <roasbeef> this one*
+19:14:16 <roasbeef> as is it's just an advisory in either case right?
+19:14:24 <mschmoock> what does a node do when he gets flooded?
+19:14:31 <roasbeef> so don't send too many, and maybe disconnect if they're sending too many
+19:14:37 <mschmoock> :]
+19:14:44 <BlueMatt> mschmoock: if you have a problem getting flooded with pings you're very, very screwed at that point
+19:14:45 <t-bast> yeah, but why a specific duration though?
+19:15:06 <roasbeef> t-bast: agreed is arbitrary, is there another duration? 30 seconds seems like "long enough" I guess?
+19:15:07 <cdecker[m]> Pings can already be rather large, so even with a 30 sec timeout the traffic can be coniderable (2KB / s / connection)
+19:15:08 <crypt-iq> Did mschmoock mean packet flood in general rather than ln-ping-flood
+19:15:13 <BlueMatt> my point is largely that if you're worried about getting ping-floods your're, like, really really doing it wrong
+19:15:21 <mschmoock> I meant LN ping flood
+19:15:37 <BlueMatt> cause, like, I can also send gossip messages duplicatively, or, like, tcp keepalives or whatever
+19:15:45 <mschmoock> Jep I know
+19:15:46 <roasbeef> should we soften the langauge rather than removing all together?
+19:15:46 <BlueMatt> or, like, just send you a udp flood of non-lightning traffic
+19:16:00 <roasbeef> seems were conflating like general DoS with recommended rate limiting at the protocol level?
+19:16:25 <t-bast> true, let's not conflate these and just stick to removing this arbitrary ping limitation?
+19:16:32 <BlueMatt> I think so - why are we recommending rate-limiting pings in the protocol? its a really useless anti-dos mechanism by itself
+19:16:38 <roasbeef> fwiw lnd sends pings every 1 minute rn
+19:16:45 <BlueMatt> nodes should do *something* about dos, but this isn't it
+19:16:47 <roasbeef> jsut to advise re best practices?
+19:16:51 <mschmoock> BlueMatt: okay
+19:17:03 <BlueMatt> roasbeef: fwiw we've moved to 3 seconds
+19:17:07 <gene> could do increasing PoW per connecting client
+19:17:17 <roasbeef> mainly I don't see the harm in the recommendation
+19:17:19 <BlueMatt> and we can/should maybe have a discussion about dos, but that's pretty separate
+19:17:30 <BlueMatt> roasbeef: because we need to be way more aggressive on mobile
+19:17:37 <BlueMatt> and so this recommendation is preventing us from doign so
+19:17:38 <ariard> gene: ouch for the mobile clients on low-grade CPUs
+19:17:39 <BlueMatt> doing so
+19:17:47 <BlueMatt> well, "preventing", we're doing it now anyway and seem to have no issues :)
+19:17:53 <cdecker[m]> Duplicate in-flight Pings are still prohibited? If yes there's a simple way of throttling the peer
+19:17:57 <BlueMatt> except for the occasional nodes-on-rpis that are too slow, but...
+19:18:05 <roasbeef> iirc re mobile, we ended up tuning our read/write timeoutes to accomodate the higher latency/roaming env
+19:18:06 <gene> the client starts with low-no PoW, then increases log scale with each subsequent request
+19:18:31 <gene> well-behaving clients would rarely, if ever, have to send more than a few hashes worth of PoW
+19:18:41 <roasbeef> gene: LN nodes can already kinda opt to just not have connections to anyone that doesn't have a channel with them
+19:18:41 <BlueMatt> gene: meh, I dunno if we need to?
+19:18:43 <crypt-iq> doesn't rust-lightning then separate itself from the plebnet/rpi graph
+19:18:53 <roasbeef> what do you mean separate?
+19:19:02 <crypt-iq> Like if you require a 3s ping and the rpi's are slow
+19:19:04 <BlueMatt> crypt-iq: nah, you just disconnect/reconnect once an hour
+19:19:14 <gene> BlueMatt: mb not, just throwing ideas out there. maybe that one is dumb/unworkable
+19:19:43 <BlueMatt> gene: the broader issue is if you're worried about *incoming* traffic, you can't do anything but pay cloudflare/a ddos provider. if you're worried about *ougoing* traffic, stop sending stuff!
+19:19:47 <gene> PoW was originally for DoS protecc tho
+19:19:58 <roasbeef> even w/ this removed, impls can still do w/e arbitrary things to rate limit pings
+19:19:59 <BlueMatt> yes, but I can udp flood you too and you still get packets :p
+19:20:09 <roasbeef> just like a lot of thigns aren't spelled out in the spec, but impls do in practice anyway
+19:20:15 <BlueMatt> roasbeef: no?
+19:20:16 <mschmoock> cdecker[m]: from what I read there is no " Duplicate in-flight Pings are prohibited" rule
+19:20:21 <roasbeef> do we want to instead lower the interval here?
+19:20:21 <BlueMatt> - MUST respond by sending a `pong` message, with `byteslen` equal to `num_pong_bytes`.
+19:20:25 <BlueMatt> the spec is very clear here
+19:20:25 <gene> packets == drop after certain threshold?
+19:20:27 <BlueMatt> you MUST respond
+19:20:36 <roasbeef> BlueMatt: I mean we all do a lot of throttling for gossip messages that isn't spelled ou tin the spec
+19:20:39 <BlueMatt> if you dont like the peer and its being stupid, disconnect it and close your channels with it
+19:20:47 <gene> ^
+19:20:47 <BlueMatt> roasbeef: IIRC that part of the spec is SHOULD
+19:20:49 <BlueMatt> not MUST
+19:21:18 <mschmoock> Also, I doubt you should do a ping each 3sec especially on mobile
+19:21:24 <mschmoock> but maybe thats just me :D
+19:21:28 <roasbeef> idk, doesn't seem like the rest have strong opinions re sending more pings or w/e
+19:21:28 <BlueMatt> if you dont like how often someone is sending you packets, you go to your anti-ddos provider and tell them about your new firewall rule, there's just really not a lot else you can do
+19:21:47 <BlueMatt> mschmoock: if you're in the background, no, but you generally don't get cpu time when you're in the backgrouna and not charging/on wifi anyway :p
+19:22:14 <mschmoock> For a reason
+19:22:19 <t-bast> I acked the PR, I think we should remove this requirement because we indeed need to be more aggressive on mobile if you hope to keep them alive, and I don't think the spec can provide a good enough / works everywhere rule of thumb / magic number here
+19:22:23 <crypt-iq> impls won't know each others ping timeouts, so are they supposed to respond asap
+19:22:30 * gene groans about DDoS  providers requiring non-free JS
+19:22:44 <BlueMatt> mschmoock: yes, because stupid people like me keep writing apps that wake up the radio too often :p
+19:22:44 <mschmoock> If my mobile wallet would do 3sec pings I would surely uninstall it
+19:23:06 <BlueMatt> gene: i do hope your only complaint about the NSA^H^H^Hddos providers isn't just the non-free JS,
+19:23:11 <roasbeef> idk we'll prob eventually rate limit pings if ppl start spamming it, there's an open issue for it, similar to all the stuff ppl started doing once gossip messages were spammed/churned a ton
+19:23:31 <cdecker[m]> crypt-iq: this is not about the liveness decision, this is just about how often you're allowed to check
+19:23:35 <BlueMatt> roasbeef: the spec is very clear that you MUST NOT do that. if you have an issue with that, you should speak now :)
+19:23:39 <mschmoock> cdecker[m]: yes
+19:23:39 <BlueMatt> roasbeef: and propose something else
+19:23:41 <gene> BlueMatt: surely more, like what that non-free JS allows alphabet soup to do to users
+19:23:47 <cdecker[m]> I.e., you're free to wait before replying however long you want
+19:23:48 <BlueMatt> like "no more than one ping in flight at once" or whatever
+19:23:56 <mschmoock> cdecker[m]: I there a "duplicate inflight not allowed rule" ?
+19:23:58 <mschmoock> *is
+19:24:05 <mschmoock> If so, go for 0.1secs pings
+19:24:06 <mschmoock> :D
+19:24:11 <crypt-iq> cdecker: got it
+19:24:14 <BlueMatt> there is not currently a duplicate in flight requirement
+19:24:17 <BlueMatt> we could add it, however
+19:24:20 <mschmoock> Good
+19:24:25 <mschmoock> maybe we do this together
+19:24:26 <t-bast> I like that, it sounds reasonable
+19:24:30 <cdecker[m]> I thought there was, what was I thinking of?
+19:24:34 <BlueMatt> can we also require that byteslen be 0
+19:24:40 <mschmoock> remove the throttle replace by a dups disallowed rule
+19:24:42 <BlueMatt> does anyone do padding with pings?
+19:24:52 <roasbeef> yeah we do
+19:24:54 <crypt-iq> we do blockheaders
+19:25:03 <BlueMatt> roasbeef: can you switch to dummy unknown messages for paddings?
+19:25:06 <roasbeef> prior nodes do like 16 bytes or something like that
+19:25:08 <cdecker[m]> BlueMatt: having just reimplemented that part, yes, I get all kinds of sizes
+19:25:19 <roasbeef> and we also do the thing where we send back as muich as dictated in the ping
+19:25:27 <BlueMatt> well, we can say "ping must be 0" today and ignore non-0 pings in 3 years :p
+19:25:32 <cdecker[m]> And I personally like it to have decoy traffic
+19:25:41 <BlueMatt> cdecker[m]: right, my point is decoy traffic can be other messages
+19:25:42 <cdecker[m]> (though nobody uses it like that yet)
+19:25:46 <roasbeef> idk, tbh this doens't seem very important to me, and nice to have that decoy measure in there as cdecker[m]  mentions
+19:25:48 <BlueMatt> agree decoy traffic is good
+19:26:02 <t-bast> +1 for decoy traffic (some day)
+19:26:14 <BlueMatt> well then I'm confused, if you're annoyed at the amount of bandwidth, maybe the easiest solution is to not allow pongs up to 64KB :p
+19:26:28 <cdecker[m]> It's just the simplest way of simulating a query-reply that is common for the protocol without having to use non-fitting other data
+19:26:48 <crypt-iq> Is it much of a decoy if the ping is on a timer ? This is decoy for a network-level adversary
+19:26:54 <mschmoock> BlueMatt: about using low interval pings on mobile (not related to this discussion) it comes with a high cost, it forces the radio to staay active which kills the battery
+19:26:54 <crypt-iq> on a static timer*
+19:26:55 <roasbeef> didn't make the bandwidth arg, just re general rate limiting of stuff peers send you, like if there's a peer that sends you the same bogus chan_ann 10000x, what do you do?
+19:27:02 <cdecker[m]> I think the "no duplcate" rule + "decoy traffic" is limitation enough tbh
+19:27:03 <BlueMatt> cdecker[m]: yea, that's true I suppose, just feels awkward to try to get cbr from pings and not by both sides doing cbr
+19:27:20 <roasbeef> but just something I don't feel strongly about really, seems RL is the one that cares mainly about pings and wants to send them more frequetnyl
+19:27:23 <cdecker[m]> crypt-iq: c-lightning does ping at irregular intervals too, but I see your point
+19:27:45 <BlueMatt> mschmoock: yes, but the os prevents you from doing that in effect - you only get tcp time if you're in the foreground and the app is open, at which point users *want* things to be responsive (and generally happens for 10 seconds at a time)
+19:27:45 <cdecker[m]> cbr?
+19:28:09 <BlueMatt> constant bit rate
+19:28:11 <mschmoock> Just saying, I have dealt whith this stuff a lot
+19:28:41 <mschmoock> and android and ios behave very differntly :D
+19:28:50 <BlueMatt> mschmoock: well in any case, we leave these decision up to our users, we dont decide for them. and users nagged us for this, soooo :)
+19:29:00 <mschmoock> I can imagine
+19:29:05 <cdecker[m]> BlueMatt: I see, I thought of this more like pretending to send an HTLC or a commitment, and asking the remote side to reply with a reasonable sized response
+19:29:20 <BlueMatt> cdecker[m]: right, I think that's a really really bad way to try to get cover traffic
+19:29:36 <BlueMatt> cdecker[m]: if you want cover traffic, you can do cbr (and maybe a second connection for gossip that doesn't do htlc relay)
+19:29:56 <cdecker[m]> Because you're tempted to do it as a mirror of actual stuff happening, now tipping off unrelated peers?
+19:29:57 <roasbeef> design space is open, no reason to shut off the possibility of it all together via this vector
+19:30:22 <BlueMatt> sure, alright, I dont care about the pong len, I was just suggesting a way to do rate limiting I thought others might like
+19:30:42 <BlueMatt> so is there a concrete suggestion here? the "no more than one in flight" seems like it breaks some cover traffic models
+19:30:44 <gene> are amplification attacks a concern?
+19:31:01 <mschmoock> BlueMatt: maybe allow 2 or some more inflight :D
+19:31:04 <BlueMatt> gene: amplification of what form?
+19:31:24 <roasbeef> if it ain't broke...
+19:31:32 <BlueMatt> mschmoock: to be fair, I kinda doubt any implementation is going to *enforce* the "in flight limit" requirement - its a huge pain and massive layer violation to enforce it in code
+19:31:37 <gene> reply (much?) longer than request, malleable destination (doesn't return to requester)
+19:31:39 <niftynei__> qq about "only one in flight at a time" -- how do you decide when your peer's offline/not responding so you can send another ping?
+19:31:55 <t-bast> Or just remove the 30 seconds without changing anything else for now...?
+19:32:01 <BlueMatt> niftynei__: presumably if the peer is offline/not responding after N seconds you drop the tcp connection
+19:32:04 <t-bast> Like the current state of the PR :)
+19:32:14 <BlueMatt> t-bast: that implies that you MUST NOT rate-limit, which roasbeef said he was planning on violating
+19:32:25 <niftynei__> so if peer doesn't respond you drop and don't reconnect?
+19:32:27 <BlueMatt> so I'd kinda prefer we not tweak the spec and then have lnd go shit on it again in 6 months
+19:32:27 <cdecker[m]> Agreed with t-bast, let's remove that now, replace later
+19:32:45 <roasbeef> if this is about the connection itself, then isn't it possible to set a lower tcp keep alive probe/time at a lower level?
+19:32:45 <BlueMatt> niftynei__: you totally should reconnect! but you cant ping until that's done :)
+19:32:47 <cdecker[m]> The 30 second limitation will linger around anyway, so we havetime to find a replacement
+19:33:01 <BlueMatt> roasbeef: tcp keepalives are fairly unreliable
+19:33:03 <roasbeef> yeah there's also no way of knowing what kinda timer/rate teh other peer even uses
+19:33:04 <BlueMatt> and a pita
+19:33:48 <niftynei__> so .. "at a time" means "per tcp connection session"?
+19:33:49 <mschmoock> Mobile operators use all kind of nasty equiment that kill your TCP session without you knowing once in a while
+19:33:55 <BlueMatt> the spec change in this pr, as suggested requires that you respond (though I suppose you could creatively interpret the spec to simply say "delay outbound pong messages to 1/second, and take days to respond to a flood, which is fine)
+19:34:12 <BlueMatt> mschmoock: yes, that's why we use pings in the protocol :)
+19:34:27 <BlueMatt> niftynei__: unclear! good reason to remove it :)
+19:34:48 <BlueMatt> roasbeef: so what's y'all's plan? are you intending to rate-limit soon - and if so what can we put in the spec so that isn't a gratuitous incompatibility?
+19:34:59 <t-bast> BlueMatt: but it only requires you to respond to *one* of the pending pings, right?
+19:35:03 <BlueMatt> roasbeef: you're the only one here who said you can't live with this suggested change
+19:35:08 <BlueMatt> t-bast: no.
+19:35:12 <BlueMatt> t-bast: not the way i read it?
+19:35:19 <BlueMatt> A node receiving a `ping` message:
+19:35:28 <BlueMatt> - if `num_pong_bytes` is less than 65532:
+19:35:28 <BlueMatt> - MUST respond by sending a `pong` message, with `byteslen` equal to `num_pong_bytes`.
+19:35:33 <BlueMatt> that's pretty clear, I think
+19:35:57 <t-bast> Right, that is clear indeed, my bad, I was looking at that one: "if byteslen does not correspond to any ping's num_pong_bytes value it has sent: " and made a shortcut
+19:36:01 <crypt-iq> I thought the proposed change to lnd was to enforce timely pong replies ?
+19:36:24 <BlueMatt> <roasbeef> idk we'll prob eventually rate limit pings if ppl start spamming it, there's an open issue for it, similar to all the stuff ppl started doing once gossip messages were spammed/churned a ton
+19:36:25 <roasbeef> maybe lets timebox this re other stuff?
+19:36:38 <BlueMatt> roasbeef: can you comment on the pr with a concrete suggestion?
+19:36:42 <BlueMatt> then we can move on
+19:36:53 <roasbeef> BlueMatt: no immediate plans to rate limit, but was brought up by a newer developer wondering why we _didn't_ as is
+19:37:43 <t-bast> If there's no immediate plans to rate-limit at the ping level, I like the PR as-is, and once plans to rate-limit start forming we can open a new PR to accomodate it?
+19:37:59 <mschmoock> t-bast: the problem with that is...
+19:38:04 <roasbeef> crypt-iq: yeh there's that issue, but someone else brought up just rate limiting it in general too
+19:38:29 <mschmoock> a stipid implementation can then send too many pings without waiting for response. when we add later, we need to make harder decisions
+19:38:34 <roasbeef> any rate limit thing would just be avisory or impl specific really, right? just like we all rate limit gossip messages differently
+19:38:46 <t-bast> mschmoock: just close the connection on them then...?
+19:38:53 <mschmoock> and the channel ?
+19:38:56 <BlueMatt> roasbeef: rate-limiting gossip doesn't imply that nodes cant talk to each other
+19:39:00 <roasbeef> I'm cool w/ whatever here tbh, no strong feelings, not super important to me
+19:39:07 <BlueMatt> roasbeef: the outcome of incompatible rate-limits here would actually be network breakage
+19:39:15 <t-bast> mschmoock: and ban them if you want, fail the channels if they're behaving maliciously
+19:39:35 <mschmoock> yep, maybe we are talking about stuff that never matters
+19:39:50 <t-bast> I don't think this will actually be an issue to be honest
+19:40:26 <mschmoock> not really, I would more likely spam a node on 0msat base fee in 10000 circles :D
+19:40:27 <BlueMatt> no, i doubt it will either, but if someone says "I'm gonna violate that spec requirement" when we're deciding to add one I generally pause cause breakage is bad :p
+19:40:40 <BlueMatt> mschmoock: right lol, hence why I figured we should drop the rate limit
+19:40:56 <mschmoock> and the base fee ^^
+19:41:00 <roasbeef> main thing re spamming it us prob just the bandwidth, since they can make you send 65kb each time, but I guess ppl will do w/e if that pops up, it's the "freest" message we have rn data, since it requires a resposne unlike doing some error ting , soyou can make things symmetric
+19:41:26 <BlueMatt> roasbeef: right, hence why i suggested reducing the size limit
+19:41:29 <BlueMatt> but...:shrug:
+19:41:42 * roasbeef 1 hour later *spongebobe narrator voice
+19:42:31 <t-bast> so...shall we voice opinions on the PR with either concrete counter-proposals or acks?
+19:42:39 <t-bast> and move on to the next topic?
+19:43:02 <mschmoock> Maybe someone wants to add more info on the decoy traffic stuff in the PR
+19:43:17 <mschmoock> because otherwise i still prefere no more dups inflight rule
+19:43:42 <BlueMatt> mschmoock: the issue with no dups in flight is its really a pita to enforce at the code-level
+19:43:43 <BlueMatt> but lets move
+19:43:44 <BlueMatt> on
+19:43:59 <mschmoock> kk. just wanted to bring that in
+19:44:03 <mschmoock> * next :D
+19:44:07 <t-bast> #action progress on the PR, provide concrete proposals there
+19:44:12 <t-bast> #topic Dust Exposure
+19:44:14 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/919
+19:44:38 <t-bast> On that one, rusty proposed doing it differently
+19:45:04 <t-bast> niftynei do you agree with him on that? Shall we defer and discuss that with him next time, or shall we cover it today?
+19:45:07 <BlueMatt> there's a few comments here, I'd suggested being much less prescriptive
+19:45:11 <BlueMatt> cc ariard
+19:45:19 <niftynei__> i agree with the assessment that it's a proposal to do it differently :P
+19:45:25 <roasbeef> iirc this was the original approach re a protocol extension, but then we went w/ the things we could just implement as accepting/forwarding policy essentially?
+19:45:27 <cdecker[m]> I'm lagging a bit behind on this, so I won't speak for Rusty here :-)
+19:45:28 <t-bast> I agree about being less prescriptive on the actuel thresholds (dust buffer feerate)
+19:45:42 <t-bast> niftynei: xD
+19:45:44 <roasbeef> oh no this is diff
+19:45:45 <ariard> Right the `dust_buffer_feerate` should be left to implementers wisdom
+19:45:48 <BlueMatt> sounes like "pending response to pr review feedback from ariard"
+19:46:05 <niftynei__> the biggest difference imo is that there's an agreed/implicit 'dust bucket threshold' btw the two peers
+19:46:14 <niftynei__> which is set to 0.5% of the channel or *waves hands*
+19:46:20 <ariard> the issue with a protocol extension is risk exposures of node operators are not taken into accounts
+19:46:52 <niftynei__> with a minimum of one dust htlc allowed per channel (which i think is .. reasonable?)
+19:47:00 <t-bast> I agree with ariard there, as expressed on the PR I don't think we can capture it well enough with a static percentage of the channel capacity
+19:47:02 <BlueMatt> may be worth noting that there's not really a way to avoid force-closure in some cases around feerate changes without a protocol extension :(
+19:47:02 <niftynei__> yeah, rolling it out requires upgrades on both channel sides
+19:47:17 <niftynei__> so it's definitely a slow fix
+19:47:29 <BlueMatt> we're hoping its rare enough to not be an issue
+19:47:29 <t-bast> But these force-closure don't happen when using anchor outputs zero fee though
+19:47:33 <cdecker[m]> t-bast: can we do #911 next? We have merged our websocket support, and would like to hammer down the address type number, since it conflicts with DNS now, and our release is this week
+19:47:33 <BlueMatt> but may be worth noting
+19:47:36 <ariard> BlueMatt: you can shrugg about the dust exposure and prefer NOT to force-close, i think eclair is doing that ?
+19:47:41 <crypt-iq> a minimum of one dust htlc allowed per channel is counter to option_dusty_htlcs_uncounted, which I know I've been sleeping on
+19:47:44 <BlueMatt> t-bast: right, anchor makes the whole thing a non-issue anyway
+19:48:03 <t-bast> So if we're all moving towards anchor outputs zero fee, and specing channel upgrades soon (TM) we may not need to bikeshed this?
+19:48:03 <niftynei__> idk man this dust bucket thing is pretty problematic in general, afaict big sudden feerate changes are kinda deadly to your ability to route payments
+19:48:05 <BlueMatt> so maybe it isn't even worth documenting any of it and we rip out all references to non-0-fee anchor stuff acros the spec :p
+19:48:23 <t-bast> cdecker[m]: sure, next topic will be that one
+19:48:55 <niftynei__> well, uncounted dust htlcs still counts against your 'dust bucket limit'
+19:48:55 <niftynei__> which if you're using a 0.5% ceiling for might be ... very very small htlcs
+19:48:55 <cdecker[m]> Thanks, that'll allow us to move bump the type out of the way if there's a conflict
+19:48:58 <crypt-iq> if you have zero-fee-anchors (echoing here), you can just use the forwarding heuristic rather than an upgrade
+19:49:03 <ariard> t-bast: +1, i can even propose that mitigation as a blip and up to everyone ?
+19:49:25 <crypt-iq> > well, uncounted dust htlcs still counts against your 'dust bucket limit', I gotcha
+19:50:58 <niftynei__> like yes, im in bigly favor of the 483 limit only touching non-dusty htlcs, but that's complicated right now... what do you do when the feerate drops and some "were dusty but now are not dusty" htlcs should be added to the 483 number?
+19:51:16 <niftynei__> yes yes, easier with a fixed dust rate (eg zero anchor etc)
+19:51:28 <crypt-iq> right so maybe only if zero-fee-anchor
+19:51:34 <roasbeef> cdecker[m]: mschmoock: so what gets 5 is the thing merged first? (dns vs ws)
+19:51:35 <niftynei__> feerate changes suck
+19:51:36 <t-bast> ariard: interesting, I don't know if it should be only a blip, as all implementations really need to implement *some kind of dust exposure limit* to be safe
+19:51:44 <ariard> maybe let's do `option_dusty_htlcs_uncounted` only with zero-fee annchor
+19:51:45 <niftynei__> yeah this is not a BLIP
+19:52:03 <mschmoock> roasbeef: Thats what I want to know :D
+19:52:18 <BlueMatt> ariard: why does it need an option? you can just reject them if you have 0-fee anchor, no?
+19:52:20 <t-bast> that's why you should all shill glozow's PRs: with anchor outputs and package relay, update_fee can finally go away!
+19:52:30 <BlueMatt> t-bast: :+1:
+19:52:40 <niftynei__> so like, what's the status with this zero anchor thing?
+19:52:46 <rusty> You can't, in general, set a threshold on your peer and not tell them.  You can, however, limit what you send.  IMHO we should just pick a number and start there, then later enforce it on receive, if we really care.
+19:52:53 <t-bast> a wild rusty appears
+19:53:05 <cdecker[m]> roasbeef: Sort of, I'm not sure we ever exchange the websocket one with anyone, so might not need a low type allocated, the important part is that implementations need to know how long the addresses are (ws = 2bytes port)
+19:53:08 <BlueMatt> niftynei__: we merged it! we probably need channel upgrades tho
+19:53:12 <crypt-iq> rusty: why can you not just fail back immediately after commitment without force closing in the zero-fee-anchors case?
+19:53:16 <BlueMatt> (merged it in spec, that is)
+19:53:19 <roasbeef> mschmoock: the DNS one is pretty small so maybe just do that first and it gets 5, then ws gets 6? cdecker[m]
+19:53:30 <ariard> BlueMatt: in case of update_fee, you can accept that your dust exposure is overflow instead of force-closing the chan because the feerate is unsafe
+19:53:37 <niftynei__> BlueMatt, dont we need package relay?
+19:53:40 <roasbeef> cdecker[m]: what do you mean exchange w/? as in advertise on gossip w/ y'alls current impl?
+19:53:51 <niftynei__> package relay and "umbrella RBF" lol
+19:53:58 <roasbeef> rusty: while you're here, thoughts on https://github.com/lightningnetwork/lightning-rfc/issues/925 ?
+19:53:58 <BlueMatt> niftynei__: everything in lightning needs package relay :p
+19:54:11 <cdecker[m]> Yep, it's not being shared with peers, it's just using the same serialization internally, which muddies the water
+19:54:12 <niftynei__> someone call USPS and get them on this stat
+19:54:14 <BlueMatt> ariard: hmm?
+19:54:27 <mschmoock> roasbeef: rusty merged in websockets type 5 already (though experimental)
+19:54:33 <mschmoock> (in clightning)
+19:54:45 <BlueMatt> sounds like ws gets 5, cause its just a number, and that sounds like less coding work :)
+19:54:55 <roasbeef> ok ws 5, dns 6?
+19:55:01 <BlueMatt> (does mean you have to support reading 5 to read dns, but so what)
+19:55:11 <cdecker[m]> roasbeef: actually I'll just move the numeric type to something large (250), because it is only used internally
+19:55:16 <mschmoock> just to be clear, implementations must ignore 6 when they cant read 5
+19:55:18 <cdecker[m]> DNS should get type=5!
+19:55:28 <BlueMatt> y
+19:55:31 <roasbeef> I think CL has implemented both already fwiw, the ws PR is on my TOOD list of things to impl
+19:55:48 <cdecker[m]> mschmoock: yep, that's the main issue: we order them by type, the first one an impl doesn't know terminates the parsing
+19:55:50 <roasbeef> mschmoock: wait thought you just ignored that addr? since there's a lnegth prefix you can skip
+19:56:07 <mschmoock> nope
+19:56:14 <cdecker[m]> Nope, there is no length prefix... :-(
+19:56:31 <mschmoock> it must ignore the following ones. It can however implement it by ignoring the data ;)
+19:56:33 <t-bast> rusty: the main issue I have with telling your peer the threshold is that it will likely be dynamic, and handling updates of such parameters is a pita
+19:56:37 <BlueMatt> maybe we define type 5 to "tlv stream" and call it a day :p
+19:56:39 <roasbeef> ok confirmed we terminate when parsing too
+19:56:39 <cdecker[m]> Saving a couple of bytes, in spite of unparseability as a result
+19:56:56 <roasbeef> (terminate on unknown type)
+19:56:58 * BlueMatt ducks
+19:57:04 <t-bast> looks like we moved to DNS
+19:57:06 <roasbeef> heh
+19:57:09 <rusty> t-bast: yeah, it's a dumb idea.  Hence nail it in the spec to some value and go home.
+19:57:14 <niftynei__> BlueMatt: get out
+19:57:18 <t-bast> #topic DNS addresses in node_announcement
+19:57:18 <cdecker[m]> Welp, I'm not opposed to TLV, but yet another nesting?...
+19:57:22 <t-bast> #link https://github.com/lightningnetwork/lightning-rfc/pull/911
+19:57:33 <BlueMatt> it was a joke, dont take me seriously
+19:57:36 <mschmoock> :D
+19:57:43 <t-bast> rusty: but I really don't want my 10 BTC channel to potentially give up 0.5% in miner fees!
+19:58:09 <cdecker[m]> Just to make sure this doesn't create confusion: I will switch the websocket one over to type=250 so no need to drag that into the discussion here. Let's discuss DNS on its own merits ^^
+19:58:20 <rusty> t-bast: 1%, since you could each have that much dust...
+19:58:30 <BlueMatt> cdecker[m]: you cant skip them!
+19:58:35 <t-bast> rusty: I hate it xD
+19:58:38 <BlueMatt> cdecker[m]: oh, wait, ignore me, yes you can
+19:58:39 <crypt-iq> 1% is pretttty high
+19:58:40 <cdecker[m]> Oh, when did rusty join? Didn't see you there
+19:58:50 <rusty> I am not here.... couldn't sleep though.,
+19:58:54 <roasbeef> cdecker[m]: ok so....dns 5, ws 6 (250 for CL internal)
+19:59:01 <cdecker[m]> BlueMatt: yes, we can, we just can't skip ones from others that we don't know
+19:59:28 <ariard> well ultimately you could be fine with really high level of dust exposure if your counterparty is trustwhorty and reliable to not go on-chain with a loaded commitment
+19:59:31 <rusty> Happy to give 5 to DNS, ws is experimental and can break in lots of fun ways anyway.
+19:59:33 <cdecker[m]> roasbeef: yep, you guys don't need to be concerned about WS, since that'll never leave our node
+19:59:48 <rusty> cdecker[m]: um, no, we definitely advertize it.
+19:59:51 <cdecker[m]> Hehe, viva el experimento :-)
+19:59:54 <roasbeef> cool, we'll prob have it in our next major release
+20:00:17 <mschmoock> also t-bast did a little compat test on #917 with acinq and clightning
+20:00:26 <rusty> cdecker[m]: I can change to type 6 before release, with the downside that we'll never parse it...
+20:00:26 <niftynei__> wait what's the reason for not putting WS at #6?
+20:00:35 <BlueMatt> can someone flip a coin already
+20:00:37 <roasbeef> niftynei__: something something deployment order?
+20:00:50 <mschmoock> niftynei__: that our code already has it expermental on type 5
+20:00:53 <cdecker[m]> Oh? But it doesn't have an IP address, and shouldn't it then rather be a modifier of an existing address type (you can reach me here, but speak websockeranto to me)
+20:00:57 <t-bast> yep #917 is very simple to implement and I'm curious to see how it behaves in the wild, not acting on it yet though
+20:01:22 <mschmoock> t-bast: what do we do if a node announces a private addres?
+20:01:26 <rusty> niftynei__: c-lightning used 5.  But we can switch...
+20:01:28 <niftynei__> mschmoock, but we're clearly going with DNS for #5 yeh?
+20:01:30 <mschmoock> (like my dump impl did?)
+20:01:34 <roasbeef> 5 (dns), ws (6), ws-CL (250)
+20:01:39 <t-bast> mschmoock: for now I'm just dropping it
+20:01:42 <niftynei__> so WS can haz #6 then
+20:01:51 <rusty> Yep, patch incoming...
+20:01:58 <mschmoock> kk
+20:02:12 <cdecker[m]> Uff, terribly sorry for the confusion
+20:02:26 <mschmoock> t-bast: maybe we should add a note on #917 that it "MUST ignore" private addresses ?!?
+20:02:32 <mschmoock> ir *SHOULD
+20:02:32 <niftynei__> (unrelated to anything but this PR number made this song start playing in me head https://www.youtube.com/watch?v=YkyhvCdJ_vM)
+20:03:43 <t-bast> mschmoock: "IP addresses within private networks (RFC-1918) MUST not be used" -> isn't that already it? Or do you mean we should have a similar one in the receiver requirements? If so yes, it doesn't hurt
+20:03:50 <mschmoock> yep
+20:03:58 <mschmoock> because it might rebroadcast crap otherwise
+20:04:11 <t-bast> mschmoock: but to be honest I dont think it's necessary, implementations shouldn't be dumb enough to take external inputs without validating them
+20:04:50 <mschmoock> also we can add that later if it ever gets a problem (never)
+20:04:52 <rusty> websocket spec updated to 6.
+20:04:56 <mschmoock> thx
+20:05:46 <t-bast> alright folks, we've hit the 1h timer, I gotta go soon
+20:05:57 <crypt-iq> do impl's validate node_announcement to ensure they aren't local addresses
+20:06:22 <mschmoock> crypt-iq: they should
+20:06:34 <BlueMatt> crypt-iq: no. if you send us crap, you may still want other addresses out there or whatever, and presumably you're sending it to others too, so not our problem?
+20:06:47 <t-bast> Thanks rusty for green-lighting https://github.com/lightningnetwork/lightning-rfc/issues/925; do you want to keep the lightning-rfc name of shall we rename to lightning/bolts?
+20:06:56 <BlueMatt> and, like, it isn't really a big deal if you tell the world your internal address. not idea, but not a big deal
+20:06:58 <rusty> t-bast: oh, bolts FTW!
+20:07:01 <t-bast> roasbeef if you can give us rights on the org, it would be great
+20:07:03 <niftynei__> +1 for /bolts
+20:07:04 <mschmoock> nice
+20:07:17 <rusty> BlueMatt: there are weird probing things in theory... better to discard.
+20:07:29 <t-bast> nice, looks like lightning/bolts gets traction, roasbeef we're all good to go to transfer the repo then rename it then ;)
+20:07:33 <BlueMatt> rusty: sure, but if you also have "real" addresses there, you'd probably prefer they get out there.
+20:07:49 <BlueMatt> rusty: and, sadly, its signed, so we cannot discard parts
+20:08:05 <rusty> BlueMatt: sure, but we can ignore parts, which would be best practice.
+20:08:16 <niftynei__> is this `remote_addr` just an IP discovery service?
+20:08:29 <mschmoock> niftynei__: yep, but decentralized :D
+20:08:32 <niftynei__> peer tells me my IP addy cuz i don't know it
+20:08:32 <BlueMatt> oh, sure, yes, *definitly* dont *connect* to a local ip in an announcement :)
+20:08:55 <niftynei__> i'm dmb, what's this useful for?
+20:09:03 <BlueMatt> niftynei__: yes, what you just said
+20:09:06 <mschmoock> NATs etc
+20:09:22 <gene> yeah, NAT traversal/hole-punch
+20:09:22 <mschmoock> you just need to open the 9735 port
+20:09:30 <mschmoock> discovery then works out of the box
+20:09:32 <niftynei__> am i, the node getting my `remote_addr` back, going to update my address list based on this?
+20:09:36 <niftynei__> like is this actionable??
+20:09:54 <mschmoock> niftynei__: yes, the node can do some checks
+20:10:07 <mschmoock> but basically if its sure enough the address is usable then announce it
+20:10:09 <rusty> niftynei: it's better than many of the alternatives, it turns out...
+20:10:10 <t-bast> niftynei: that's the big question, if enough of your peers send you back the same ip address and it's not the one you advertized, maybe your ISP changed your IP and you should advertize this new one
+20:10:20 <niftynei__> so i start up, connect to some peers, make sure the majority of them agree about what my IP addr is and set that as my connection deets?
+20:10:44 <BlueMatt> niftynei__: recall you have a pubkey and can provide multiple ips :)
+20:10:52 <t-bast> niftynei: it should at least send the node operator a notification and let them act on it - or automatically decide to use it
+20:11:00 <rusty> niftynei: we would do it by default only in the case where we don't otherwise advertize *any* addresses.  So it's better than nothing...
+20:11:18 <niftynei__> sort of a nit but this PR's commit message would be easier to figure out if it had the word "discovery" in it somewhere
+20:12:01 <mschmoock> kk
+20:12:10 <niftynei__> BlueMatt: ack, seems like it's not useful for a node that knows it's multi IPs then?? or do you just add all reported IPs to your list lol
+20:12:29 <BlueMatt> niftynei__: not a lot of reason to not report 2/3 ips?
+20:12:36 <BlueMatt> niftynei__: i mean it costs something to the network, so dont send 10
+20:12:37 <niftynei__> i mean if you've got a pubkey others can verify, you could jsut append anything anyone tells you back yolo
+20:12:43 <niftynei__> ahh facts
+20:12:52 <BlueMatt> but, like, if you're not sure, and you think maybe some ip is workable, just tell people it?
+20:13:02 <niftynei__> is this to get people away from TOR?
+20:13:15 <t-bast> #endmeeting

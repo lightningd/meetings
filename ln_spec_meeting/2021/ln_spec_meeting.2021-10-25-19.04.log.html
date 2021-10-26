@@ -1,0 +1,463 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">19:04:48</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">LN Spec Meeting</span>
+<a name="l-2"></a><span class="tm">19:04:48</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Oct 25 19:04:48 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">19:04:48</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">19:04:48</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'ln_spec_meeting'
+<a name="l-5"></a><span class="tm">19:04:49</span><span class="nk"> &lt;cdecker[m]&gt;</span> Since I'll not stick around till the end I probably shouldn't chair
+<a name="l-6"></a><span class="tm">19:04:50</span><span class="nk"> &lt;roasbeef&gt;</span> ah yeh as we found out, the bot 2 weeks ago, the bot isn't fully autonomous ;)
+<a name="l-7"></a><span class="tm">19:05:05</span><span class="nk"> &lt;t-bast&gt;</span> The bot is cdecker's puppet
+<a name="l-8"></a><span class="tm">19:05:06</span><span class="nk"> &lt;crypt-iq&gt;</span> mechanical turk?
+<a name="l-9"></a><span class="tm">19:05:19</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/issues/929</span>
+<a name="l-10"></a><span class="tm">19:05:27</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Moving to a new org</span>
+<a name="l-11"></a><span class="tm">19:05:37</span><span class="nk"> &lt;BlueMatt&gt;</span> cc roasbeef
+<a name="l-12"></a><span class="tm">19:05:39</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/issues/925</span>
+<a name="l-13"></a><span class="tm">19:05:47</span><span class="nk"> &lt;cdecker[m]&gt;</span> Couple of people in the the video chat, but all decisions are to be taken in written form
+<a name="l-14"></a><span class="tm">19:06:29</span><span class="nk"> &lt;roasbeef&gt;</span> can't join the chat rn, will prob hover there in the future as able to
+<a name="l-15"></a><span class="tm">19:06:49</span><span class="nk"> &lt;t-bast&gt;</span> roasbeef could you give us rights on the lightning repo?
+<a name="l-16"></a><span class="tm">19:06:59</span><span class="nk"> &lt;roasbeef&gt;</span> ok yeh re the org, mainly waiting for buy in from some of the other devs, seems we're all generally on board with it though?
+<a name="l-17"></a><span class="tm">19:07:13</span><span class="nk"> &lt;t-bast&gt;</span> I don't think we've heard from rusty though
+<a name="l-18"></a><span class="tm">19:07:16</span><span class="nk"> &lt;roasbeef&gt;</span> yeh
+<a name="l-19"></a><span class="tm">19:07:28</span><span class="nk"> &lt;t-bast&gt;</span> does someone know if he's down with moving the repos there?
+<a name="l-20"></a><span class="tm">19:07:33</span><span class="nk"> &lt;roasbeef&gt;</span> also Q of who should be made admin, was gonna add the "OG/lead dev" of the major impls, then let them take it from there
+<a name="l-21"></a><span class="tm">19:07:49</span><span class="nk"> &lt;cdecker[m]&gt;</span> Rusty excuses himself, and likely won't be joining today
+<a name="l-22"></a><span class="tm">19:08:07</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> do you know how he feels about the general concept? I can reach out directyl as well if needed
+<a name="l-23"></a><span class="tm">19:08:08</span><span class="nk"> &lt;ariard&gt;</span> sgtm as long as we have someone from each impl
+<a name="l-24"></a><span class="tm">19:08:09</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> sgtm, we haven't had any issues with repo rights yet, lets not worry too much about it until its a problem :)
+<a name="l-25"></a><span class="tm">19:09:39</span><span class="nk"> &lt;t-bast&gt;</span> So maybe let's wait for rusty to ACK on this, and we'll move then?
+<a name="l-26"></a><span class="tm">19:09:43</span><span class="nk"> &lt;cdecker[m]&gt;</span> For reference, Lisa and I are happy with moving the the RFC repo, and this way around the import paths don't get screwed either
+<a name="l-27"></a><span class="tm">19:09:49</span><span class="nk"> &lt;roasbeef&gt;</span> ok i'll reach out to him directly re that
+<a name="l-28"></a><span class="tm">19:09:58</span><span class="nk"> &lt;cdecker[m]&gt;</span> Sounds good to me ^^
+<a name="l-29"></a><span class="tm">19:10:11</span><span class="nk"> &lt;t-bast&gt;</span> thanks roasbeef, can you also ask him whether he'd like us to rename it to lightning/bolts or keep lightning-rfc?
+<a name="l-30"></a><span class="tm">19:10:17</span><span class="nk"> &lt;roasbeef&gt;</span> yeh
+<a name="l-31"></a><span class="tm">19:10:45</span><span class="nk"> &lt;t-bast&gt;</span> I like lightning/bolts and lightning/blips FWIW, but I can understand why some may want the more standard "RFC" naming
+<a name="l-32"></a><span class="tm">19:11:16</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">roasbeef to ping rusty about org move, and initiate it if we're all on board with it</span>
+<a name="l-33"></a><span class="tm">19:12:04</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="cmd">#903 </span><span class="cmdline">next?</span>
+<a name="l-34"></a><span class="tm">19:12:21</span><span class="nk"> &lt;roasbeef&gt;</span> I see comments filled in there, I'll make sure to get to them this week
+<a name="l-35"></a><span class="tm">19:12:32</span><span class="nk"> &lt;t-bast&gt;</span> Yep let's do that
+<a name="l-36"></a><span class="tm">19:12:41</span><span class="nk"> &lt;t-bast&gt;</span> But I think it's just a call to action
+<a name="l-37"></a><span class="tm">19:13:04</span><span class="nk"> &lt;t-bast&gt;</span> If you have some time to address the comments this week roasbeef, it's all good and we can move on to something else
+<a name="l-38"></a><span class="tm">19:13:12</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Ping rate limitation</span>
+<a name="l-39"></a><span class="tm">19:13:13</span><span class="nk"> &lt;roasbeef&gt;</span> yeh should be able to
+<a name="l-40"></a><span class="tm">19:13:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/918</span>
+<a name="l-41"></a><span class="tm">19:13:25</span><span class="nk"> &lt;t-bast&gt;</span> great, let's keep it on github then, thanks!
+<a name="l-42"></a><span class="tm">19:13:39</span><span class="nk"> &lt;t-bast&gt;</span> BlueMatt proposed removing that limitation from the spec
+<a name="l-43"></a><span class="tm">19:13:51</span><span class="nk"> &lt;t-bast&gt;</span> I think it makes sense
+<a name="l-44"></a><span class="tm">19:13:52</span><span class="nk"> &lt;roasbeef&gt;</span> no strong feelings on thi sone myself, but at the same time don't see the harm in the current langauge
+<a name="l-45"></a><span class="tm">19:13:57</span><span class="nk"> &lt;roasbeef&gt;</span> this one*
+<a name="l-46"></a><span class="tm">19:14:16</span><span class="nk"> &lt;roasbeef&gt;</span> as is it's just an advisory in either case right?
+<a name="l-47"></a><span class="tm">19:14:24</span><span class="nk"> &lt;mschmoock&gt;</span> what does a node do when he gets flooded?
+<a name="l-48"></a><span class="tm">19:14:31</span><span class="nk"> &lt;roasbeef&gt;</span> so don't send too many, and maybe disconnect if they're sending too many
+<a name="l-49"></a><span class="tm">19:14:37</span><span class="nk"> &lt;mschmoock&gt;</span> :]
+<a name="l-50"></a><span class="tm">19:14:44</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> if you have a problem getting flooded with pings you're very, very screwed at that point
+<a name="l-51"></a><span class="tm">19:14:45</span><span class="nk"> &lt;t-bast&gt;</span> yeah, but why a specific duration though?
+<a name="l-52"></a><span class="tm">19:15:06</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> agreed is arbitrary, is there another duration? 30 seconds seems like "long enough" I guess?
+<a name="l-53"></a><span class="tm">19:15:07</span><span class="nk"> &lt;cdecker[m]&gt;</span> Pings can already be rather large, so even with a 30 sec timeout the traffic can be coniderable (2KB / s / connection)
+<a name="l-54"></a><span class="tm">19:15:08</span><span class="nk"> &lt;crypt-iq&gt;</span> Did mschmoock mean packet flood in general rather than ln-ping-flood
+<a name="l-55"></a><span class="tm">19:15:13</span><span class="nk"> &lt;BlueMatt&gt;</span> my point is largely that if you're worried about getting ping-floods your're, like, really really doing it wrong
+<a name="l-56"></a><span class="tm">19:15:21</span><span class="nk"> &lt;mschmoock&gt;</span> I meant LN ping flood
+<a name="l-57"></a><span class="tm">19:15:37</span><span class="nk"> &lt;BlueMatt&gt;</span> cause, like, I can also send gossip messages duplicatively, or, like, tcp keepalives or whatever
+<a name="l-58"></a><span class="tm">19:15:45</span><span class="nk"> &lt;mschmoock&gt;</span> Jep I know
+<a name="l-59"></a><span class="tm">19:15:46</span><span class="nk"> &lt;roasbeef&gt;</span> should we soften the langauge rather than removing all together?
+<a name="l-60"></a><span class="tm">19:15:46</span><span class="nk"> &lt;BlueMatt&gt;</span> or, like, just send you a udp flood of non-lightning traffic
+<a name="l-61"></a><span class="tm">19:16:00</span><span class="nk"> &lt;roasbeef&gt;</span> seems were conflating like general DoS with recommended rate limiting at the protocol level?
+<a name="l-62"></a><span class="tm">19:16:25</span><span class="nk"> &lt;t-bast&gt;</span> true, let's not conflate these and just stick to removing this arbitrary ping limitation?
+<a name="l-63"></a><span class="tm">19:16:32</span><span class="nk"> &lt;BlueMatt&gt;</span> I think so - why are we recommending rate-limiting pings in the protocol? its a really useless anti-dos mechanism by itself
+<a name="l-64"></a><span class="tm">19:16:38</span><span class="nk"> &lt;roasbeef&gt;</span> fwiw lnd sends pings every 1 minute rn
+<a name="l-65"></a><span class="tm">19:16:45</span><span class="nk"> &lt;BlueMatt&gt;</span> nodes should do *something* about dos, but this isn't it
+<a name="l-66"></a><span class="tm">19:16:47</span><span class="nk"> &lt;roasbeef&gt;</span> jsut to advise re best practices?
+<a name="l-67"></a><span class="tm">19:16:51</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">BlueMatt:</span> okay
+<a name="l-68"></a><span class="tm">19:17:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> fwiw we've moved to 3 seconds
+<a name="l-69"></a><span class="tm">19:17:07</span><span class="nk"> &lt;gene&gt;</span> could do increasing PoW per connecting client
+<a name="l-70"></a><span class="tm">19:17:17</span><span class="nk"> &lt;roasbeef&gt;</span> mainly I don't see the harm in the recommendation
+<a name="l-71"></a><span class="tm">19:17:19</span><span class="nk"> &lt;BlueMatt&gt;</span> and we can/should maybe have a discussion about dos, but that's pretty separate
+<a name="l-72"></a><span class="tm">19:17:30</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> because we need to be way more aggressive on mobile
+<a name="l-73"></a><span class="tm">19:17:37</span><span class="nk"> &lt;BlueMatt&gt;</span> and so this recommendation is preventing us from doign so
+<a name="l-74"></a><span class="tm">19:17:38</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">gene:</span> ouch for the mobile clients on low-grade CPUs
+<a name="l-75"></a><span class="tm">19:17:39</span><span class="nk"> &lt;BlueMatt&gt;</span> doing so
+<a name="l-76"></a><span class="tm">19:17:47</span><span class="nk"> &lt;BlueMatt&gt;</span> well, "preventing", we're doing it now anyway and seem to have no issues :)
+<a name="l-77"></a><span class="tm">19:17:53</span><span class="nk"> &lt;cdecker[m]&gt;</span> Duplicate in-flight Pings are still prohibited? If yes there's a simple way of throttling the peer
+<a name="l-78"></a><span class="tm">19:17:57</span><span class="nk"> &lt;BlueMatt&gt;</span> except for the occasional nodes-on-rpis that are too slow, but...
+<a name="l-79"></a><span class="tm">19:18:05</span><span class="nk"> &lt;roasbeef&gt;</span> iirc re mobile, we ended up tuning our read/write timeoutes to accomodate the higher latency/roaming env
+<a name="l-80"></a><span class="tm">19:18:06</span><span class="nk"> &lt;gene&gt;</span> the client starts with low-no PoW, then increases log scale with each subsequent request
+<a name="l-81"></a><span class="tm">19:18:31</span><span class="nk"> &lt;gene&gt;</span> well-behaving clients would rarely, if ever, have to send more than a few hashes worth of PoW
+<a name="l-82"></a><span class="tm">19:18:41</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">gene:</span> LN nodes can already kinda opt to just not have connections to anyone that doesn't have a channel with them
+<a name="l-83"></a><span class="tm">19:18:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">gene:</span> meh, I dunno if we need to?
+<a name="l-84"></a><span class="tm">19:18:43</span><span class="nk"> &lt;crypt-iq&gt;</span> doesn't rust-lightning then separate itself from the plebnet/rpi graph
+<a name="l-85"></a><span class="tm">19:18:53</span><span class="nk"> &lt;roasbeef&gt;</span> what do you mean separate?
+<a name="l-86"></a><span class="tm">19:19:02</span><span class="nk"> &lt;crypt-iq&gt;</span> Like if you require a 3s ping and the rpi's are slow
+<a name="l-87"></a><span class="tm">19:19:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> nah, you just disconnect/reconnect once an hour
+<a name="l-88"></a><span class="tm">19:19:14</span><span class="nk"> &lt;gene&gt;</span> <span class="hi">BlueMatt:</span> mb not, just throwing ideas out there. maybe that one is dumb/unworkable
+<a name="l-89"></a><span class="tm">19:19:43</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">gene:</span> the broader issue is if you're worried about *incoming* traffic, you can't do anything but pay cloudflare/a ddos provider. if you're worried about *ougoing* traffic, stop sending stuff!
+<a name="l-90"></a><span class="tm">19:19:47</span><span class="nk"> &lt;gene&gt;</span> PoW was originally for DoS protecc tho
+<a name="l-91"></a><span class="tm">19:19:58</span><span class="nk"> &lt;roasbeef&gt;</span> even w/ this removed, impls can still do w/e arbitrary things to rate limit pings
+<a name="l-92"></a><span class="tm">19:19:59</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, but I can udp flood you too and you still get packets :p
+<a name="l-93"></a><span class="tm">19:20:09</span><span class="nk"> &lt;roasbeef&gt;</span> just like a lot of thigns aren't spelled out in the spec, but impls do in practice anyway
+<a name="l-94"></a><span class="tm">19:20:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> no?
+<a name="l-95"></a><span class="tm">19:20:16</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">cdecker[m]:</span> from what I read there is no " Duplicate in-flight Pings are prohibited" rule
+<a name="l-96"></a><span class="tm">19:20:21</span><span class="nk"> &lt;roasbeef&gt;</span> do we want to instead lower the interval here?
+<a name="l-97"></a><span class="tm">19:20:21</span><span class="nk"> &lt;BlueMatt&gt;</span> - MUST respond by sending a `pong` message, with `byteslen` equal to `num_pong_bytes`.
+<a name="l-98"></a><span class="tm">19:20:25</span><span class="nk"> &lt;BlueMatt&gt;</span> the spec is very clear here
+<a name="l-99"></a><span class="tm">19:20:25</span><span class="nk"> &lt;gene&gt;</span> packets == drop after certain threshold?
+<a name="l-100"></a><span class="tm">19:20:27</span><span class="nk"> &lt;BlueMatt&gt;</span> you MUST respond
+<a name="l-101"></a><span class="tm">19:20:36</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> I mean we all do a lot of throttling for gossip messages that isn't spelled ou tin the spec
+<a name="l-102"></a><span class="tm">19:20:39</span><span class="nk"> &lt;BlueMatt&gt;</span> if you dont like the peer and its being stupid, disconnect it and close your channels with it
+<a name="l-103"></a><span class="tm">19:20:47</span><span class="nk"> &lt;gene&gt;</span> ^
+<a name="l-104"></a><span class="tm">19:20:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> IIRC that part of the spec is SHOULD
+<a name="l-105"></a><span class="tm">19:20:49</span><span class="nk"> &lt;BlueMatt&gt;</span> not MUST
+<a name="l-106"></a><span class="tm">19:21:18</span><span class="nk"> &lt;mschmoock&gt;</span> Also, I doubt you should do a ping each 3sec especially on mobile
+<a name="l-107"></a><span class="tm">19:21:24</span><span class="nk"> &lt;mschmoock&gt;</span> but maybe thats just me :D
+<a name="l-108"></a><span class="tm">19:21:28</span><span class="nk"> &lt;roasbeef&gt;</span> idk, doesn't seem like the rest have strong opinions re sending more pings or w/e
+<a name="l-109"></a><span class="tm">19:21:28</span><span class="nk"> &lt;BlueMatt&gt;</span> if you dont like how often someone is sending you packets, you go to your anti-ddos provider and tell them about your new firewall rule, there's just really not a lot else you can do
+<a name="l-110"></a><span class="tm">19:21:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> if you're in the background, no, but you generally don't get cpu time when you're in the backgrouna and not charging/on wifi anyway :p
+<a name="l-111"></a><span class="tm">19:22:14</span><span class="nk"> &lt;mschmoock&gt;</span> For a reason
+<a name="l-112"></a><span class="tm">19:22:19</span><span class="nk"> &lt;t-bast&gt;</span> I acked the PR, I think we should remove this requirement because we indeed need to be more aggressive on mobile if you hope to keep them alive, and I don't think the spec can provide a good enough / works everywhere rule of thumb / magic number here
+<a name="l-113"></a><span class="tm">19:22:23</span><span class="nk"> &lt;crypt-iq&gt;</span> impls won't know each others ping timeouts, so are they supposed to respond asap
+<a name="l-114"></a><span class="tm">19:22:30 </span><span class="nka">* gene</span> <span class="ac">groans about DDoS  providers requiring non-free JS</span>
+<a name="l-115"></a><span class="tm">19:22:44</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> yes, because stupid people like me keep writing apps that wake up the radio too often :p
+<a name="l-116"></a><span class="tm">19:22:44</span><span class="nk"> &lt;mschmoock&gt;</span> If my mobile wallet would do 3sec pings I would surely uninstall it
+<a name="l-117"></a><span class="tm">19:23:06</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">gene:</span> i do hope your only complaint about the NSA^H^H^Hddos providers isn't just the non-free JS,
+<a name="l-118"></a><span class="tm">19:23:11</span><span class="nk"> &lt;roasbeef&gt;</span> idk we'll prob eventually rate limit pings if ppl start spamming it, there's an open issue for it, similar to all the stuff ppl started doing once gossip messages were spammed/churned a ton
+<a name="l-119"></a><span class="tm">19:23:31</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">crypt-iq:</span> this is not about the liveness decision, this is just about how often you're allowed to check
+<a name="l-120"></a><span class="tm">19:23:35</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the spec is very clear that you MUST NOT do that. if you have an issue with that, you should speak now :)
+<a name="l-121"></a><span class="tm">19:23:39</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">cdecker[m]:</span> yes
+<a name="l-122"></a><span class="tm">19:23:39</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> and propose something else
+<a name="l-123"></a><span class="tm">19:23:41</span><span class="nk"> &lt;gene&gt;</span> <span class="hi">BlueMatt:</span> surely more, like what that non-free JS allows alphabet soup to do to users
+<a name="l-124"></a><span class="tm">19:23:47</span><span class="nk"> &lt;cdecker[m]&gt;</span> I.e., you're free to wait before replying however long you want
+<a name="l-125"></a><span class="tm">19:23:48</span><span class="nk"> &lt;BlueMatt&gt;</span> like "no more than one ping in flight at once" or whatever
+<a name="l-126"></a><span class="tm">19:23:56</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">cdecker[m]:</span> I there a "duplicate inflight not allowed rule" ?
+<a name="l-127"></a><span class="tm">19:23:58</span><span class="nk"> &lt;mschmoock&gt;</span> *is
+<a name="l-128"></a><span class="tm">19:24:05</span><span class="nk"> &lt;mschmoock&gt;</span> If so, go for 0.1secs pings
+<a name="l-129"></a><span class="tm">19:24:06</span><span class="nk"> &lt;mschmoock&gt;</span> :D
+<a name="l-130"></a><span class="tm">19:24:11</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">cdecker:</span> got it
+<a name="l-131"></a><span class="tm">19:24:14</span><span class="nk"> &lt;BlueMatt&gt;</span> there is not currently a duplicate in flight requirement
+<a name="l-132"></a><span class="tm">19:24:17</span><span class="nk"> &lt;BlueMatt&gt;</span> we could add it, however
+<a name="l-133"></a><span class="tm">19:24:20</span><span class="nk"> &lt;mschmoock&gt;</span> Good
+<a name="l-134"></a><span class="tm">19:24:25</span><span class="nk"> &lt;mschmoock&gt;</span> maybe we do this together
+<a name="l-135"></a><span class="tm">19:24:26</span><span class="nk"> &lt;t-bast&gt;</span> I like that, it sounds reasonable
+<a name="l-136"></a><span class="tm">19:24:30</span><span class="nk"> &lt;cdecker[m]&gt;</span> I thought there was, what was I thinking of?
+<a name="l-137"></a><span class="tm">19:24:34</span><span class="nk"> &lt;BlueMatt&gt;</span> can we also require that byteslen be 0
+<a name="l-138"></a><span class="tm">19:24:40</span><span class="nk"> &lt;mschmoock&gt;</span> remove the throttle replace by a dups disallowed rule
+<a name="l-139"></a><span class="tm">19:24:42</span><span class="nk"> &lt;BlueMatt&gt;</span> does anyone do padding with pings?
+<a name="l-140"></a><span class="tm">19:24:52</span><span class="nk"> &lt;roasbeef&gt;</span> yeah we do
+<a name="l-141"></a><span class="tm">19:24:54</span><span class="nk"> &lt;crypt-iq&gt;</span> we do blockheaders
+<a name="l-142"></a><span class="tm">19:25:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> can you switch to dummy unknown messages for paddings?
+<a name="l-143"></a><span class="tm">19:25:06</span><span class="nk"> &lt;roasbeef&gt;</span> prior nodes do like 16 bytes or something like that
+<a name="l-144"></a><span class="tm">19:25:08</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">BlueMatt:</span> having just reimplemented that part, yes, I get all kinds of sizes
+<a name="l-145"></a><span class="tm">19:25:19</span><span class="nk"> &lt;roasbeef&gt;</span> and we also do the thing where we send back as muich as dictated in the ping
+<a name="l-146"></a><span class="tm">19:25:27</span><span class="nk"> &lt;BlueMatt&gt;</span> well, we can say "ping must be 0" today and ignore non-0 pings in 3 years :p
+<a name="l-147"></a><span class="tm">19:25:32</span><span class="nk"> &lt;cdecker[m]&gt;</span> And I personally like it to have decoy traffic
+<a name="l-148"></a><span class="tm">19:25:41</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> right, my point is decoy traffic can be other messages
+<a name="l-149"></a><span class="tm">19:25:42</span><span class="nk"> &lt;cdecker[m]&gt;</span> (though nobody uses it like that yet)
+<a name="l-150"></a><span class="tm">19:25:46</span><span class="nk"> &lt;roasbeef&gt;</span> idk, tbh this doens't seem very important to me, and nice to have that decoy measure in there as cdecker[m]  mentions
+<a name="l-151"></a><span class="tm">19:25:48</span><span class="nk"> &lt;BlueMatt&gt;</span> agree decoy traffic is good
+<a name="l-152"></a><span class="tm">19:26:02</span><span class="nk"> &lt;t-bast&gt;</span> +1 for decoy traffic (some day)
+<a name="l-153"></a><span class="tm">19:26:14</span><span class="nk"> &lt;BlueMatt&gt;</span> well then I'm confused, if you're annoyed at the amount of bandwidth, maybe the easiest solution is to not allow pongs up to 64KB :p
+<a name="l-154"></a><span class="tm">19:26:28</span><span class="nk"> &lt;cdecker[m]&gt;</span> It's just the simplest way of simulating a query-reply that is common for the protocol without having to use non-fitting other data
+<a name="l-155"></a><span class="tm">19:26:48</span><span class="nk"> &lt;crypt-iq&gt;</span> Is it much of a decoy if the ping is on a timer ? This is decoy for a network-level adversary
+<a name="l-156"></a><span class="tm">19:26:54</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">BlueMatt:</span> about using low interval pings on mobile (not related to this discussion) it comes with a high cost, it forces the radio to staay active which kills the battery
+<a name="l-157"></a><span class="tm">19:26:54</span><span class="nk"> &lt;crypt-iq&gt;</span> on a static timer*
+<a name="l-158"></a><span class="tm">19:26:55</span><span class="nk"> &lt;roasbeef&gt;</span> didn't make the bandwidth arg, just re general rate limiting of stuff peers send you, like if there's a peer that sends you the same bogus chan_ann 10000x, what do you do?
+<a name="l-159"></a><span class="tm">19:27:02</span><span class="nk"> &lt;cdecker[m]&gt;</span> I think the "no duplcate" rule + "decoy traffic" is limitation enough tbh
+<a name="l-160"></a><span class="tm">19:27:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> yea, that's true I suppose, just feels awkward to try to get cbr from pings and not by both sides doing cbr
+<a name="l-161"></a><span class="tm">19:27:20</span><span class="nk"> &lt;roasbeef&gt;</span> but just something I don't feel strongly about really, seems RL is the one that cares mainly about pings and wants to send them more frequetnyl
+<a name="l-162"></a><span class="tm">19:27:23</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">crypt-iq:</span> c-lightning does ping at irregular intervals too, but I see your point
+<a name="l-163"></a><span class="tm">19:27:45</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> yes, but the os prevents you from doing that in effect - you only get tcp time if you're in the foreground and the app is open, at which point users *want* things to be responsive (and generally happens for 10 seconds at a time)
+<a name="l-164"></a><span class="tm">19:27:45</span><span class="nk"> &lt;cdecker[m]&gt;</span> cbr?
+<a name="l-165"></a><span class="tm">19:28:09</span><span class="nk"> &lt;BlueMatt&gt;</span> constant bit rate
+<a name="l-166"></a><span class="tm">19:28:11</span><span class="nk"> &lt;mschmoock&gt;</span> Just saying, I have dealt whith this stuff a lot
+<a name="l-167"></a><span class="tm">19:28:41</span><span class="nk"> &lt;mschmoock&gt;</span> and android and ios behave very differntly :D
+<a name="l-168"></a><span class="tm">19:28:50</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> well in any case, we leave these decision up to our users, we dont decide for them. and users nagged us for this, soooo :)
+<a name="l-169"></a><span class="tm">19:29:00</span><span class="nk"> &lt;mschmoock&gt;</span> I can imagine
+<a name="l-170"></a><span class="tm">19:29:05</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">BlueMatt:</span> I see, I thought of this more like pretending to send an HTLC or a commitment, and asking the remote side to reply with a reasonable sized response
+<a name="l-171"></a><span class="tm">19:29:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> right, I think that's a really really bad way to try to get cover traffic
+<a name="l-172"></a><span class="tm">19:29:36</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> if you want cover traffic, you can do cbr (and maybe a second connection for gossip that doesn't do htlc relay)
+<a name="l-173"></a><span class="tm">19:29:56</span><span class="nk"> &lt;cdecker[m]&gt;</span> Because you're tempted to do it as a mirror of actual stuff happening, now tipping off unrelated peers?
+<a name="l-174"></a><span class="tm">19:29:57</span><span class="nk"> &lt;roasbeef&gt;</span> design space is open, no reason to shut off the possibility of it all together via this vector
+<a name="l-175"></a><span class="tm">19:30:22</span><span class="nk"> &lt;BlueMatt&gt;</span> sure, alright, I dont care about the pong len, I was just suggesting a way to do rate limiting I thought others might like
+<a name="l-176"></a><span class="tm">19:30:42</span><span class="nk"> &lt;BlueMatt&gt;</span> so is there a concrete suggestion here? the "no more than one in flight" seems like it breaks some cover traffic models
+<a name="l-177"></a><span class="tm">19:30:44</span><span class="nk"> &lt;gene&gt;</span> are amplification attacks a concern?
+<a name="l-178"></a><span class="tm">19:31:01</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">BlueMatt:</span> maybe allow 2 or some more inflight :D
+<a name="l-179"></a><span class="tm">19:31:04</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">gene:</span> amplification of what form?
+<a name="l-180"></a><span class="tm">19:31:24</span><span class="nk"> &lt;roasbeef&gt;</span> if it ain't broke...
+<a name="l-181"></a><span class="tm">19:31:32</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> to be fair, I kinda doubt any implementation is going to *enforce* the "in flight limit" requirement - its a huge pain and massive layer violation to enforce it in code
+<a name="l-182"></a><span class="tm">19:31:37</span><span class="nk"> &lt;gene&gt;</span> reply (much?) longer than request, malleable destination (doesn't return to requester)
+<a name="l-183"></a><span class="tm">19:31:39</span><span class="nk"> &lt;niftynei__&gt;</span> qq about "only one in flight at a time" -- how do you decide when your peer's offline/not responding so you can send another ping?
+<a name="l-184"></a><span class="tm">19:31:55</span><span class="nk"> &lt;t-bast&gt;</span> Or just remove the 30 seconds without changing anything else for now...?
+<a name="l-185"></a><span class="tm">19:32:01</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> presumably if the peer is offline/not responding after N seconds you drop the tcp connection
+<a name="l-186"></a><span class="tm">19:32:04</span><span class="nk"> &lt;t-bast&gt;</span> Like the current state of the PR :)
+<a name="l-187"></a><span class="tm">19:32:14</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> that implies that you MUST NOT rate-limit, which roasbeef said he was planning on violating
+<a name="l-188"></a><span class="tm">19:32:25</span><span class="nk"> &lt;niftynei__&gt;</span> so if peer doesn't respond you drop and don't reconnect?
+<a name="l-189"></a><span class="tm">19:32:27</span><span class="nk"> &lt;BlueMatt&gt;</span> so I'd kinda prefer we not tweak the spec and then have lnd go shit on it again in 6 months
+<a name="l-190"></a><span class="tm">19:32:27</span><span class="nk"> &lt;cdecker[m]&gt;</span> Agreed with t-bast, let's remove that now, replace later
+<a name="l-191"></a><span class="tm">19:32:45</span><span class="nk"> &lt;roasbeef&gt;</span> if this is about the connection itself, then isn't it possible to set a lower tcp keep alive probe/time at a lower level?
+<a name="l-192"></a><span class="tm">19:32:45</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> you totally should reconnect! but you cant ping until that's done :)
+<a name="l-193"></a><span class="tm">19:32:47</span><span class="nk"> &lt;cdecker[m]&gt;</span> The 30 second limitation will linger around anyway, so we havetime to find a replacement
+<a name="l-194"></a><span class="tm">19:33:01</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> tcp keepalives are fairly unreliable
+<a name="l-195"></a><span class="tm">19:33:03</span><span class="nk"> &lt;roasbeef&gt;</span> yeah there's also no way of knowing what kinda timer/rate teh other peer even uses
+<a name="l-196"></a><span class="tm">19:33:04</span><span class="nk"> &lt;BlueMatt&gt;</span> and a pita
+<a name="l-197"></a><span class="tm">19:33:48</span><span class="nk"> &lt;niftynei__&gt;</span> so .. "at a time" means "per tcp connection session"?
+<a name="l-198"></a><span class="tm">19:33:49</span><span class="nk"> &lt;mschmoock&gt;</span> Mobile operators use all kind of nasty equiment that kill your TCP session without you knowing once in a while
+<a name="l-199"></a><span class="tm">19:33:55</span><span class="nk"> &lt;BlueMatt&gt;</span> the spec change in this pr, as suggested requires that you respond (though I suppose you could creatively interpret the spec to simply say "delay outbound pong messages to 1/second, and take days to respond to a flood, which is fine)
+<a name="l-200"></a><span class="tm">19:34:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> yes, that's why we use pings in the protocol :)
+<a name="l-201"></a><span class="tm">19:34:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> unclear! good reason to remove it :)
+<a name="l-202"></a><span class="tm">19:34:48</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> so what's y'all's plan? are you intending to rate-limit soon - and if so what can we put in the spec so that isn't a gratuitous incompatibility?
+<a name="l-203"></a><span class="tm">19:34:59</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> but it only requires you to respond to *one* of the pending pings, right?
+<a name="l-204"></a><span class="tm">19:35:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> you're the only one here who said you can't live with this suggested change
+<a name="l-205"></a><span class="tm">19:35:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> no.
+<a name="l-206"></a><span class="tm">19:35:12</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> not the way i read it?
+<a name="l-207"></a><span class="tm">19:35:19</span><span class="nk"> &lt;BlueMatt&gt;</span> A node receiving a `ping` message:
+<a name="l-208"></a><span class="tm">19:35:28</span><span class="nk"> &lt;BlueMatt&gt;</span> - if `num_pong_bytes` is less than 65532:
+<a name="l-209"></a><span class="tm">19:35:28</span><span class="nk"> &lt;BlueMatt&gt;</span> - MUST respond by sending a `pong` message, with `byteslen` equal to `num_pong_bytes`.
+<a name="l-210"></a><span class="tm">19:35:33</span><span class="nk"> &lt;BlueMatt&gt;</span> that's pretty clear, I think
+<a name="l-211"></a><span class="tm">19:35:57</span><span class="nk"> &lt;t-bast&gt;</span> Right, that is clear indeed, my bad, I was looking at that one: "if byteslen does not correspond to any ping's num_pong_bytes value it has sent: " and made a shortcut
+<a name="l-212"></a><span class="tm">19:36:01</span><span class="nk"> &lt;crypt-iq&gt;</span> I thought the proposed change to lnd was to enforce timely pong replies ?
+<a name="l-213"></a><span class="tm">19:36:24</span><span class="nk"> &lt;BlueMatt&gt;</span> &lt;roasbeef&gt; idk we'll prob eventually rate limit pings if ppl start spamming it, there's an open issue for it, similar to all the stuff ppl started doing once gossip messages were spammed/churned a ton
+<a name="l-214"></a><span class="tm">19:36:25</span><span class="nk"> &lt;roasbeef&gt;</span> maybe lets timebox this re other stuff?
+<a name="l-215"></a><span class="tm">19:36:38</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> can you comment on the pr with a concrete suggestion?
+<a name="l-216"></a><span class="tm">19:36:42</span><span class="nk"> &lt;BlueMatt&gt;</span> then we can move on
+<a name="l-217"></a><span class="tm">19:36:53</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> no immediate plans to rate limit, but was brought up by a newer developer wondering why we _didn't_ as is
+<a name="l-218"></a><span class="tm">19:37:43</span><span class="nk"> &lt;t-bast&gt;</span> If there's no immediate plans to rate-limit at the ping level, I like the PR as-is, and once plans to rate-limit start forming we can open a new PR to accomodate it?
+<a name="l-219"></a><span class="tm">19:37:59</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">t-bast:</span> the problem with that is...
+<a name="l-220"></a><span class="tm">19:38:04</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">crypt-iq:</span> yeh there's that issue, but someone else brought up just rate limiting it in general too
+<a name="l-221"></a><span class="tm">19:38:29</span><span class="nk"> &lt;mschmoock&gt;</span> a stipid implementation can then send too many pings without waiting for response. when we add later, we need to make harder decisions
+<a name="l-222"></a><span class="tm">19:38:34</span><span class="nk"> &lt;roasbeef&gt;</span> any rate limit thing would just be avisory or impl specific really, right? just like we all rate limit gossip messages differently
+<a name="l-223"></a><span class="tm">19:38:46</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">mschmoock:</span> just close the connection on them then...?
+<a name="l-224"></a><span class="tm">19:38:53</span><span class="nk"> &lt;mschmoock&gt;</span> and the channel ?
+<a name="l-225"></a><span class="tm">19:38:56</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> rate-limiting gossip doesn't imply that nodes cant talk to each other
+<a name="l-226"></a><span class="tm">19:39:00</span><span class="nk"> &lt;roasbeef&gt;</span> I'm cool w/ whatever here tbh, no strong feelings, not super important to me
+<a name="l-227"></a><span class="tm">19:39:07</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the outcome of incompatible rate-limits here would actually be network breakage
+<a name="l-228"></a><span class="tm">19:39:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">mschmoock:</span> and ban them if you want, fail the channels if they're behaving maliciously
+<a name="l-229"></a><span class="tm">19:39:35</span><span class="nk"> &lt;mschmoock&gt;</span> yep, maybe we are talking about stuff that never matters
+<a name="l-230"></a><span class="tm">19:39:50</span><span class="nk"> &lt;t-bast&gt;</span> I don't think this will actually be an issue to be honest
+<a name="l-231"></a><span class="tm">19:40:26</span><span class="nk"> &lt;mschmoock&gt;</span> not really, I would more likely spam a node on 0msat base fee in 10000 circles :D
+<a name="l-232"></a><span class="tm">19:40:27</span><span class="nk"> &lt;BlueMatt&gt;</span> no, i doubt it will either, but if someone says "I'm gonna violate that spec requirement" when we're deciding to add one I generally pause cause breakage is bad :p
+<a name="l-233"></a><span class="tm">19:40:40</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> right lol, hence why I figured we should drop the rate limit
+<a name="l-234"></a><span class="tm">19:40:56</span><span class="nk"> &lt;mschmoock&gt;</span> and the base fee ^^
+<a name="l-235"></a><span class="tm">19:41:00</span><span class="nk"> &lt;roasbeef&gt;</span> main thing re spamming it us prob just the bandwidth, since they can make you send 65kb each time, but I guess ppl will do w/e if that pops up, it's the "freest" message we have rn data, since it requires a resposne unlike doing some error ting , soyou can make things symmetric
+<a name="l-236"></a><span class="tm">19:41:26</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> right, hence why i suggested reducing the size limit
+<a name="l-237"></a><span class="tm">19:41:29</span><span class="nk"> &lt;BlueMatt&gt;</span> but...:shrug:
+<a name="l-238"></a><span class="tm">19:41:42 </span><span class="nka">* roasbeef</span> <span class="ac">1 hour later *spongebobe narrator voice</span>
+<a name="l-239"></a><span class="tm">19:42:31</span><span class="nk"> &lt;t-bast&gt;</span> so...shall we voice opinions on the PR with either concrete counter-proposals or acks?
+<a name="l-240"></a><span class="tm">19:42:39</span><span class="nk"> &lt;t-bast&gt;</span> and move on to the next topic?
+<a name="l-241"></a><span class="tm">19:43:02</span><span class="nk"> &lt;mschmoock&gt;</span> Maybe someone wants to add more info on the decoy traffic stuff in the PR
+<a name="l-242"></a><span class="tm">19:43:17</span><span class="nk"> &lt;mschmoock&gt;</span> because otherwise i still prefere no more dups inflight rule
+<a name="l-243"></a><span class="tm">19:43:42</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">mschmoock:</span> the issue with no dups in flight is its really a pita to enforce at the code-level
+<a name="l-244"></a><span class="tm">19:43:43</span><span class="nk"> &lt;BlueMatt&gt;</span> but lets move
+<a name="l-245"></a><span class="tm">19:43:44</span><span class="nk"> &lt;BlueMatt&gt;</span> on
+<a name="l-246"></a><span class="tm">19:43:59</span><span class="nk"> &lt;mschmoock&gt;</span> kk. just wanted to bring that in
+<a name="l-247"></a><span class="tm">19:44:03</span><span class="nk"> &lt;mschmoock&gt;</span> * next :D
+<a name="l-248"></a><span class="tm">19:44:07</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">progress on the PR, provide concrete proposals there</span>
+<a name="l-249"></a><span class="tm">19:44:12</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Dust Exposure</span>
+<a name="l-250"></a><span class="tm">19:44:14</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/919</span>
+<a name="l-251"></a><span class="tm">19:44:38</span><span class="nk"> &lt;t-bast&gt;</span> On that one, rusty proposed doing it differently
+<a name="l-252"></a><span class="tm">19:45:04</span><span class="nk"> &lt;t-bast&gt;</span> niftynei do you agree with him on that? Shall we defer and discuss that with him next time, or shall we cover it today?
+<a name="l-253"></a><span class="tm">19:45:07</span><span class="nk"> &lt;BlueMatt&gt;</span> there's a few comments here, I'd suggested being much less prescriptive
+<a name="l-254"></a><span class="tm">19:45:11</span><span class="nk"> &lt;BlueMatt&gt;</span> cc ariard
+<a name="l-255"></a><span class="tm">19:45:19</span><span class="nk"> &lt;niftynei__&gt;</span> i agree with the assessment that it's a proposal to do it differently :P
+<a name="l-256"></a><span class="tm">19:45:25</span><span class="nk"> &lt;roasbeef&gt;</span> iirc this was the original approach re a protocol extension, but then we went w/ the things we could just implement as accepting/forwarding policy essentially?
+<a name="l-257"></a><span class="tm">19:45:27</span><span class="nk"> &lt;cdecker[m]&gt;</span> I'm lagging a bit behind on this, so I won't speak for Rusty here :-)
+<a name="l-258"></a><span class="tm">19:45:28</span><span class="nk"> &lt;t-bast&gt;</span> I agree about being less prescriptive on the actuel thresholds (dust buffer feerate)
+<a name="l-259"></a><span class="tm">19:45:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> xD
+<a name="l-260"></a><span class="tm">19:45:44</span><span class="nk"> &lt;roasbeef&gt;</span> oh no this is diff
+<a name="l-261"></a><span class="tm">19:45:45</span><span class="nk"> &lt;ariard&gt;</span> Right the `dust_buffer_feerate` should be left to implementers wisdom
+<a name="l-262"></a><span class="tm">19:45:48</span><span class="nk"> &lt;BlueMatt&gt;</span> sounes like "pending response to pr review feedback from ariard"
+<a name="l-263"></a><span class="tm">19:46:05</span><span class="nk"> &lt;niftynei__&gt;</span> the biggest difference imo is that there's an agreed/implicit 'dust bucket threshold' btw the two peers
+<a name="l-264"></a><span class="tm">19:46:14</span><span class="nk"> &lt;niftynei__&gt;</span> which is set to 0.5% of the channel or *waves hands*
+<a name="l-265"></a><span class="tm">19:46:20</span><span class="nk"> &lt;ariard&gt;</span> the issue with a protocol extension is risk exposures of node operators are not taken into accounts
+<a name="l-266"></a><span class="tm">19:46:52</span><span class="nk"> &lt;niftynei__&gt;</span> with a minimum of one dust htlc allowed per channel (which i think is .. reasonable?)
+<a name="l-267"></a><span class="tm">19:47:00</span><span class="nk"> &lt;t-bast&gt;</span> I agree with ariard there, as expressed on the PR I don't think we can capture it well enough with a static percentage of the channel capacity
+<a name="l-268"></a><span class="tm">19:47:02</span><span class="nk"> &lt;BlueMatt&gt;</span> may be worth noting that there's not really a way to avoid force-closure in some cases around feerate changes without a protocol extension :(
+<a name="l-269"></a><span class="tm">19:47:02</span><span class="nk"> &lt;niftynei__&gt;</span> yeah, rolling it out requires upgrades on both channel sides
+<a name="l-270"></a><span class="tm">19:47:17</span><span class="nk"> &lt;niftynei__&gt;</span> so it's definitely a slow fix
+<a name="l-271"></a><span class="tm">19:47:29</span><span class="nk"> &lt;BlueMatt&gt;</span> we're hoping its rare enough to not be an issue
+<a name="l-272"></a><span class="tm">19:47:29</span><span class="nk"> &lt;t-bast&gt;</span> But these force-closure don't happen when using anchor outputs zero fee though
+<a name="l-273"></a><span class="tm">19:47:33</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">t-bast:</span> can we do #911 next? We have merged our websocket support, and would like to hammer down the address type number, since it conflicts with DNS now, and our release is this week
+<a name="l-274"></a><span class="tm">19:47:33</span><span class="nk"> &lt;BlueMatt&gt;</span> but may be worth noting
+<a name="l-275"></a><span class="tm">19:47:36</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> you can shrugg about the dust exposure and prefer NOT to force-close, i think eclair is doing that ?
+<a name="l-276"></a><span class="tm">19:47:41</span><span class="nk"> &lt;crypt-iq&gt;</span> a minimum of one dust htlc allowed per channel is counter to option_dusty_htlcs_uncounted, which I know I've been sleeping on
+<a name="l-277"></a><span class="tm">19:47:44</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> right, anchor makes the whole thing a non-issue anyway
+<a name="l-278"></a><span class="tm">19:48:03</span><span class="nk"> &lt;t-bast&gt;</span> So if we're all moving towards anchor outputs zero fee, and specing channel upgrades soon (TM) we may not need to bikeshed this?
+<a name="l-279"></a><span class="tm">19:48:03</span><span class="nk"> &lt;niftynei__&gt;</span> idk man this dust bucket thing is pretty problematic in general, afaict big sudden feerate changes are kinda deadly to your ability to route payments
+<a name="l-280"></a><span class="tm">19:48:05</span><span class="nk"> &lt;BlueMatt&gt;</span> so maybe it isn't even worth documenting any of it and we rip out all references to non-0-fee anchor stuff acros the spec :p
+<a name="l-281"></a><span class="tm">19:48:23</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker[m]:</span> sure, next topic will be that one
+<a name="l-282"></a><span class="tm">19:48:55</span><span class="nk"> &lt;niftynei__&gt;</span> well, uncounted dust htlcs still counts against your 'dust bucket limit'
+<a name="l-283"></a><span class="tm">19:48:55</span><span class="nk"> &lt;niftynei__&gt;</span> which if you're using a 0.5% ceiling for might be ... very very small htlcs
+<a name="l-284"></a><span class="tm">19:48:55</span><span class="nk"> &lt;cdecker[m]&gt;</span> Thanks, that'll allow us to move bump the type out of the way if there's a conflict
+<a name="l-285"></a><span class="tm">19:48:58</span><span class="nk"> &lt;crypt-iq&gt;</span> if you have zero-fee-anchors (echoing here), you can just use the forwarding heuristic rather than an upgrade
+<a name="l-286"></a><span class="tm">19:49:03</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> +1, i can even propose that mitigation as a blip and up to everyone ?
+<a name="l-287"></a><span class="tm">19:49:25</span><span class="nk"> &lt;crypt-iq&gt;</span> &gt; well, uncounted dust htlcs still counts against your 'dust bucket limit', I gotcha
+<a name="l-288"></a><span class="tm">19:50:58</span><span class="nk"> &lt;niftynei__&gt;</span> like yes, im in bigly favor of the 483 limit only touching non-dusty htlcs, but that's complicated right now... what do you do when the feerate drops and some "were dusty but now are not dusty" htlcs should be added to the 483 number?
+<a name="l-289"></a><span class="tm">19:51:16</span><span class="nk"> &lt;niftynei__&gt;</span> yes yes, easier with a fixed dust rate (eg zero anchor etc)
+<a name="l-290"></a><span class="tm">19:51:28</span><span class="nk"> &lt;crypt-iq&gt;</span> right so maybe only if zero-fee-anchor
+<a name="l-291"></a><span class="tm">19:51:34</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> mschmoock: so what gets 5 is the thing merged first? (dns vs ws)
+<a name="l-292"></a><span class="tm">19:51:35</span><span class="nk"> &lt;niftynei__&gt;</span> feerate changes suck
+<a name="l-293"></a><span class="tm">19:51:36</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> interesting, I don't know if it should be only a blip, as all implementations really need to implement *some kind of dust exposure limit* to be safe
+<a name="l-294"></a><span class="tm">19:51:44</span><span class="nk"> &lt;ariard&gt;</span> maybe let's do `option_dusty_htlcs_uncounted` only with zero-fee annchor
+<a name="l-295"></a><span class="tm">19:51:45</span><span class="nk"> &lt;niftynei__&gt;</span> yeah this is not a BLIP
+<a name="l-296"></a><span class="tm">19:52:03</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">roasbeef:</span> Thats what I want to know :D
+<a name="l-297"></a><span class="tm">19:52:18</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> why does it need an option? you can just reject them if you have 0-fee anchor, no?
+<a name="l-298"></a><span class="tm">19:52:20</span><span class="nk"> &lt;t-bast&gt;</span> that's why you should all shill glozow's PRs: with anchor outputs and package relay, update_fee can finally go away!
+<a name="l-299"></a><span class="tm">19:52:30</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> :+1:
+<a name="l-300"></a><span class="tm">19:52:40</span><span class="nk"> &lt;niftynei__&gt;</span> so like, what's the status with this zero anchor thing?
+<a name="l-301"></a><span class="tm">19:52:46</span><span class="nk"> &lt;rusty&gt;</span> You can't, in general, set a threshold on your peer and not tell them.  You can, however, limit what you send.  IMHO we should just pick a number and start there, then later enforce it on receive, if we really care.
+<a name="l-302"></a><span class="tm">19:52:53</span><span class="nk"> &lt;t-bast&gt;</span> a wild rusty appears
+<a name="l-303"></a><span class="tm">19:53:05</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">roasbeef:</span> Sort of, I'm not sure we ever exchange the websocket one with anyone, so might not need a low type allocated, the important part is that implementations need to know how long the addresses are (ws = 2bytes port)
+<a name="l-304"></a><span class="tm">19:53:08</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> we merged it! we probably need channel upgrades tho
+<a name="l-305"></a><span class="tm">19:53:12</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">rusty:</span> why can you not just fail back immediately after commitment without force closing in the zero-fee-anchors case?
+<a name="l-306"></a><span class="tm">19:53:16</span><span class="nk"> &lt;BlueMatt&gt;</span> (merged it in spec, that is)
+<a name="l-307"></a><span class="tm">19:53:19</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">mschmoock:</span> the DNS one is pretty small so maybe just do that first and it gets 5, then ws gets 6? cdecker[m]
+<a name="l-308"></a><span class="tm">19:53:30</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> in case of update_fee, you can accept that your dust exposure is overflow instead of force-closing the chan because the feerate is unsafe
+<a name="l-309"></a><span class="tm">19:53:37</span><span class="nk"> &lt;niftynei__&gt;</span> BlueMatt, dont we need package relay?
+<a name="l-310"></a><span class="tm">19:53:40</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> what do you mean exchange w/? as in advertise on gossip w/ y'alls current impl?
+<a name="l-311"></a><span class="tm">19:53:51</span><span class="nk"> &lt;niftynei__&gt;</span> package relay and "umbrella RBF" lol
+<a name="l-312"></a><span class="tm">19:53:58</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">rusty:</span> while you're here, thoughts on https://github.com/lightningnetwork/lightning-rfc/issues/925 ?
+<a name="l-313"></a><span class="tm">19:53:58</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> everything in lightning needs package relay :p
+<a name="l-314"></a><span class="tm">19:54:11</span><span class="nk"> &lt;cdecker[m]&gt;</span> Yep, it's not being shared with peers, it's just using the same serialization internally, which muddies the water
+<a name="l-315"></a><span class="tm">19:54:12</span><span class="nk"> &lt;niftynei__&gt;</span> someone call USPS and get them on this stat
+<a name="l-316"></a><span class="tm">19:54:14</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">ariard:</span> hmm?
+<a name="l-317"></a><span class="tm">19:54:27</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">roasbeef:</span> rusty merged in websockets type 5 already (though experimental)
+<a name="l-318"></a><span class="tm">19:54:33</span><span class="nk"> &lt;mschmoock&gt;</span> (in clightning)
+<a name="l-319"></a><span class="tm">19:54:45</span><span class="nk"> &lt;BlueMatt&gt;</span> sounds like ws gets 5, cause its just a number, and that sounds like less coding work :)
+<a name="l-320"></a><span class="tm">19:54:55</span><span class="nk"> &lt;roasbeef&gt;</span> ok ws 5, dns 6?
+<a name="l-321"></a><span class="tm">19:55:01</span><span class="nk"> &lt;BlueMatt&gt;</span> (does mean you have to support reading 5 to read dns, but so what)
+<a name="l-322"></a><span class="tm">19:55:11</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">roasbeef:</span> actually I'll just move the numeric type to something large (250), because it is only used internally
+<a name="l-323"></a><span class="tm">19:55:16</span><span class="nk"> &lt;mschmoock&gt;</span> just to be clear, implementations must ignore 6 when they cant read 5
+<a name="l-324"></a><span class="tm">19:55:18</span><span class="nk"> &lt;cdecker[m]&gt;</span> DNS should get type=5!
+<a name="l-325"></a><span class="tm">19:55:28</span><span class="nk"> &lt;BlueMatt&gt;</span> y
+<a name="l-326"></a><span class="tm">19:55:31</span><span class="nk"> &lt;roasbeef&gt;</span> I think CL has implemented both already fwiw, the ws PR is on my TOOD list of things to impl
+<a name="l-327"></a><span class="tm">19:55:48</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">mschmoock:</span> yep, that's the main issue: we order them by type, the first one an impl doesn't know terminates the parsing
+<a name="l-328"></a><span class="tm">19:55:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">mschmoock:</span> wait thought you just ignored that addr? since there's a lnegth prefix you can skip
+<a name="l-329"></a><span class="tm">19:56:07</span><span class="nk"> &lt;mschmoock&gt;</span> nope
+<a name="l-330"></a><span class="tm">19:56:14</span><span class="nk"> &lt;cdecker[m]&gt;</span> Nope, there is no length prefix... :-(
+<a name="l-331"></a><span class="tm">19:56:31</span><span class="nk"> &lt;mschmoock&gt;</span> it must ignore the following ones. It can however implement it by ignoring the data ;)
+<a name="l-332"></a><span class="tm">19:56:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> the main issue I have with telling your peer the threshold is that it will likely be dynamic, and handling updates of such parameters is a pita
+<a name="l-333"></a><span class="tm">19:56:37</span><span class="nk"> &lt;BlueMatt&gt;</span> maybe we define type 5 to "tlv stream" and call it a day :p
+<a name="l-334"></a><span class="tm">19:56:39</span><span class="nk"> &lt;roasbeef&gt;</span> ok confirmed we terminate when parsing too
+<a name="l-335"></a><span class="tm">19:56:39</span><span class="nk"> &lt;cdecker[m]&gt;</span> Saving a couple of bytes, in spite of unparseability as a result
+<a name="l-336"></a><span class="tm">19:56:56</span><span class="nk"> &lt;roasbeef&gt;</span> (terminate on unknown type)
+<a name="l-337"></a><span class="tm">19:56:58 </span><span class="nka">* BlueMatt</span> <span class="ac">ducks</span>
+<a name="l-338"></a><span class="tm">19:57:04</span><span class="nk"> &lt;t-bast&gt;</span> looks like we moved to DNS
+<a name="l-339"></a><span class="tm">19:57:06</span><span class="nk"> &lt;roasbeef&gt;</span> heh
+<a name="l-340"></a><span class="tm">19:57:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yeah, it's a dumb idea.  Hence nail it in the spec to some value and go home.
+<a name="l-341"></a><span class="tm">19:57:14</span><span class="nk"> &lt;niftynei__&gt;</span> <span class="hi">BlueMatt:</span> get out
+<a name="l-342"></a><span class="tm">19:57:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">DNS addresses in node_announcement</span>
+<a name="l-343"></a><span class="tm">19:57:18</span><span class="nk"> &lt;cdecker[m]&gt;</span> Welp, I'm not opposed to TLV, but yet another nesting?...
+<a name="l-344"></a><span class="tm">19:57:22</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightningnetwork/lightning-rfc/pull/911</span>
+<a name="l-345"></a><span class="tm">19:57:33</span><span class="nk"> &lt;BlueMatt&gt;</span> it was a joke, dont take me seriously
+<a name="l-346"></a><span class="tm">19:57:36</span><span class="nk"> &lt;mschmoock&gt;</span> :D
+<a name="l-347"></a><span class="tm">19:57:43</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but I really don't want my 10 BTC channel to potentially give up 0.5% in miner fees!
+<a name="l-348"></a><span class="tm">19:58:09</span><span class="nk"> &lt;cdecker[m]&gt;</span> Just to make sure this doesn't create confusion: I will switch the websocket one over to type=250 so no need to drag that into the discussion here. Let's discuss DNS on its own merits ^^
+<a name="l-349"></a><span class="tm">19:58:20</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> 1%, since you could each have that much dust...
+<a name="l-350"></a><span class="tm">19:58:30</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> you cant skip them!
+<a name="l-351"></a><span class="tm">19:58:35</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> I hate it xD
+<a name="l-352"></a><span class="tm">19:58:38</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">cdecker[m]:</span> oh, wait, ignore me, yes you can
+<a name="l-353"></a><span class="tm">19:58:39</span><span class="nk"> &lt;crypt-iq&gt;</span> 1% is pretttty high
+<a name="l-354"></a><span class="tm">19:58:40</span><span class="nk"> &lt;cdecker[m]&gt;</span> Oh, when did rusty join? Didn't see you there
+<a name="l-355"></a><span class="tm">19:58:50</span><span class="nk"> &lt;rusty&gt;</span> I am not here.... couldn't sleep though.,
+<a name="l-356"></a><span class="tm">19:58:54</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">cdecker[m]:</span> ok so....dns 5, ws 6 (250 for CL internal)
+<a name="l-357"></a><span class="tm">19:59:01</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">BlueMatt:</span> yes, we can, we just can't skip ones from others that we don't know
+<a name="l-358"></a><span class="tm">19:59:28</span><span class="nk"> &lt;ariard&gt;</span> well ultimately you could be fine with really high level of dust exposure if your counterparty is trustwhorty and reliable to not go on-chain with a loaded commitment
+<a name="l-359"></a><span class="tm">19:59:31</span><span class="nk"> &lt;rusty&gt;</span> Happy to give 5 to DNS, ws is experimental and can break in lots of fun ways anyway.
+<a name="l-360"></a><span class="tm">19:59:33</span><span class="nk"> &lt;cdecker[m]&gt;</span> <span class="hi">roasbeef:</span> yep, you guys don't need to be concerned about WS, since that'll never leave our node
+<a name="l-361"></a><span class="tm">19:59:48</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker[m]:</span> um, no, we definitely advertize it.
+<a name="l-362"></a><span class="tm">19:59:51</span><span class="nk"> &lt;cdecker[m]&gt;</span> Hehe, viva el experimento :-)
+<a name="l-363"></a><span class="tm">19:59:54</span><span class="nk"> &lt;roasbeef&gt;</span> cool, we'll prob have it in our next major release
+<a name="l-364"></a><span class="tm">20:00:17</span><span class="nk"> &lt;mschmoock&gt;</span> also t-bast did a little compat test on #917 with acinq and clightning
+<a name="l-365"></a><span class="tm">20:00:26</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">cdecker[m]:</span> I can change to type 6 before release, with the downside that we'll never parse it...
+<a name="l-366"></a><span class="tm">20:00:26</span><span class="nk"> &lt;niftynei__&gt;</span> wait what's the reason for not putting WS at #6?
+<a name="l-367"></a><span class="tm">20:00:35</span><span class="nk"> &lt;BlueMatt&gt;</span> can someone flip a coin already
+<a name="l-368"></a><span class="tm">20:00:37</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei__:</span> something something deployment order?
+<a name="l-369"></a><span class="tm">20:00:50</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">niftynei__:</span> that our code already has it expermental on type 5
+<a name="l-370"></a><span class="tm">20:00:53</span><span class="nk"> &lt;cdecker[m]&gt;</span> Oh? But it doesn't have an IP address, and shouldn't it then rather be a modifier of an existing address type (you can reach me here, but speak websockeranto to me)
+<a name="l-371"></a><span class="tm">20:00:57</span><span class="nk"> &lt;t-bast&gt;</span> yep #917 is very simple to implement and I'm curious to see how it behaves in the wild, not acting on it yet though
+<a name="l-372"></a><span class="tm">20:01:22</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">t-bast:</span> what do we do if a node announces a private addres?
+<a name="l-373"></a><span class="tm">20:01:26</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei__:</span> c-lightning used 5.  But we can switch...
+<a name="l-374"></a><span class="tm">20:01:28</span><span class="nk"> &lt;niftynei__&gt;</span> mschmoock, but we're clearly going with DNS for #5 yeh?
+<a name="l-375"></a><span class="tm">20:01:30</span><span class="nk"> &lt;mschmoock&gt;</span> (like my dump impl did?)
+<a name="l-376"></a><span class="tm">20:01:34</span><span class="nk"> &lt;roasbeef&gt;</span> 5 (dns), ws (6), ws-CL (250)
+<a name="l-377"></a><span class="tm">20:01:39</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">mschmoock:</span> for now I'm just dropping it
+<a name="l-378"></a><span class="tm">20:01:42</span><span class="nk"> &lt;niftynei__&gt;</span> so WS can haz #6 then
+<a name="l-379"></a><span class="tm">20:01:51</span><span class="nk"> &lt;rusty&gt;</span> Yep, patch incoming...
+<a name="l-380"></a><span class="tm">20:01:58</span><span class="nk"> &lt;mschmoock&gt;</span> kk
+<a name="l-381"></a><span class="tm">20:02:12</span><span class="nk"> &lt;cdecker[m]&gt;</span> Uff, terribly sorry for the confusion
+<a name="l-382"></a><span class="tm">20:02:26</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">t-bast:</span> maybe we should add a note on #917 that it "MUST ignore" private addresses ?!?
+<a name="l-383"></a><span class="tm">20:02:32</span><span class="nk"> &lt;mschmoock&gt;</span> ir *SHOULD
+<a name="l-384"></a><span class="tm">20:02:32</span><span class="nk"> &lt;niftynei__&gt;</span> (unrelated to anything but this PR number made this song start playing in me head https://www.youtube.com/watch?v=YkyhvCdJ_vM)
+<a name="l-385"></a><span class="tm">20:03:43</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">mschmoock:</span> "IP addresses within private networks (RFC-1918) MUST not be used" -&gt; isn't that already it? Or do you mean we should have a similar one in the receiver requirements? If so yes, it doesn't hurt
+<a name="l-386"></a><span class="tm">20:03:50</span><span class="nk"> &lt;mschmoock&gt;</span> yep
+<a name="l-387"></a><span class="tm">20:03:58</span><span class="nk"> &lt;mschmoock&gt;</span> because it might rebroadcast crap otherwise
+<a name="l-388"></a><span class="tm">20:04:11</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">mschmoock:</span> but to be honest I dont think it's necessary, implementations shouldn't be dumb enough to take external inputs without validating them
+<a name="l-389"></a><span class="tm">20:04:50</span><span class="nk"> &lt;mschmoock&gt;</span> also we can add that later if it ever gets a problem (never)
+<a name="l-390"></a><span class="tm">20:04:52</span><span class="nk"> &lt;rusty&gt;</span> websocket spec updated to 6.
+<a name="l-391"></a><span class="tm">20:04:56</span><span class="nk"> &lt;mschmoock&gt;</span> thx
+<a name="l-392"></a><span class="tm">20:05:46</span><span class="nk"> &lt;t-bast&gt;</span> alright folks, we've hit the 1h timer, I gotta go soon
+<a name="l-393"></a><span class="tm">20:05:57</span><span class="nk"> &lt;crypt-iq&gt;</span> do impl's validate node_announcement to ensure they aren't local addresses
+<a name="l-394"></a><span class="tm">20:06:22</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">crypt-iq:</span> they should
+<a name="l-395"></a><span class="tm">20:06:34</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">crypt-iq:</span> no. if you send us crap, you may still want other addresses out there or whatever, and presumably you're sending it to others too, so not our problem?
+<a name="l-396"></a><span class="tm">20:06:47</span><span class="nk"> &lt;t-bast&gt;</span> Thanks rusty for green-lighting https://github.com/lightningnetwork/lightning-rfc/issues/925; do you want to keep the lightning-rfc name of shall we rename to lightning/bolts?
+<a name="l-397"></a><span class="tm">20:06:56</span><span class="nk"> &lt;BlueMatt&gt;</span> and, like, it isn't really a big deal if you tell the world your internal address. not idea, but not a big deal
+<a name="l-398"></a><span class="tm">20:06:58</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> oh, bolts FTW!
+<a name="l-399"></a><span class="tm">20:07:01</span><span class="nk"> &lt;t-bast&gt;</span> roasbeef if you can give us rights on the org, it would be great
+<a name="l-400"></a><span class="tm">20:07:03</span><span class="nk"> &lt;niftynei__&gt;</span> +1 for /bolts
+<a name="l-401"></a><span class="tm">20:07:04</span><span class="nk"> &lt;mschmoock&gt;</span> nice
+<a name="l-402"></a><span class="tm">20:07:17</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> there are weird probing things in theory... better to discard.
+<a name="l-403"></a><span class="tm">20:07:29</span><span class="nk"> &lt;t-bast&gt;</span> nice, looks like lightning/bolts gets traction, roasbeef we're all good to go to transfer the repo then rename it then ;)
+<a name="l-404"></a><span class="tm">20:07:33</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> sure, but if you also have "real" addresses there, you'd probably prefer they get out there.
+<a name="l-405"></a><span class="tm">20:07:49</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> and, sadly, its signed, so we cannot discard parts
+<a name="l-406"></a><span class="tm">20:08:05</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> sure, but we can ignore parts, which would be best practice.
+<a name="l-407"></a><span class="tm">20:08:16</span><span class="nk"> &lt;niftynei__&gt;</span> is this `remote_addr` just an IP discovery service?
+<a name="l-408"></a><span class="tm">20:08:29</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">niftynei__:</span> yep, but decentralized :D
+<a name="l-409"></a><span class="tm">20:08:32</span><span class="nk"> &lt;niftynei__&gt;</span> peer tells me my IP addy cuz i don't know it
+<a name="l-410"></a><span class="tm">20:08:32</span><span class="nk"> &lt;BlueMatt&gt;</span> oh, sure, yes, *definitly* dont *connect* to a local ip in an announcement :)
+<a name="l-411"></a><span class="tm">20:08:55</span><span class="nk"> &lt;niftynei__&gt;</span> i'm dmb, what's this useful for?
+<a name="l-412"></a><span class="tm">20:09:03</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> yes, what you just said
+<a name="l-413"></a><span class="tm">20:09:06</span><span class="nk"> &lt;mschmoock&gt;</span> NATs etc
+<a name="l-414"></a><span class="tm">20:09:22</span><span class="nk"> &lt;gene&gt;</span> yeah, NAT traversal/hole-punch
+<a name="l-415"></a><span class="tm">20:09:22</span><span class="nk"> &lt;mschmoock&gt;</span> you just need to open the 9735 port
+<a name="l-416"></a><span class="tm">20:09:30</span><span class="nk"> &lt;mschmoock&gt;</span> discovery then works out of the box
+<a name="l-417"></a><span class="tm">20:09:32</span><span class="nk"> &lt;niftynei__&gt;</span> am i, the node getting my `remote_addr` back, going to update my address list based on this?
+<a name="l-418"></a><span class="tm">20:09:36</span><span class="nk"> &lt;niftynei__&gt;</span> like is this actionable??
+<a name="l-419"></a><span class="tm">20:09:54</span><span class="nk"> &lt;mschmoock&gt;</span> <span class="hi">niftynei__:</span> yes, the node can do some checks
+<a name="l-420"></a><span class="tm">20:10:07</span><span class="nk"> &lt;mschmoock&gt;</span> but basically if its sure enough the address is usable then announce it
+<a name="l-421"></a><span class="tm">20:10:09</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> it's better than many of the alternatives, it turns out...
+<a name="l-422"></a><span class="tm">20:10:10</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> that's the big question, if enough of your peers send you back the same ip address and it's not the one you advertized, maybe your ISP changed your IP and you should advertize this new one
+<a name="l-423"></a><span class="tm">20:10:20</span><span class="nk"> &lt;niftynei__&gt;</span> so i start up, connect to some peers, make sure the majority of them agree about what my IP addr is and set that as my connection deets?
+<a name="l-424"></a><span class="tm">20:10:44</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> recall you have a pubkey and can provide multiple ips :)
+<a name="l-425"></a><span class="tm">20:10:52</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> it should at least send the node operator a notification and let them act on it - or automatically decide to use it
+<a name="l-426"></a><span class="tm">20:11:00</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">niftynei:</span> we would do it by default only in the case where we don't otherwise advertize *any* addresses.  So it's better than nothing...
+<a name="l-427"></a><span class="tm">20:11:18</span><span class="nk"> &lt;niftynei__&gt;</span> sort of a nit but this PR's commit message would be easier to figure out if it had the word "discovery" in it somewhere
+<a name="l-428"></a><span class="tm">20:12:01</span><span class="nk"> &lt;mschmoock&gt;</span> kk
+<a name="l-429"></a><span class="tm">20:12:10</span><span class="nk"> &lt;niftynei__&gt;</span> <span class="hi">BlueMatt:</span> ack, seems like it's not useful for a node that knows it's multi IPs then?? or do you just add all reported IPs to your list lol
+<a name="l-430"></a><span class="tm">20:12:29</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> not a lot of reason to not report 2/3 ips?
+<a name="l-431"></a><span class="tm">20:12:36</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">niftynei__:</span> i mean it costs something to the network, so dont send 10
+<a name="l-432"></a><span class="tm">20:12:37</span><span class="nk"> &lt;niftynei__&gt;</span> i mean if you've got a pubkey others can verify, you could jsut append anything anyone tells you back yolo
+<a name="l-433"></a><span class="tm">20:12:43</span><span class="nk"> &lt;niftynei__&gt;</span> ahh facts
+<a name="l-434"></a><span class="tm">20:12:52</span><span class="nk"> &lt;BlueMatt&gt;</span> but, like, if you're not sure, and you think maybe some ip is workable, just tell people it?
+<a name="l-435"></a><span class="tm">20:13:02</span><span class="nk"> &lt;niftynei__&gt;</span> is this to get people away from TOR?
+<a name="l-436"></a><span class="tm">20:13:15</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>
