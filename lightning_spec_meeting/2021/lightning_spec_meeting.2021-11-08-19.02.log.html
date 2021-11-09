@@ -1,0 +1,327 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev log</title>
+<style type="text/css">
+/* For the .log.html */
+pre { /*line-height: 125%;*/
+      white-space: pre-wrap; }
+body { background: #f0f0f0; }
+
+body .tm  { color: #007020 }                      /* time */
+body .nk  { color: #062873; font-weight: bold }   /* nick, regular */
+body .nka { color: #007020; font-weight: bold }  /* action nick */
+body .ac  { color: #00A000 }                      /* action line */
+body .hi  { color: #4070a0 }                 /* hilights */
+/* Things to make particular MeetBot commands stick out */
+body .topic     { color: #007020; font-weight: bold }
+body .topicline { color: #000080; font-weight: bold }
+body .cmd       { color: #007020; font-weight: bold }
+body .cmdline  { font-weight: bold }
+
+</style>
+</head>
+
+<body>
+<pre><a name="l-1"></a><span class="tm">19:02:57</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#startmeeting </span><span class="cmdline">Lightning Spec Meeting</span>
+<a name="l-2"></a><span class="tm">19:02:57</span><span class="nk"> &lt;lndev-bot&gt;</span> Meeting started Mon Nov  8 19:02:57 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+<a name="l-3"></a><span class="tm">19:02:57</span><span class="nk"> &lt;lndev-bot&gt;</span> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+<a name="l-4"></a><span class="tm">19:02:57</span><span class="nk"> &lt;lndev-bot&gt;</span> The meeting name has been set to 'lightning_spec_meeting'
+<a name="l-5"></a><span class="tm">19:03:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Warning messages</span>
+<a name="l-6"></a><span class="tm">19:03:21</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightning/bolts/pull/834</span>
+<a name="l-7"></a><span class="tm">19:03:44</span><span class="nk"> &lt;t-bast&gt;</span> There are only a couple comments remaining on this PR, and it's already in 3 implementations, so I guess it's high time we merged it? :)
+<a name="l-8"></a><span class="tm">19:04:06</span><span class="nk"> &lt;BlueMatt&gt;</span> https://github.com/lightning/bolts/pull/834#discussion_r719977416 was the last unresolved thing, iirc
+<a name="l-9"></a><span class="tm">19:04:21</span><span class="nk"> &lt;t-bast&gt;</span> There's the question of all-zeroes and a few clean-up comments (should be easy to fix)
+<a name="l-10"></a><span class="tm">19:05:27</span><span class="nk"> &lt;t-bast&gt;</span> I agree with BlueMatt to keep the all-zeroes option for now, it was already there, it's less friction to keep it
+<a name="l-11"></a><span class="tm">19:05:40</span><span class="nk"> &lt;niftynei&gt;</span> all-zeroes seems useful for peers with multiple channels :P
+<a name="l-12"></a><span class="tm">19:05:42</span><span class="nk"> &lt;cdecker[m]&gt;</span> Agreed
+<a name="l-13"></a><span class="tm">19:05:54</span><span class="nk"> &lt;rusty&gt;</span> I think the all-zeros thing is unnecessary, since if you have closed all my channels, you'll error each one as I reestablish.
+<a name="l-14"></a><span class="tm">19:05:57</span><span class="nk"> &lt;BlueMatt&gt;</span> note the debate is about all-zero *errors* (ie close-channels)
+<a name="l-15"></a><span class="tm">19:06:09</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> right, I even forgot, c-lightning doesn't care, all-zeros or not is the same for you xD
+<a name="l-16"></a><span class="tm">19:06:10</span><span class="nk"> &lt;BlueMatt&gt;</span> not all-zero *warnings*, which is presumably the default for most messages
+<a name="l-17"></a><span class="tm">19:06:34</span><span class="nk"> &lt;t-bast&gt;</span> yep
+<a name="l-18"></a><span class="tm">19:06:40</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> I really dont get why we need to rip something out just because you can emulate it with a reconnect loop
+<a name="l-19"></a><span class="tm">19:07:06</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> but if you have some weird logic to not initiate the reestablish yourself (because mobile wallet that waits for an encrypted backup for example)
+<a name="l-20"></a><span class="tm">19:07:24</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> because it's an unnecessary complication, AFAICT?  Like, tell me the channel you have a problem with, precisely!
+<a name="l-21"></a><span class="tm">19:07:47</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> if you have an issue with a peer, you dont know the channel precisely
+<a name="l-22"></a><span class="tm">19:07:48</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> hmm, ok, fair enough.
+<a name="l-23"></a><span class="tm">19:08:12</span><span class="nk"> &lt;BlueMatt&gt;</span> that's the point, if the peer is doing *handwave* then you've presumably closed your channels and may not even be tracking them
+<a name="l-24"></a><span class="tm">19:08:24</span><span class="nk"> &lt;BlueMatt&gt;</span> like, our main message responder doesn't know about channels that are closed
+<a name="l-25"></a><span class="tm">19:08:42</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, so I was thinking you'd respond (as you naturally would) to any unknown channel with an error for that thcannel.
+<a name="l-26"></a><span class="tm">19:08:46</span><span class="nk"> &lt;BlueMatt&gt;</span> sure, we can respond to messages with close errors, but, like, we cant like the need-to-be-closed channels, cause they're off in onchain-enforcement land
+<a name="l-27"></a><span class="tm">19:09:13</span><span class="nk"> &lt;rusty&gt;</span> You definitely don't want to close all channels, if they mention one you don't know.
+<a name="l-28"></a><span class="tm">19:09:27</span><span class="nk"> &lt;rusty&gt;</span> You only want a general error if you have blacklisted them or something AFAICT.
+<a name="l-29"></a><span class="tm">19:09:33</span><span class="nk"> &lt;BlueMatt&gt;</span> yes, of course we do that, but my point is still more generally about the peer
+<a name="l-30"></a><span class="tm">19:09:36</span><span class="nk"> &lt;BlueMatt&gt;</span> yes
+<a name="l-31"></a><span class="tm">19:09:37</span><span class="nk"> &lt;BlueMatt&gt;</span> exactly
+<a name="l-32"></a><span class="tm">19:10:00</span><span class="nk"> &lt;BlueMatt&gt;</span> I think we agree, you just think the error is entirely useless to the point we should remove the code, I think its marginally useful and we might as well keep it
+<a name="l-33"></a><span class="tm">19:10:40</span><span class="nk"> &lt;rusty&gt;</span> OK.  Seemed like a chance to simplify but I concede :) I'll restore that part.  Anything else?
+<a name="l-34"></a><span class="tm">19:10:51</span><span class="nk"> &lt;BlueMatt&gt;</span> IIRC I was ack modulo deciding that
+<a name="l-35"></a><span class="tm">19:11:03</span><span class="nk"> &lt;BlueMatt&gt;</span> I would have to re-review it, there may have been a few nits in my last review
+<a name="l-36"></a><span class="tm">19:11:23</span><span class="nk"> &lt;t-bast&gt;</span> Great, I think we're good on that front then. Once that's restored, we can do a last round of review for the nits, and then merge?
+<a name="l-37"></a><span class="tm">19:11:30</span><span class="nk"> &lt;BlueMatt&gt;</span> sgtm
+<a name="l-38"></a><span class="tm">19:11:58</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Clarify channel reestablish behavior when remote is late</span>
+<a name="l-39"></a><span class="tm">19:12:00</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightning/bolts/pull/932</span>
+<a name="l-40"></a><span class="tm">19:12:15</span><span class="nk"> &lt;t-bast&gt;</span> This one is interesting, I'd like other implementers feedback on that
+<a name="l-41"></a><span class="tm">19:12:45</span><span class="nk"> &lt;t-bast&gt;</span> We started creating safeguards for big nodes, where when you detect that you're late when restarting you give a chance to the node operator to check whether they messed up the DB
+<a name="l-42"></a><span class="tm">19:13:10</span><span class="nk"> &lt;cdecker[m]&gt;</span> Doesn't thos break SCBs?
+<a name="l-43"></a><span class="tm">19:13:11</span><span class="nk"> &lt;t-bast&gt;</span> But when testing it against other implementations, we realized it doesn't work because most implementations close instantly when they receive a channel_reestablish that indicate their peer is late
+<a name="l-44"></a><span class="tm">19:13:25</span><span class="nk"> &lt;t-bast&gt;</span> They should wait for the late peer to send an error before closing, shouldn't they?
+<a name="l-45"></a><span class="tm">19:13:38</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker[m]:</span> why? can you detail?
+<a name="l-46"></a><span class="tm">19:13:52</span><span class="nk"> &lt;cdecker[m]&gt;</span> afaik the SCB restore uses the outdated -&gt; close semantic to recover funds, don't they?
+<a name="l-47"></a><span class="tm">19:14:02</span><span class="nk"> &lt;t-bast&gt;</span> cdecker[m
+<a name="l-48"></a><span class="tm">19:14:04</span><span class="nk"> &lt;roasbeef&gt;</span> outdated?
+<a name="l-49"></a><span class="tm">19:14:25</span><span class="nk"> &lt;t-bast&gt;</span> but stopping the node instead of going forward with the close shouldn't impact that?
+<a name="l-50"></a><span class="tm">19:14:31</span><span class="nk"> &lt;roasbeef&gt;</span> you mean the non-static key route, where you need to obtain a point?
+<a name="l-51"></a><span class="tm">19:14:32</span><span class="nk"> &lt;cdecker[m]&gt;</span> Well, how does an SCB restore cause the remote side to unilaterally close the channel?
+<a name="l-52"></a><span class="tm">19:14:38</span><span class="nk"> &lt;niftynei&gt;</span> right, "MUST NOT broadcast" and "fail the channel" are conflicting, per our current definition of "fail the channel"
+<a name="l-53"></a><span class="tm">19:14:42</span><span class="nk"> &lt;roasbeef&gt;</span> we never delete the data needed to send the chan reest to like ppl SCB restore btw
+<a name="l-54"></a><span class="tm">19:14:50</span><span class="nk"> &lt;BlueMatt&gt;</span> I'm not really a fan of separating "send an `error`" and "fail channel" - they're the same thing right now, afaiu, and separating it into "counterparty should force-close" vs "we force-close" sucks, especially given lnd has always ignored errors.
+<a name="l-55"></a><span class="tm">19:14:51</span><span class="nk"> &lt;t-bast&gt;</span> you just give the node operator a chance to detect that they pointed to an old DB, and restart with the right one? Or if they really lost data, then move forward with the close
+<a name="l-56"></a><span class="tm">19:15:15</span><span class="nk"> &lt;cdecker[m]&gt;</span> Ok, must've misinterpreted how SCBs cause the channel closure, my bad
+<a name="l-57"></a><span class="tm">19:15:30</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> it's not separating them?
+<a name="l-58"></a><span class="tm">19:15:45</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> you mean it's misphrased in the PR
+<a name="l-59"></a><span class="tm">19:15:50</span><span class="nk"> &lt;roasbeef&gt;</span> so change here is just to send an error instead of force closing? like an attempt to make sure ppl dont' breach themselves?
+<a name="l-60"></a><span class="tm">19:16:01</span><span class="nk"> &lt;niftynei&gt;</span> does receipt of an error invoke a channel close from the peer in all cases?
+<a name="l-61"></a><span class="tm">19:16:07</span><span class="nk"> &lt;t-bast&gt;</span> But conceptually, do you agree that you should only close when sending/receiving the error, not on detecting a late channel_reestablish?
+<a name="l-62"></a><span class="tm">19:16:18</span><span class="nk"> &lt;roasbeef&gt;</span> lnd pretty much never force closes when it gets an error, only invalid sig is the main offense
+<a name="l-63"></a><span class="tm">19:16:19</span><span class="nk"> &lt;niftynei&gt;</span> in my reading it's not a change to the behavior, just a spec wording change
+<a name="l-64"></a><span class="tm">19:16:20</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> maybe I misread this? I understand the current pr text to say "send an error message, hoping the other party closes the channel, but keep the channel in active mode locally and let them restart and maybe reestablish/actually use the channel again in the future"
+<a name="l-65"></a><span class="tm">19:16:34</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> ok so that's the change? wait until the error instead of closing once yyou get a bad chan reest?
+<a name="l-66"></a><span class="tm">19:17:02</span><span class="nk"> &lt;t-bast&gt;</span> The main issue that's not obvious is that currently, implementations aren't really following the spec: they're trigger-happy and force-close when they receive an outdated channel_reestablish, instead of waiting for the error message
+<a name="l-67"></a><span class="tm">19:17:25</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> if you're late, you cannot force-close yourself, your commitment is outdated
+<a name="l-68"></a><span class="tm">19:17:27</span><span class="nk"> &lt;roasbeef&gt;</span> isn't that what the spec says to do rn? force clsoe if you get a bad chan reest
+<a name="l-69"></a><span class="tm">19:17:35</span><span class="nk"> &lt;cdecker[m]&gt;</span> I see, that makes sense
+<a name="l-70"></a><span class="tm">19:17:37</span><span class="nk"> &lt;crypt-iq&gt;</span> why would you send a chan reestablish if you aren't ready
+<a name="l-71"></a><span class="tm">19:17:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes exactly! But the implementations don't do that xD
+<a name="l-72"></a><span class="tm">19:17:45</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> sorry, I dont mean "broadcast state" I mean "set the channel to unusable for offchain state updates"
+<a name="l-73"></a><span class="tm">19:18:01</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> oh yeah, I agree this shouldn't change
+<a name="l-74"></a><span class="tm">19:18:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> and instead you observe they close earlier w/ some unknown trigger?
+<a name="l-75"></a><span class="tm">19:18:17</span><span class="nk"> &lt;roasbeef&gt;</span> did we lose the video call link this time?
+<a name="l-76"></a><span class="tm">19:18:23</span><span class="nk"> &lt;niftynei&gt;</span> it feels like the behavior t-bast describes is what the original spec was intending but it's much clearer with the proposed update
+<a name="l-77"></a><span class="tm">19:18:34</span><span class="nk"> &lt;t-bast&gt;</span> exactly what niftynei says
+<a name="l-78"></a><span class="tm">19:18:39</span><span class="nk"> &lt;BlueMatt&gt;</span> its not clear to me what changes are made by this text?
+<a name="l-79"></a><span class="tm">19:19:02</span><span class="nk"> &lt;t-bast&gt;</span> Ok let me try to summarize it better
+<a name="l-80"></a><span class="tm">19:19:03</span><span class="nk"> &lt;niftynei&gt;</span> nothing changes to intent, it just makes some current (wrong) behavior explicitly incorrect? iiuc
+<a name="l-81"></a><span class="tm">19:19:03</span><span class="nk"> &lt;BlueMatt&gt;</span> "fail the channel" without "broadcast its commitment transaction" sounds to me like "send an error message and forget the channel, maybe tell the user to think hard about broadcasting"
+<a name="l-82"></a><span class="tm">19:19:05</span><span class="nk"> &lt;roasbeef&gt;</span> this would be a larger divergence tho? like all the existing nodes would keep closing on chan reest recv
+<a name="l-83"></a><span class="tm">19:19:08</span><span class="nk"> &lt;rusty&gt;</span> Hmm, generally we close when we send an error, not when we receive an error.  You're supposed to do *both* ofc, but history...
+<a name="l-84"></a><span class="tm">19:19:47</span><span class="nk"> &lt;t-bast&gt;</span> Alice has an outdated commitment and reconnects to Bob. Alice sends `channel_reestablish`. Bob detects Alice is late. Most implementations right now have Bob force-close at that point.
+<a name="l-85"></a><span class="tm">19:20:00</span><span class="nk"> &lt;t-bast&gt;</span> Instead Bob should wait for Alice to send an error, then force-close.
+<a name="l-86"></a><span class="tm">19:20:12</span><span class="nk"> &lt;roasbeef&gt;</span> why?
+<a name="l-87"></a><span class="tm">19:20:20</span><span class="nk"> &lt;t-bast&gt;</span> I believe the spec meant that, but since implementations did it differently, it's worth clarifying the spec a bit?
+<a name="l-88"></a><span class="tm">19:20:37</span><span class="nk"> &lt;BlueMatt&gt;</span> ok, let me rephrase, its unclear to me how the pr changes that text :p
+<a name="l-89"></a><span class="tm">19:20:56</span><span class="nk"> &lt;t-bast&gt;</span> Alice cannot "fail the channel", she cannot broadcast her commitment, she can only send an error to Bob and mark the channel was "waiting for Bob to publish latest commitment"
+<a name="l-90"></a><span class="tm">19:21:03</span><span class="nk"> &lt;roasbeef&gt;</span> I don't see what that change achivies tho, you just want them to wait to send that error?
+<a name="l-91"></a><span class="tm">19:21:28</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> we don't define "fail the channel", but logically it's "return errors from now on and broadcast the latest commitment tx". If you can't do the latter, then the definition still works.
+<a name="l-92"></a><span class="tm">19:21:42</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> sure, yes, that's how i read it previously? I guess my confusion is - the pr diff here seems to change nothing about behavior, but your description here includes a propose behavior change.
+<a name="l-93"></a><span class="tm">19:21:50</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yes, I want Bob to publish his commitment only once he receives an error, not on receiving a channel_reestablish: that gives Alice time to potentially fix her DB and avoid that force-close
+<a name="l-94"></a><span class="tm">19:21:50</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> you seem be arguging that fromthe sending node? but the reciving node is the one that can actually force close
+<a name="l-95"></a><span class="tm">19:22:07</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">rusty:</span> right, the text diff seems fine, i guess, my point is more that it doesnt, to my eye, indicate behavior change.
+<a name="l-96"></a><span class="tm">19:22:09</span><span class="nk"> &lt;roasbeef&gt;</span> mid convo (like any other message here), IRC link injection: https://github.com/lightning/bolts/issues/933#issuecomment-963494419
+<a name="l-97"></a><span class="tm">19:22:54</span><span class="nk"> &lt;t-bast&gt;</span> Agreed, it doesn't indicate behavior change, but most implementation's behavior does *not* match the spec currently, and it would probably be worth fixing the implementations?
+<a name="l-98"></a><span class="tm">19:23:02</span><span class="nk"> &lt;t-bast&gt;</span> So I thought it was worth bringing to attention
+<a name="l-99"></a><span class="tm">19:23:14</span><span class="nk"> &lt;t-bast&gt;</span> We haven't tried rust-lightning though, maybe you implement it correctly :)
+<a name="l-100"></a><span class="tm">19:23:16</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> ok, my point, I think, is that that feels like an entirely separate conversation to the pr itself
+<a name="l-101"></a><span class="tm">19:23:20</span><span class="nk"> &lt;BlueMatt&gt;</span> the pr seems fine, I think
+<a name="l-102"></a><span class="tm">19:23:56</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> do you know which impls deviate rn?
+<a name="l-103"></a><span class="tm">19:23:59</span><span class="nk"> &lt;t-bast&gt;</span> Agreed, but I don't know how else to have that discussion (maybe open an issue on each implementation to highlight that its behavior diverges from the spec?)
+<a name="l-104"></a><span class="tm">19:24:12</span><span class="nk"> &lt;niftynei&gt;</span> wait t-bast does this mean that some channels drop old state to chain?
+<a name="l-105"></a><span class="tm">19:24:12</span><span class="nk"> &lt;roasbeef&gt;</span> I don't see how it's wrong still, if you lost state, you send me the chan reest, I force close
+<a name="l-106"></a><span class="tm">19:24:18</span><span class="nk"> &lt;t-bast&gt;</span> IIRC we tested lnd and c-lightning, but I'd need to double check with pm47
+<a name="l-107"></a><span class="tm">19:24:18</span><span class="nk"> &lt;roasbeef&gt;</span> this seems to be saying that I should instead send an error?
+<a name="l-108"></a><span class="tm">19:24:22</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">niftynei:</span> that's what I'm trying to get at
+<a name="l-109"></a><span class="tm">19:24:23</span><span class="nk"> &lt;BlueMatt&gt;</span> issues on implementations or an issue on the spec repo seems like a reasonable way to have that discussion
+<a name="l-110"></a><span class="tm">19:24:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> no, you should wait for my error instead of closing
+<a name="l-111"></a><span class="tm">19:24:41</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> ....why?
+<a name="l-112"></a><span class="tm">19:24:50</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> if you close instantly, you didn't give me a chance to notice I'm late, and potentially fix my DB if I messed it up
+<a name="l-113"></a><span class="tm">19:24:53</span><span class="nk"> &lt;rusty&gt;</span> If you're not going to close the channel because peer is behind, you really should be sending a warning I guess?
+<a name="l-114"></a><span class="tm">19:25:08</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> if I can fix my DB and restart, we can avoid the force-close and the channel can keep operating normally
+<a name="l-115"></a><span class="tm">19:25:29</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> assuming I haven't sent it yet, or? seems like a concurrency thing?
+<a name="l-116"></a><span class="tm">19:25:38</span><span class="nk"> &lt;roasbeef&gt;</span> if you've lost state, can you really fix it?
+<a name="l-117"></a><span class="tm">19:25:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">BlueMatt:</span> noted, that's fair, I'll open issues on implementations then
+<a name="l-118"></a><span class="tm">19:26:02</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> if you've lost state no, but if you've just messed up your restart you could fix it, so it's really dumb not to give you this opportunity
+<a name="l-119"></a><span class="tm">19:26:02</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> an issue on the spec seems reasonable too, and thanks for flagging, just very confusing to do it on an unrelated pr :p
+<a name="l-120"></a><span class="tm">19:26:10</span><span class="nk"> &lt;niftynei&gt;</span> this change in the spec is in the case where you're explictly not supposed to be dropping your commitment tx to chain; does fail the channel mean something else?
+<a name="l-121"></a><span class="tm">19:26:55</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> it's not a concurrency thing, Bob has no reason to send an error, only Alice does, so if she doesn't send anything Bob shouldn't force-close
+<a name="l-122"></a><span class="tm">19:27:26</span><span class="nk"> &lt;niftynei&gt;</span> who's Bob in this case? is Bob behind?
+<a name="l-123"></a><span class="tm">19:27:43</span><span class="nk"> &lt;t-bast&gt;</span> I don't want to hijack the meeting too much on that issue though, I'll create an issue on the spec and on implementations with a detailed step-by-step scenario
+<a name="l-124"></a><span class="tm">19:27:49</span><span class="nk"> &lt;t-bast&gt;</span> In the example I put above, Alice is late
+<a name="l-125"></a><span class="tm">19:28:26</span><span class="nk"> &lt;niftynei&gt;</span> right but this spec PR change only deals with Alice's behavior? i think?
+<a name="l-126"></a><span class="tm">19:28:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#action </span><span class="cmdline">t-bast to detail the scenario in a spec issue and tag faulty implementations</span>
+<a name="l-127"></a><span class="tm">19:28:44</span><span class="nk"> &lt;niftynei&gt;</span> will wait for more info tho, ok what's next
+<a name="l-128"></a><span class="tm">19:29:10</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> you're totally right, that's why BlueMatt is right that what I'm disucssing isn't completely related to this PR, which is a bit confusing xD
+<a name="l-129"></a><span class="tm">19:29:37</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Drop ping sending limitations</span>
+<a name="l-130"></a><span class="tm">19:29:40</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightning/bolts/pull/918</span>
+<a name="l-131"></a><span class="tm">19:30:08</span><span class="nk"> &lt;niftynei&gt;</span> ah that is confusing! ok thanks
+<a name="l-132"></a><span class="tm">19:30:09</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> finally responded 15 minutes ago, so dunno if there's more to be said aside from "lnd folks need to decide - they're still waffling"
+<a name="l-133"></a><span class="tm">19:30:53</span><span class="nk"> &lt;roasbeef&gt;</span> I think this is the issue w/ IRC, when this was brought up, I said we didn't feel strongly about it, and ppl could do w/e, we didn't commit to rate limiting
+<a name="l-134"></a><span class="tm">19:31:09</span><span class="nk"> &lt;roasbeef&gt;</span> then we spent like 30 mins on the topic, only to eventually move on w/ nothing really moving forward
+<a name="l-135"></a><span class="tm">19:31:24</span><span class="nk"> &lt;t-bast&gt;</span> But in a way this change prevents you from rate limiting in the future, right? Unless you choose to become non spec compliant?
+<a name="l-136"></a><span class="tm">19:31:26</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> feel free to respond on https://github.com/lightning/bolts/pull/918#issuecomment-963501921
+<a name="l-137"></a><span class="tm">19:31:34</span><span class="nk"> &lt;BlueMatt&gt;</span> what t-bast said
+<a name="l-138"></a><span class="tm">19:31:43</span><span class="nk"> &lt;BlueMatt&gt;</span> anyway, we dont need to spend more meeting time on this.
+<a name="l-139"></a><span class="tm">19:32:06</span><span class="nk"> &lt;BlueMatt&gt;</span> it seems like roasbeef has NAK'd it and it should die instead. on the LDK end we'll probably just keep violating the spec cause whatever.
+<a name="l-140"></a><span class="tm">19:32:12</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">t-bast:</span> that is indeed the case, but it's about optionality, we're not committing to rate limiting rn, but hold open the possibilty of doing it in the future, this is where IRC really falls shrot communication wise
+<a name="l-141"></a><span class="tm">19:32:27</span><span class="nk"> &lt;rusty&gt;</span> YEah, we don't rate-limit.  But in my head there's this idea that we should keep a "useful traffic vs useless waffle" counter for incoming traffic and send a warning and disconnect if it gets over some threshold (or start ratelimiting our responses).
+<a name="l-142"></a><span class="tm">19:32:32</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> this isn't an irc issue, methinks
+<a name="l-143"></a><span class="tm">19:32:34</span><span class="nk"> &lt;roasbeef&gt;</span> my comments were interpreted as me trying to block the proposel, but I didn't care and was just providing commentary
+<a name="l-144"></a><span class="tm">19:32:51</span><span class="nk"> &lt;roasbeef&gt;</span> idk go back and look at those logs and see if those 30 mins were productiveily used
+<a name="l-145"></a><span class="tm">19:32:51</span><span class="nk"> &lt;t-bast&gt;</span> Ok, fair enough, let's not spend too much time on this and move on ;)
+<a name="l-146"></a><span class="tm">19:33:02</span><span class="nk"> &lt;roasbeef&gt;</span> maybe I'm spoiled now after our recent-ish meat space time
+<a name="l-147"></a><span class="tm">19:33:22</span><span class="nk"> &lt;t-bast&gt;</span> Let's go for one we haven't discussed in a while...wait for it..
+<a name="l-148"></a><span class="tm">19:33:27</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">Route Blinding</span>
+<a name="l-149"></a><span class="tm">19:33:28</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> the issue appears to be that you think "well, we'll just violate the spec later cause we dont care about the spec" is totally fine way to not-nack a pr
+<a name="l-150"></a><span class="tm">19:33:30</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightning/bolts/pull/765</span>
+<a name="l-151"></a><span class="tm">19:33:36</span><span class="nk"> &lt;BlueMatt&gt;</span> but its really nack'ing it in everyone else's mind.
+<a name="l-152"></a><span class="tm">19:33:36</span><span class="nk"> &lt;t-bast&gt;</span> Yay route blinding!
+<a name="l-153"></a><span class="tm">19:33:38</span><span class="nk"> &lt;BlueMatt&gt;</span> that's not an irc issue
+<a name="l-154"></a><span class="tm">19:34:01</span><span class="nk"> &lt;roasbeef&gt;</span> <span class="hi">BlueMatt:</span> you're putting words in my mouth, I didn't commit to anything, just that it's possible for someoen to want to eventually rate limit pings
+<a name="l-155"></a><span class="tm">19:34:04</span><span class="nk"> &lt;t-bast&gt;</span> We've been making progress on onion messages in eclair (we'll merge support for relaying this week) and it has route blinding as a pre-requisite
+<a name="l-156"></a><span class="tm">19:34:11</span><span class="nk"> &lt;t-bast&gt;</span> So it would be interesting to get your feedback!
+<a name="l-157"></a><span class="tm">19:34:27</span><span class="nk"> &lt;t-bast&gt;</span> I've updated the PR, so it has both a `proposals` version that's higher level and the spec requirements
+<a name="l-158"></a><span class="tm">19:34:32</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">roasbeef:</span> its a requirements issue - you seem to have an entirely different view of what the spec is for from others. anyway, feel free to comment on the pr.
+<a name="l-159"></a><span class="tm">19:34:41</span><span class="nk"> &lt;t-bast&gt;</span> I just need to add one more test vector for blinding override and it should be ready
+<a name="l-160"></a><span class="tm">19:34:57</span><span class="nk"> &lt;roasbeef&gt;</span> route blinding is on my things to take a deeper look at along the way to checking out the latest flavor of trampoline
+<a name="l-161"></a><span class="tm">19:35:04</span><span class="nk"> &lt;niftynei&gt;</span> this is exciting t-bast!
+<a name="l-162"></a><span class="tm">19:35:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> yes, we need to do double-check test vectors.
+<a name="l-163"></a><span class="tm">19:35:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> yay! I'm curious to get your feedback on the crypto part
+<a name="l-164"></a><span class="tm">19:35:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> nice! is there a direction on cleaning up the onion messages pr?
+<a name="l-165"></a><span class="tm">19:35:31</span><span class="nk"> &lt;rusty&gt;</span> <span class="cmd">#action </span><span class="cmdline">rusty check https://github.com/lightning/bolts/pull/765 test vectors</span>
+<a name="l-166"></a><span class="tm">19:35:36</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> I've updated the tlv values we discussed yesterday, they should be final and the test vectors reflect that
+<a name="l-167"></a><span class="tm">19:35:48</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> :heartH
+<a name="l-168"></a><span class="tm">19:35:48</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> i'll try to review route blinding again soon, already done few round in the past
+<a name="l-169"></a><span class="tm">19:35:52</span><span class="nk"> &lt;t-bast&gt;</span> The onion messages PR will then be rebased on top of route blinding, it should clarify it
+<a name="l-170"></a><span class="tm">19:36:27</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> ah, that's...confusing, but okay.
+<a name="l-171"></a><span class="tm">19:36:27</span><span class="nk"> &lt;t-bast&gt;</span> to be honest, it's really much easier to review while implementing it: without code, it's hard to figure out the important details
+<a name="l-172"></a><span class="tm">19:36:51</span><span class="nk"> &lt;t-bast&gt;</span> Well actually onion messages doesn't even need to rebase on route blinding
+<a name="l-173"></a><span class="tm">19:36:55</span><span class="nk"> &lt;t-bast&gt;</span> It can simply link to it
+<a name="l-174"></a><span class="tm">19:36:59</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> eh, I implemented onion messages too, and still found it impossibly confusing, too many unrelated things everywhere
+<a name="l-175"></a><span class="tm">19:37:26</span><span class="nk"> &lt;t-bast&gt;</span> What can help is looking at how we implemented it in eclair
+<a name="l-176"></a><span class="tm">19:37:45</span><span class="nk"> &lt;t-bast&gt;</span> We first made one commit that adds the low-level route blinding utilities + tests that showcase how it could be used for payments
+<a name="l-177"></a><span class="tm">19:37:57</span><span class="nk"> &lt;t-bast&gt;</span> Then we implemented onion messages using these utilities
+<a name="l-178"></a><span class="tm">19:38:15</span><span class="nk"> &lt;BlueMatt&gt;</span> <span class="hi">t-bast:</span> the spec should stand on its own, but I'll look at route blinding, maybe its cleaner spec than onion messages
+<a name="l-179"></a><span class="tm">19:38:24</span><span class="nk"> &lt;t-bast&gt;</span> To be honest the most confusing part is not mixing the different tlv namespaces and correctly defining your types, then it kinda feels natural
+<a name="l-180"></a><span class="tm">19:38:38</span><span class="nk"> &lt;niftynei&gt;</span> off topic: is route-blinding a first-step to trampoline payments??
+<a name="l-181"></a><span class="tm">19:38:39</span><span class="nk"> &lt;BlueMatt&gt;</span> iirc onion messages just links to route blinding for parts, which was part of my "ugh, wtf"
+<a name="l-182"></a><span class="tm">19:39:00</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> it's completely orthogonal to trampoline - it can be used by trampoline for better privacy
+<a name="l-183"></a><span class="tm">19:39:10</span><span class="nk"> &lt;niftynei&gt;</span> sounds like it's definitely one to onion messages lol
+<a name="l-184"></a><span class="tm">19:40:02</span><span class="nk"> &lt;t-bast&gt;</span> If you're interested, this PR implements the crypto utilities (the code part is really small, it's mostly tests): https://github.com/ACINQ/eclair/pull/1962
+<a name="l-185"></a><span class="tm">19:40:18</span><span class="nk"> &lt;t-bast&gt;</span> Then this PR uses it for onion messages: https://github.com/ACINQ/eclair/pull/1962
+<a name="l-186"></a><span class="tm">19:41:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> yeah, will rebase, should be nicer.
+<a name="l-187"></a><span class="tm">19:41:32</span><span class="nk"> &lt;BlueMatt&gt;</span> cool! thanks rusty
+<a name="l-188"></a><span class="tm">19:42:33</span><span class="nk"> &lt;t-bast&gt;</span> Shall we move to another topic? I wanted to give you the latest updates on route blinding, but it's probably better to review it on your own when you have time. Don't hesitate to drop questions though!
+<a name="l-189"></a><span class="tm">19:44:01</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">roasbeef:</span> if you have a few minutes to space this week, can you quickly address the comments in #903 and #906 so that we get these clean-ups merged?
+<a name="l-190"></a><span class="tm">19:44:06</span><span class="nk"> &lt;rusty&gt;</span> Yeo!
+<a name="l-191"></a><span class="tm">19:44:06</span><span class="nk"> &lt;t-bast&gt;</span> *to spare
+<a name="l-192"></a><span class="tm">19:44:24</span><span class="nk"> &lt;t-bast&gt;</span> <span class="topic">#topic </span><span class="topicline">dust limit requirements</span>
+<a name="l-193"></a><span class="tm">19:44:26</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#link </span><span class="cmdline">https://github.com/lightning/bolts/pull/919</span>
+<a name="l-194"></a><span class="tm">19:44:46</span><span class="nk"> &lt;t-bast&gt;</span> Rusty, you had a counter-proposal there, I think it would be interesting to discuss it?
+<a name="l-195"></a><span class="tm">19:44:58</span><span class="nk"> &lt;t-bast&gt;</span> Since ariard is here as well
+<a name="l-196"></a><span class="tm">19:45:06</span><span class="nk"> &lt;ariard&gt;</span> yep
+<a name="l-197"></a><span class="tm">19:45:47</span><span class="nk"> &lt;rusty&gt;</span> So, this PR was unclear to me.  It's basically "have your own internal limit, fail channel if it passes that".
+<a name="l-198"></a><span class="tm">19:46:02</span><span class="nk"> &lt;rusty&gt;</span> But that's a recipe for exploitable channel breaks, really.
+<a name="l-199"></a><span class="tm">19:46:43</span><span class="nk"> &lt;ariard&gt;</span> well i think you have 2 recommendations a) if dust HTLC above your dust_limit_exposure, cancel this HTLC _without_ forward
+<a name="l-200"></a><span class="tm">19:46:46</span><span class="nk"> &lt;BlueMatt&gt;</span> its not clear how you do better without 0-htlc-fees-on-anchor
+<a name="l-201"></a><span class="tm">19:47:04</span><span class="nk"> &lt;rusty&gt;</span> In practice, dust is limited by (1) number of HTLCs (until we get that infinite-dusty-htlcs feature) and (2) feerate.
+<a name="l-202"></a><span class="tm">19:47:08</span><span class="nk"> &lt;ariard&gt;</span> and b) if increasing update_fee, either fail channel OR accept the balance burning risk
+<a name="l-203"></a><span class="tm">19:47:20</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> there's only a fail-channel option if you're not using anchor_outputs_zero_fee_htlc_tx, I think it's an important point to note
+<a name="l-204"></a><span class="tm">19:48:02</span><span class="nk"> &lt;ariard&gt;</span> the fail-channel option have always been deferred to the implementors, and iirc LDK and eclair don't have the same behavior here
+<a name="l-205"></a><span class="tm">19:48:16</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> why?  I don't see how that changes the problem?
+<a name="l-206"></a><span class="tm">19:48:30</span><span class="nk"> &lt;ariard&gt;</span> like I fully agree there is risk for channel breaks in case of fee spikes, it's to be balanced with the risk of loosing money
+<a name="l-207"></a><span class="tm">19:48:34</span><span class="nk"> &lt;t-bast&gt;</span> I think that since all implementations have added that fail-safe, and new ones will directly target anchor_outputs_zero_fee_htlc_tx, we don't need to bikeshed it too much, it will soon be obsolete
+<a name="l-208"></a><span class="tm">19:48:49</span><span class="nk"> &lt;ariard&gt;</span> ideally better to have a knob and deferre the choice to node operators
+<a name="l-209"></a><span class="tm">19:48:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> when using anchor_outputs_zero_fee_htlc_tx you're simply not at risk when receiving update_fee
+<a name="l-210"></a><span class="tm">19:49:12</span><span class="nk"> &lt;t-bast&gt;</span> because it doesn't change your dust threshold, so it doesn't impact your dust exposure
+<a name="l-211"></a><span class="tm">19:49:23</span><span class="nk"> &lt;t-bast&gt;</span> so when using anchor_outputs_zero_fee_htlc_tx there's no case where this PR introduces a force-close
+<a name="l-212"></a><span class="tm">19:49:26</span><span class="nk"> &lt;ariard&gt;</span> wit zero_fee_tlc_tx, 2nd stage HTLCs are committed with 0-fees
+<a name="l-213"></a><span class="tm">19:49:32</span><span class="nk"> &lt;niftynei&gt;</span> there's definitely an indeterminate point at which htlc failures begin to occur, but that's not much different from balance exhaustion
+<a name="l-214"></a><span class="tm">19:49:36</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> right.
+<a name="l-215"></a><span class="tm">19:49:38</span><span class="nk"> &lt;niftynei&gt;</span> it's just *not* balance exhaustion
+<a name="l-216"></a><span class="tm">19:50:15</span><span class="nk"> &lt;crypt-iq&gt;</span> perhaps the fix is to upgrade to zero-fee-anchors
+<a name="l-217"></a><span class="tm">19:50:44</span><span class="nk"> &lt;ariard&gt;</span> well it's just your channel become useless to route to for a class of low-values HTLC
+<a name="l-218"></a><span class="tm">19:50:56</span><span class="nk"> &lt;niftynei&gt;</span> bigger htlcs will still succeed; this will have implications for route algos that use historic payment success data to choose routes (cdecker[m])
+<a name="l-219"></a><span class="tm">19:51:14</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> but if I add more dust than you want, what happens?  We didn't fix the problem, you still could be stuck with too much dust?
+<a name="l-220"></a><span class="tm">19:51:19</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">crypt-iq:</span> though maybe we still need a dust_limit_exposure with the infinite-dusty-htlcs feature ?
+<a name="l-221"></a><span class="tm">19:51:34</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">ariard:</span> definitely.  A total dust option is required for that.
+<a name="l-222"></a><span class="tm">19:51:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> you just fail it instead of relaying it (would be nicer with an "un-add", but it's not dangerous so never leads to a force-close)
+<a name="l-223"></a><span class="tm">19:51:44</span><span class="nk"> &lt;cdecker[m]&gt;</span> Correct
+<a name="l-224"></a><span class="tm">19:51:44</span><span class="nk"> &lt;niftynei&gt;</span> im pretty sure it's required... what rusty said
+<a name="l-225"></a><span class="tm">19:51:56</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">ariard:</span> can just fail back ?
+<a name="l-226"></a><span class="tm">19:52:01</span><span class="nk"> &lt;niftynei&gt;</span> the real gotcha here is feerate spikes
+<a name="l-227"></a><span class="tm">19:52:07</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> there's an exposure window though :(  We tried to avoid that.
+<a name="l-228"></a><span class="tm">19:52:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> no there's not, that's why it's interesting!
+<a name="l-229"></a><span class="tm">19:52:35</span><span class="nk"> &lt;niftynei&gt;</span> at least with an ahead of time known limit, you know when you'll be feerate spiking into bad territory
+<a name="l-230"></a><span class="tm">19:52:42</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> because since you haven't relayed it, right now it's only taken from your peer's balance
+<a name="l-231"></a><span class="tm">19:52:46</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">crypt-iq:</span> yes what we already doing with 919, or maybe we can introduce an error for dusty HTLCs but state machine asynchronous issues
+<a name="l-232"></a><span class="tm">19:52:54</span><span class="nk"> &lt;niftynei&gt;</span> whereas right now you kinda just yolo there and then .. maybe the channel closes?
+<a name="l-233"></a><span class="tm">19:52:58</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">rusty:</span> so it's purely money they lose, not you
+<a name="l-234"></a><span class="tm">19:53:03</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">t-bast:</span> ah!  good point!  I had missed that!!
+<a name="l-235"></a><span class="tm">19:53:12</span><span class="nk"> &lt;ariard&gt;</span> inbound HTLC are subtracted from your peer balance
+<a name="l-236"></a><span class="tm">19:53:34</span><span class="nk"> &lt;t-bast&gt;</span> That's the important point, you can safely receive many HTLCs that make you go over your dust threshold, it only becomes dangerous if you relay them
+<a name="l-237"></a><span class="tm">19:53:44</span><span class="nk"> &lt;t-bast&gt;</span> So if you simply fail them instead, you're always safe
+<a name="l-238"></a><span class="tm">19:53:52</span><span class="nk"> &lt;crypt-iq&gt;</span> <span class="hi">ariard:</span> there are async issues but only for the exit-hop case, rather than forwarding
+<a name="l-239"></a><span class="tm">19:53:53</span><span class="nk"> &lt;rusty&gt;</span> OK, so now the trap is that your own sent htlcs get dusted by an update_fee, which is fixed by zerofee-anchor.  Right.
+<a name="l-240"></a><span class="tm">19:53:58</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">t-bast:</span> or accept them as a final payee
+<a name="l-241"></a><span class="tm">19:54:06</span><span class="nk"> &lt;t-bast&gt;</span> (if you use anchor_outputs_zero_fee_htlc_tx or ignore the update_fee case)
+<a name="l-242"></a><span class="tm">19:54:15</span><span class="nk"> &lt;t-bast&gt;</span> yes exactly
+<a name="l-243"></a><span class="tm">19:54:22</span><span class="nk"> &lt;rusty&gt;</span> OK, I withdraw my objection.  I think the spec change should be far shorter though, textually.
+<a name="l-244"></a><span class="tm">19:54:23</span><span class="nk"> &lt;niftynei&gt;</span> AOZFHT ftw lol
+<a name="l-245"></a><span class="tm">19:55:00</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">rusty:</span> yeah if you have suggestion to short/improve i'll take them, there was a discussion with niftynei where to put the changes as it's forwarding recommendations
+<a name="l-246"></a><span class="tm">19:55:09</span><span class="nk"> &lt;ariard&gt;</span> and not purely evaluation of `update_add_htlc`
+<a name="l-247"></a><span class="tm">19:56:22</span><span class="nk"> &lt;niftynei&gt;</span> one thing that'd fix the feerate spike problems is changing the update_fee requirements
+<a name="l-248"></a><span class="tm">19:56:38</span><span class="nk"> &lt;niftynei&gt;</span> and setting the max increase the same as the dust_limit checks for
+<a name="l-249"></a><span class="tm">19:57:09</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> but you can't really do that though
+<a name="l-250"></a><span class="tm">19:57:11</span><span class="nk"> &lt;crypt-iq&gt;</span> what if it actually increases that high
+<a name="l-251"></a><span class="tm">19:57:16</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> wdym? a new requirment on the sender?
+<a name="l-252"></a><span class="tm">19:57:22</span><span class="nk"> &lt;niftynei&gt;</span> you can send multiple update_fees, but each can only increase the total feerate by the same factor as the pre-checked amount for the feerate bucket
+<a name="l-253"></a><span class="tm">19:57:33</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> if your peer has been offline for a while, and the feerate really rised a lot, your update_fee needs to match the reality of on-chain feerates, right?
+<a name="l-254"></a><span class="tm">19:57:43</span><span class="nk"> &lt;niftynei&gt;</span> you just send a bunch of them
+<a name="l-255"></a><span class="tm">19:58:09</span><span class="nk"> &lt;crypt-iq&gt;</span> how does that change fee spikes? you fail back earlier ?
+<a name="l-256"></a><span class="tm">19:58:10</span><span class="nk"> &lt;t-bast&gt;</span> well ok, why not...to be honest I simply wouldn't bother and would focus on finalizing implementation of anchor_zero_fee :)
+<a name="l-257"></a><span class="tm">19:58:15</span><span class="nk"> &lt;niftynei&gt;</span> ah wait you're right it doesnt matter if it's sudden or not, as soon as the dust goes over the bucket limit we kill the channel
+<a name="l-258"></a><span class="tm">19:58:29</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> i think you're introducing a global as you need to have the same factor across sender/receiver
+<a name="l-259"></a><span class="tm">19:58:39</span><span class="nk"> &lt;niftynei&gt;</span> so it doesnt matter if it's all at once or incremental the real problem is that you've exhausted your budget
+<a name="l-260"></a><span class="tm">19:58:56</span><span class="nk"> &lt;BlueMatt&gt;</span> it appears we're about to run out of time.
+<a name="l-261"></a><span class="tm">19:58:58</span><span class="nk"> &lt;niftynei&gt;</span> timing of budget exhaustion is irrelevant
+<a name="l-262"></a><span class="tm">19:59:26</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">BlueMatt:</span> better to run out of time than running out of feerate :p
+<a name="l-263"></a><span class="tm">19:59:51</span><span class="nk"> &lt;niftynei&gt;</span> feerate rises are basically a channel bomb now tho
+<a name="l-264"></a><span class="tm">20:00:14</span><span class="nk"> &lt;niftynei&gt;</span> i mean, maybe they've always been?
+<a name="l-265"></a><span class="tm">20:00:44</span><span class="nk"> &lt;ariard&gt;</span> Package Relay Solves This (tm)?
+<a name="l-266"></a><span class="tm">20:00:47</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">ariard:</span> :D
+<a name="l-267"></a><span class="tm">20:00:48</span><span class="nk"> &lt;niftynei&gt;</span> i guess knowing you're going to close the channel isnt' any better than not knowing you're going to close the channel b/c of a feerate rise
+<a name="l-268"></a><span class="tm">20:00:50</span><span class="nk"> &lt;roasbeef&gt;</span> dust begone
+<a name="l-269"></a><span class="tm">20:00:55</span><span class="nk"> &lt;BlueMatt&gt;</span> fwiw, rusty, apologies we've been bad about spec stuff lately - I'm a bit under the weather but will stick my head back above water on spec stuff this week hopefully. would love to move our onion messages impl forward and also https://github.com/lightning/bolts/pull/910 but it seems like you still wanted to change that to use a channel type? Any updates on that? I've gotta run, but would https://github.com/lightning/bolts/pull/918#issuecomment
+<a name="l-270"></a><span class="tm">20:00:55</span><span class="nk"> &lt;BlueMatt&gt;</span> -963519924 solve your issues, roasbeef? Then we can merge that cursed pr and move on with our lives. anyway, I've gotta run.
+<a name="l-271"></a><span class="tm">20:00:56</span><span class="nk"> &lt;ariard&gt;</span> thoug not really because we don't have infinite fee-bumping reserve
+<a name="l-272"></a><span class="tm">20:01:23</span><span class="nk"> &lt;t-bast&gt;</span> See ya BlueMatt!
+<a name="l-273"></a><span class="tm">20:02:00</span><span class="nk"> &lt;niftynei&gt;</span> there's something kinda ironic here about how lightning is supposed to be the Thing to Use when feerates onchain rise, but also uhh have you seen how lightning runs into problems when feerates onchain rise?
+<a name="l-274"></a><span class="tm">20:02:29</span><span class="nk"> &lt;limping&gt;</span> very interested in #910
+<a name="l-275"></a><span class="tm">20:02:40</span><span class="nk"> &lt;niftynei&gt;</span> i guess the real problem is velocity of change here
+<a name="l-276"></a><span class="tm">20:03:03</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> and scale / number of channels
+<a name="l-277"></a><span class="tm">20:03:15</span><span class="nk"> &lt;t-bast&gt;</span> If you have only a few channels, you're probably ok even with a large feerate update
+<a name="l-278"></a><span class="tm">20:04:03</span><span class="nk"> &lt;roasbeef&gt;</span> is it really that diff in the LN case tho? similar scenario of leaking the value of an output if chain fees are high
+<a name="l-279"></a><span class="tm">20:04:05</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> NP, thanks!
+<a name="l-280"></a><span class="tm">20:04:15</span><span class="nk"> &lt;niftynei&gt;</span> t-bast, this is for zero-fee anchor outs yeah?  yeah... fewer channels definitely a real win there
+<a name="l-281"></a><span class="tm">20:04:54</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> yes, for that case, ideally with package relay as well (maybe I'm glimpsing too much into the future though!)
+<a name="l-282"></a><span class="tm">20:05:04</span><span class="nk"> &lt;niftynei&gt;</span> i mean the reality of feerates rising is that a swath of utxos become uneconomical; higher feerates means that some subset of bitcoin is 'economically unspendable'
+<a name="l-283"></a><span class="tm">20:05:38</span><span class="nk"> &lt;crypt-iq&gt;</span> then there are less txn for feerate maybe?
+<a name="l-284"></a><span class="tm">20:05:40</span><span class="nk"> &lt;niftynei&gt;</span> lightning failures (htlcs onchain) are like having a front row seat to this particular reality
+<a name="l-285"></a><span class="tm">20:06:19</span><span class="nk"> &lt;rusty&gt;</span> <span class="hi">BlueMatt:</span> I will revisit taht PR.  The channel_type is simply a type whihc says "don't ever fwd by real scid", which is simple.
+<a name="l-286"></a><span class="tm">20:06:30</span><span class="nk"> &lt;niftynei&gt;</span> this is definitely not helpful or on topic but interesting nonetheless llol
+<a name="l-287"></a><span class="tm">20:06:32</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">niftynei:</span> but if the feerate ever comes back down, you'll be able to claim these utxos then, but no guarantee...
+<a name="l-288"></a><span class="tm">20:06:49</span><span class="nk"> &lt;niftynei&gt;</span> which is fine for a wallet of utxos, but htlcs have time constraints iiuc
+<a name="l-289"></a><span class="tm">20:06:58</span><span class="nk"> &lt;ariard&gt;</span> <span class="hi">niftynei:</span> yes it's described in the LN paper, ideally we could stuck the "time" for LN time-sensitive closes in case of fees spikes
+<a name="l-290"></a><span class="tm">20:07:21</span><span class="nk"> &lt;t-bast&gt;</span> regarding #910 pm47 on our side spent time experimenting with it, he'll be able to provide more feedback as well
+<a name="l-291"></a><span class="tm">20:07:22</span><span class="nk"> &lt;niftynei&gt;</span> i think you end up circling back around to the observation a friend of mine who works at stripe made about how "payment processors are actuallly insurance companies"
+<a name="l-292"></a><span class="tm">20:07:31</span><span class="nk"> &lt;niftynei&gt;</span> which is to say there is some risk involved in routing payments!
+<a name="l-293"></a><span class="tm">20:07:42</span><span class="nk"> &lt;niftynei&gt;</span> and you should expect a return that justifies the risk involved ;)
+<a name="l-294"></a><span class="tm">20:08:15</span><span class="nk"> &lt;crypt-iq&gt;</span> It would be nice to have a channel_type for zero-conf option-scid_alias and nix the min_conf 0 setting. The spec wording as is basically the acceptor *hoping* that it's a zero-conf channel w/o knowing the intent of the initiator
+<a name="l-295"></a><span class="tm">20:08:24</span><span class="nk"> &lt;t-bast&gt;</span> yes that's true, we should probably get that explained better for routing node operators and get them to raise their routing fees a bit ;)
+<a name="l-296"></a><span class="tm">20:08:56</span><span class="nk"> &lt;t-bast&gt;</span> <span class="hi">cdecker[m]:</span> are you still around? I've got a quick q
+<a name="l-297"></a><span class="tm">20:10:03</span><span class="nk"> &lt;niftynei&gt;</span> t-bast, hehe sounds like good blogpost/ blip(spark?) material ;)
+<a name="l-298"></a><span class="tm">20:10:15</span><span class="nk"> &lt;niftynei&gt;</span> i'm headed out, thanks for chairing t-bast!
+<a name="l-299"></a><span class="tm">20:10:16</span><span class="nk"> &lt;t-bast&gt;</span> Let's stop now, meeting time is over and we already covered a lot
+<a name="l-300"></a><span class="tm">20:10:18</span><span class="nk"> &lt;t-bast&gt;</span> <span class="cmd">#endmeeting</span><span class="cmdline"></span></pre>
+</body></html>

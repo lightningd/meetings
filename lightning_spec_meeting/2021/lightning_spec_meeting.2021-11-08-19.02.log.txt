@@ -1,0 +1,300 @@
+19:02:57 <t-bast> #startmeeting Lightning Spec Meeting
+19:02:57 <lndev-bot> Meeting started Mon Nov  8 19:02:57 2021 UTC and is due to finish in 60 minutes.  The chair is t-bast. Information about MeetBot at http://wiki.debian.org/MeetBot.
+19:02:57 <lndev-bot> Useful Commands: #action #agreed #help #info #idea #link #topic #startvote.
+19:02:57 <lndev-bot> The meeting name has been set to 'lightning_spec_meeting'
+19:03:18 <t-bast> #topic Warning messages
+19:03:21 <t-bast> #link https://github.com/lightning/bolts/pull/834
+19:03:44 <t-bast> There are only a couple comments remaining on this PR, and it's already in 3 implementations, so I guess it's high time we merged it? :)
+19:04:06 <BlueMatt> https://github.com/lightning/bolts/pull/834#discussion_r719977416 was the last unresolved thing, iirc
+19:04:21 <t-bast> There's the question of all-zeroes and a few clean-up comments (should be easy to fix)
+19:05:27 <t-bast> I agree with BlueMatt to keep the all-zeroes option for now, it was already there, it's less friction to keep it
+19:05:40 <niftynei> all-zeroes seems useful for peers with multiple channels :P
+19:05:42 <cdecker[m]> Agreed
+19:05:54 <rusty> I think the all-zeros thing is unnecessary, since if you have closed all my channels, you'll error each one as I reestablish.
+19:05:57 <BlueMatt> note the debate is about all-zero *errors* (ie close-channels)
+19:06:09 <t-bast> niftynei: right, I even forgot, c-lightning doesn't care, all-zeros or not is the same for you xD
+19:06:10 <BlueMatt> not all-zero *warnings*, which is presumably the default for most messages
+19:06:34 <t-bast> yep
+19:06:40 <BlueMatt> rusty: I really dont get why we need to rip something out just because you can emulate it with a reconnect loop
+19:07:06 <t-bast> rusty: but if you have some weird logic to not initiate the reestablish yourself (because mobile wallet that waits for an encrypted backup for example)
+19:07:24 <rusty> BlueMatt: because it's an unnecessary complication, AFAICT?  Like, tell me the channel you have a problem with, precisely!
+19:07:47 <BlueMatt> rusty: if you have an issue with a peer, you dont know the channel precisely
+19:07:48 <rusty> t-bast: hmm, ok, fair enough.
+19:08:12 <BlueMatt> that's the point, if the peer is doing *handwave* then you've presumably closed your channels and may not even be tracking them
+19:08:24 <BlueMatt> like, our main message responder doesn't know about channels that are closed
+19:08:42 <rusty> BlueMatt: yeah, so I was thinking you'd respond (as you naturally would) to any unknown channel with an error for that thcannel.
+19:08:46 <BlueMatt> sure, we can respond to messages with close errors, but, like, we cant like the need-to-be-closed channels, cause they're off in onchain-enforcement land
+19:09:13 <rusty> You definitely don't want to close all channels, if they mention one you don't know.
+19:09:27 <rusty> You only want a general error if you have blacklisted them or something AFAICT.
+19:09:33 <BlueMatt> yes, of course we do that, but my point is still more generally about the peer
+19:09:36 <BlueMatt> yes
+19:09:37 <BlueMatt> exactly
+19:10:00 <BlueMatt> I think we agree, you just think the error is entirely useless to the point we should remove the code, I think its marginally useful and we might as well keep it
+19:10:40 <rusty> OK.  Seemed like a chance to simplify but I concede :) I'll restore that part.  Anything else?
+19:10:51 <BlueMatt> IIRC I was ack modulo deciding that
+19:11:03 <BlueMatt> I would have to re-review it, there may have been a few nits in my last review
+19:11:23 <t-bast> Great, I think we're good on that front then. Once that's restored, we can do a last round of review for the nits, and then merge?
+19:11:30 <BlueMatt> sgtm
+19:11:58 <t-bast> #topic Clarify channel reestablish behavior when remote is late
+19:12:00 <t-bast> #link https://github.com/lightning/bolts/pull/932
+19:12:15 <t-bast> This one is interesting, I'd like other implementers feedback on that
+19:12:45 <t-bast> We started creating safeguards for big nodes, where when you detect that you're late when restarting you give a chance to the node operator to check whether they messed up the DB
+19:13:10 <cdecker[m]> Doesn't thos break SCBs?
+19:13:11 <t-bast> But when testing it against other implementations, we realized it doesn't work because most implementations close instantly when they receive a channel_reestablish that indicate their peer is late
+19:13:25 <t-bast> They should wait for the late peer to send an error before closing, shouldn't they?
+19:13:38 <t-bast> cdecker[m]: why? can you detail?
+19:13:52 <cdecker[m]> afaik the SCB restore uses the outdated -> close semantic to recover funds, don't they?
+19:14:02 <t-bast> cdecker[m
+19:14:04 <roasbeef> outdated?
+19:14:25 <t-bast> but stopping the node instead of going forward with the close shouldn't impact that?
+19:14:31 <roasbeef> you mean the non-static key route, where you need to obtain a point?
+19:14:32 <cdecker[m]> Well, how does an SCB restore cause the remote side to unilaterally close the channel?
+19:14:38 <niftynei> right, "MUST NOT broadcast" and "fail the channel" are conflicting, per our current definition of "fail the channel"
+19:14:42 <roasbeef> we never delete the data needed to send the chan reest to like ppl SCB restore btw
+19:14:50 <BlueMatt> I'm not really a fan of separating "send an `error`" and "fail channel" - they're the same thing right now, afaiu, and separating it into "counterparty should force-close" vs "we force-close" sucks, especially given lnd has always ignored errors.
+19:14:51 <t-bast> you just give the node operator a chance to detect that they pointed to an old DB, and restart with the right one? Or if they really lost data, then move forward with the close
+19:15:15 <cdecker[m]> Ok, must've misinterpreted how SCBs cause the channel closure, my bad
+19:15:30 <t-bast> BlueMatt: it's not separating them?
+19:15:45 <t-bast> BlueMatt: you mean it's misphrased in the PR
+19:15:50 <roasbeef> so change here is just to send an error instead of force closing? like an attempt to make sure ppl dont' breach themselves?
+19:16:01 <niftynei> does receipt of an error invoke a channel close from the peer in all cases?
+19:16:07 <t-bast> But conceptually, do you agree that you should only close when sending/receiving the error, not on detecting a late channel_reestablish?
+19:16:18 <roasbeef> lnd pretty much never force closes when it gets an error, only invalid sig is the main offense
+19:16:19 <niftynei> in my reading it's not a change to the behavior, just a spec wording change
+19:16:20 <BlueMatt> t-bast: maybe I misread this? I understand the current pr text to say "send an error message, hoping the other party closes the channel, but keep the channel in active mode locally and let them restart and maybe reestablish/actually use the channel again in the future"
+19:16:34 <roasbeef> t-bast: ok so that's the change? wait until the error instead of closing once yyou get a bad chan reest?
+19:17:02 <t-bast> The main issue that's not obvious is that currently, implementations aren't really following the spec: they're trigger-happy and force-close when they receive an outdated channel_reestablish, instead of waiting for the error message
+19:17:25 <t-bast> BlueMatt: if you're late, you cannot force-close yourself, your commitment is outdated
+19:17:27 <roasbeef> isn't that what the spec says to do rn? force clsoe if you get a bad chan reest
+19:17:35 <cdecker[m]> I see, that makes sense
+19:17:37 <crypt-iq> why would you send a chan reestablish if you aren't ready
+19:17:42 <t-bast> roasbeef: yes exactly! But the implementations don't do that xD
+19:17:45 <BlueMatt> t-bast: sorry, I dont mean "broadcast state" I mean "set the channel to unusable for offchain state updates"
+19:18:01 <t-bast> BlueMatt: oh yeah, I agree this shouldn't change
+19:18:01 <roasbeef> t-bast: and instead you observe they close earlier w/ some unknown trigger?
+19:18:17 <roasbeef> did we lose the video call link this time?
+19:18:23 <niftynei> it feels like the behavior t-bast describes is what the original spec was intending but it's much clearer with the proposed update
+19:18:34 <t-bast> exactly what niftynei says
+19:18:39 <BlueMatt> its not clear to me what changes are made by this text?
+19:19:02 <t-bast> Ok let me try to summarize it better
+19:19:03 <niftynei> nothing changes to intent, it just makes some current (wrong) behavior explicitly incorrect? iiuc
+19:19:03 <BlueMatt> "fail the channel" without "broadcast its commitment transaction" sounds to me like "send an error message and forget the channel, maybe tell the user to think hard about broadcasting"
+19:19:05 <roasbeef> this would be a larger divergence tho? like all the existing nodes would keep closing on chan reest recv
+19:19:08 <rusty> Hmm, generally we close when we send an error, not when we receive an error.  You're supposed to do *both* ofc, but history...
+19:19:47 <t-bast> Alice has an outdated commitment and reconnects to Bob. Alice sends `channel_reestablish`. Bob detects Alice is late. Most implementations right now have Bob force-close at that point.
+19:20:00 <t-bast> Instead Bob should wait for Alice to send an error, then force-close.
+19:20:12 <roasbeef> why?
+19:20:20 <t-bast> I believe the spec meant that, but since implementations did it differently, it's worth clarifying the spec a bit?
+19:20:37 <BlueMatt> ok, let me rephrase, its unclear to me how the pr changes that text :p
+19:20:56 <t-bast> Alice cannot "fail the channel", she cannot broadcast her commitment, she can only send an error to Bob and mark the channel was "waiting for Bob to publish latest commitment"
+19:21:03 <roasbeef> I don't see what that change achivies tho, you just want them to wait to send that error?
+19:21:28 <rusty> BlueMatt: we don't define "fail the channel", but logically it's "return errors from now on and broadcast the latest commitment tx". If you can't do the latter, then the definition still works.
+19:21:42 <BlueMatt> t-bast: sure, yes, that's how i read it previously? I guess my confusion is - the pr diff here seems to change nothing about behavior, but your description here includes a propose behavior change.
+19:21:50 <t-bast> roasbeef: yes, I want Bob to publish his commitment only once he receives an error, not on receiving a channel_reestablish: that gives Alice time to potentially fix her DB and avoid that force-close
+19:21:50 <roasbeef> t-bast: you seem be arguging that fromthe sending node? but the reciving node is the one that can actually force close
+19:22:07 <BlueMatt> rusty: right, the text diff seems fine, i guess, my point is more that it doesnt, to my eye, indicate behavior change.
+19:22:09 <roasbeef> mid convo (like any other message here), IRC link injection: https://github.com/lightning/bolts/issues/933#issuecomment-963494419
+19:22:54 <t-bast> Agreed, it doesn't indicate behavior change, but most implementation's behavior does *not* match the spec currently, and it would probably be worth fixing the implementations?
+19:23:02 <t-bast> So I thought it was worth bringing to attention
+19:23:14 <t-bast> We haven't tried rust-lightning though, maybe you implement it correctly :)
+19:23:16 <BlueMatt> t-bast: ok, my point, I think, is that that feels like an entirely separate conversation to the pr itself
+19:23:20 <BlueMatt> the pr seems fine, I think
+19:23:56 <roasbeef> t-bast: do you know which impls deviate rn?
+19:23:59 <t-bast> Agreed, but I don't know how else to have that discussion (maybe open an issue on each implementation to highlight that its behavior diverges from the spec?)
+19:24:12 <niftynei> wait t-bast does this mean that some channels drop old state to chain?
+19:24:12 <roasbeef> I don't see how it's wrong still, if you lost state, you send me the chan reest, I force close
+19:24:18 <t-bast> IIRC we tested lnd and c-lightning, but I'd need to double check with pm47
+19:24:18 <roasbeef> this seems to be saying that I should instead send an error?
+19:24:22 <roasbeef> niftynei: that's what I'm trying to get at
+19:24:23 <BlueMatt> issues on implementations or an issue on the spec repo seems like a reasonable way to have that discussion
+19:24:32 <t-bast> roasbeef: no, you should wait for my error instead of closing
+19:24:41 <roasbeef> t-bast: ....why?
+19:24:50 <t-bast> roasbeef: if you close instantly, you didn't give me a chance to notice I'm late, and potentially fix my DB if I messed it up
+19:24:53 <rusty> If you're not going to close the channel because peer is behind, you really should be sending a warning I guess?
+19:25:08 <t-bast> roasbeef: if I can fix my DB and restart, we can avoid the force-close and the channel can keep operating normally
+19:25:29 <roasbeef> t-bast: assuming I haven't sent it yet, or? seems like a concurrency thing?
+19:25:38 <roasbeef> if you've lost state, can you really fix it?
+19:25:42 <t-bast> BlueMatt: noted, that's fair, I'll open issues on implementations then
+19:26:02 <t-bast> roasbeef: if you've lost state no, but if you've just messed up your restart you could fix it, so it's really dumb not to give you this opportunity
+19:26:02 <BlueMatt> t-bast: an issue on the spec seems reasonable too, and thanks for flagging, just very confusing to do it on an unrelated pr :p
+19:26:10 <niftynei> this change in the spec is in the case where you're explictly not supposed to be dropping your commitment tx to chain; does fail the channel mean something else?
+19:26:55 <t-bast> roasbeef: it's not a concurrency thing, Bob has no reason to send an error, only Alice does, so if she doesn't send anything Bob shouldn't force-close
+19:27:26 <niftynei> who's Bob in this case? is Bob behind?
+19:27:43 <t-bast> I don't want to hijack the meeting too much on that issue though, I'll create an issue on the spec and on implementations with a detailed step-by-step scenario
+19:27:49 <t-bast> In the example I put above, Alice is late
+19:28:26 <niftynei> right but this spec PR change only deals with Alice's behavior? i think?
+19:28:42 <t-bast> #action t-bast to detail the scenario in a spec issue and tag faulty implementations
+19:28:44 <niftynei> will wait for more info tho, ok what's next
+19:29:10 <t-bast> niftynei: you're totally right, that's why BlueMatt is right that what I'm disucssing isn't completely related to this PR, which is a bit confusing xD
+19:29:37 <t-bast> #topic Drop ping sending limitations
+19:29:40 <t-bast> #link https://github.com/lightning/bolts/pull/918
+19:30:08 <niftynei> ah that is confusing! ok thanks
+19:30:09 <BlueMatt> roasbeef: finally responded 15 minutes ago, so dunno if there's more to be said aside from "lnd folks need to decide - they're still waffling"
+19:30:53 <roasbeef> I think this is the issue w/ IRC, when this was brought up, I said we didn't feel strongly about it, and ppl could do w/e, we didn't commit to rate limiting
+19:31:09 <roasbeef> then we spent like 30 mins on the topic, only to eventually move on w/ nothing really moving forward
+19:31:24 <t-bast> But in a way this change prevents you from rate limiting in the future, right? Unless you choose to become non spec compliant?
+19:31:26 <BlueMatt> roasbeef: feel free to respond on https://github.com/lightning/bolts/pull/918#issuecomment-963501921
+19:31:34 <BlueMatt> what t-bast said
+19:31:43 <BlueMatt> anyway, we dont need to spend more meeting time on this.
+19:32:06 <BlueMatt> it seems like roasbeef has NAK'd it and it should die instead. on the LDK end we'll probably just keep violating the spec cause whatever.
+19:32:12 <roasbeef> t-bast: that is indeed the case, but it's about optionality, we're not committing to rate limiting rn, but hold open the possibilty of doing it in the future, this is where IRC really falls shrot communication wise
+19:32:27 <rusty> YEah, we don't rate-limit.  But in my head there's this idea that we should keep a "useful traffic vs useless waffle" counter for incoming traffic and send a warning and disconnect if it gets over some threshold (or start ratelimiting our responses).
+19:32:32 <BlueMatt> roasbeef: this isn't an irc issue, methinks
+19:32:34 <roasbeef> my comments were interpreted as me trying to block the proposel, but I didn't care and was just providing commentary
+19:32:51 <roasbeef> idk go back and look at those logs and see if those 30 mins were productiveily used
+19:32:51 <t-bast> Ok, fair enough, let's not spend too much time on this and move on ;)
+19:33:02 <roasbeef> maybe I'm spoiled now after our recent-ish meat space time
+19:33:22 <t-bast> Let's go for one we haven't discussed in a while...wait for it..
+19:33:27 <t-bast> #topic Route Blinding
+19:33:28 <BlueMatt> roasbeef: the issue appears to be that you think "well, we'll just violate the spec later cause we dont care about the spec" is totally fine way to not-nack a pr
+19:33:30 <t-bast> #link https://github.com/lightning/bolts/pull/765
+19:33:36 <BlueMatt> but its really nack'ing it in everyone else's mind.
+19:33:36 <t-bast> Yay route blinding!
+19:33:38 <BlueMatt> that's not an irc issue
+19:34:01 <roasbeef> BlueMatt: you're putting words in my mouth, I didn't commit to anything, just that it's possible for someoen to want to eventually rate limit pings
+19:34:04 <t-bast> We've been making progress on onion messages in eclair (we'll merge support for relaying this week) and it has route blinding as a pre-requisite
+19:34:11 <t-bast> So it would be interesting to get your feedback!
+19:34:27 <t-bast> I've updated the PR, so it has both a `proposals` version that's higher level and the spec requirements
+19:34:32 <BlueMatt> roasbeef: its a requirements issue - you seem to have an entirely different view of what the spec is for from others. anyway, feel free to comment on the pr.
+19:34:41 <t-bast> I just need to add one more test vector for blinding override and it should be ready
+19:34:57 <roasbeef> route blinding is on my things to take a deeper look at along the way to checking out the latest flavor of trampoline
+19:35:04 <niftynei> this is exciting t-bast!
+19:35:16 <rusty> t-bast: yes, we need to do double-check test vectors.
+19:35:20 <t-bast> roasbeef: yay! I'm curious to get your feedback on the crypto part
+19:35:27 <BlueMatt> t-bast: nice! is there a direction on cleaning up the onion messages pr?
+19:35:31 <rusty> #action rusty check https://github.com/lightning/bolts/pull/765 test vectors
+19:35:36 <t-bast> rusty: I've updated the tlv values we discussed yesterday, they should be final and the test vectors reflect that
+19:35:48 <rusty> t-bast: :heartH
+19:35:48 <ariard> t-bast: i'll try to review route blinding again soon, already done few round in the past
+19:35:52 <t-bast> The onion messages PR will then be rebased on top of route blinding, it should clarify it
+19:36:27 <BlueMatt> t-bast: ah, that's...confusing, but okay.
+19:36:27 <t-bast> to be honest, it's really much easier to review while implementing it: without code, it's hard to figure out the important details
+19:36:51 <t-bast> Well actually onion messages doesn't even need to rebase on route blinding
+19:36:55 <t-bast> It can simply link to it
+19:36:59 <BlueMatt> t-bast: eh, I implemented onion messages too, and still found it impossibly confusing, too many unrelated things everywhere
+19:37:26 <t-bast> What can help is looking at how we implemented it in eclair
+19:37:45 <t-bast> We first made one commit that adds the low-level route blinding utilities + tests that showcase how it could be used for payments
+19:37:57 <t-bast> Then we implemented onion messages using these utilities
+19:38:15 <BlueMatt> t-bast: the spec should stand on its own, but I'll look at route blinding, maybe its cleaner spec than onion messages
+19:38:24 <t-bast> To be honest the most confusing part is not mixing the different tlv namespaces and correctly defining your types, then it kinda feels natural
+19:38:38 <niftynei> off topic: is route-blinding a first-step to trampoline payments??
+19:38:39 <BlueMatt> iirc onion messages just links to route blinding for parts, which was part of my "ugh, wtf"
+19:39:00 <t-bast> niftynei: it's completely orthogonal to trampoline - it can be used by trampoline for better privacy
+19:39:10 <niftynei> sounds like it's definitely one to onion messages lol
+19:40:02 <t-bast> If you're interested, this PR implements the crypto utilities (the code part is really small, it's mostly tests): https://github.com/ACINQ/eclair/pull/1962
+19:40:18 <t-bast> Then this PR uses it for onion messages: https://github.com/ACINQ/eclair/pull/1962
+19:41:16 <rusty> BlueMatt: yeah, will rebase, should be nicer.
+19:41:32 <BlueMatt> cool! thanks rusty
+19:42:33 <t-bast> Shall we move to another topic? I wanted to give you the latest updates on route blinding, but it's probably better to review it on your own when you have time. Don't hesitate to drop questions though!
+19:44:01 <t-bast> roasbeef: if you have a few minutes to space this week, can you quickly address the comments in #903 and #906 so that we get these clean-ups merged?
+19:44:06 <rusty> Yeo!
+19:44:06 <t-bast> *to spare
+19:44:24 <t-bast> #topic dust limit requirements
+19:44:26 <t-bast> #link https://github.com/lightning/bolts/pull/919
+19:44:46 <t-bast> Rusty, you had a counter-proposal there, I think it would be interesting to discuss it?
+19:44:58 <t-bast> Since ariard is here as well
+19:45:06 <ariard> yep
+19:45:47 <rusty> So, this PR was unclear to me.  It's basically "have your own internal limit, fail channel if it passes that".
+19:46:02 <rusty> But that's a recipe for exploitable channel breaks, really.
+19:46:43 <ariard> well i think you have 2 recommendations a) if dust HTLC above your dust_limit_exposure, cancel this HTLC _without_ forward
+19:46:46 <BlueMatt> its not clear how you do better without 0-htlc-fees-on-anchor
+19:47:04 <rusty> In practice, dust is limited by (1) number of HTLCs (until we get that infinite-dusty-htlcs feature) and (2) feerate.
+19:47:08 <ariard> and b) if increasing update_fee, either fail channel OR accept the balance burning risk
+19:47:20 <t-bast> rusty: there's only a fail-channel option if you're not using anchor_outputs_zero_fee_htlc_tx, I think it's an important point to note
+19:48:02 <ariard> the fail-channel option have always been deferred to the implementors, and iirc LDK and eclair don't have the same behavior here
+19:48:16 <rusty> t-bast: why?  I don't see how that changes the problem?
+19:48:30 <ariard> like I fully agree there is risk for channel breaks in case of fee spikes, it's to be balanced with the risk of loosing money
+19:48:34 <t-bast> I think that since all implementations have added that fail-safe, and new ones will directly target anchor_outputs_zero_fee_htlc_tx, we don't need to bikeshed it too much, it will soon be obsolete
+19:48:49 <ariard> ideally better to have a knob and deferre the choice to node operators
+19:48:56 <t-bast> rusty: when using anchor_outputs_zero_fee_htlc_tx you're simply not at risk when receiving update_fee
+19:49:12 <t-bast> because it doesn't change your dust threshold, so it doesn't impact your dust exposure
+19:49:23 <t-bast> so when using anchor_outputs_zero_fee_htlc_tx there's no case where this PR introduces a force-close
+19:49:26 <ariard> wit zero_fee_tlc_tx, 2nd stage HTLCs are committed with 0-fees
+19:49:32 <niftynei> there's definitely an indeterminate point at which htlc failures begin to occur, but that's not much different from balance exhaustion
+19:49:36 <rusty> t-bast: right.
+19:49:38 <niftynei> it's just *not* balance exhaustion
+19:50:15 <crypt-iq> perhaps the fix is to upgrade to zero-fee-anchors
+19:50:44 <ariard> well it's just your channel become useless to route to for a class of low-values HTLC
+19:50:56 <niftynei> bigger htlcs will still succeed; this will have implications for route algos that use historic payment success data to choose routes (cdecker[m])
+19:51:14 <rusty> t-bast: but if I add more dust than you want, what happens?  We didn't fix the problem, you still could be stuck with too much dust?
+19:51:19 <ariard> crypt-iq: though maybe we still need a dust_limit_exposure with the infinite-dusty-htlcs feature ?
+19:51:34 <rusty> ariard: definitely.  A total dust option is required for that.
+19:51:42 <t-bast> rusty: you just fail it instead of relaying it (would be nicer with an "un-add", but it's not dangerous so never leads to a force-close)
+19:51:44 <cdecker[m]> Correct
+19:51:44 <niftynei> im pretty sure it's required... what rusty said
+19:51:56 <crypt-iq> ariard: can just fail back ?
+19:52:01 <niftynei> the real gotcha here is feerate spikes
+19:52:07 <rusty> t-bast: there's an exposure window though :(  We tried to avoid that.
+19:52:18 <t-bast> rusty: no there's not, that's why it's interesting!
+19:52:35 <niftynei> at least with an ahead of time known limit, you know when you'll be feerate spiking into bad territory
+19:52:42 <t-bast> rusty: because since you haven't relayed it, right now it's only taken from your peer's balance
+19:52:46 <ariard> crypt-iq: yes what we already doing with 919, or maybe we can introduce an error for dusty HTLCs but state machine asynchronous issues
+19:52:54 <niftynei> whereas right now you kinda just yolo there and then .. maybe the channel closes?
+19:52:58 <t-bast> rusty: so it's purely money they lose, not you
+19:53:03 <rusty> t-bast: ah!  good point!  I had missed that!!
+19:53:12 <ariard> inbound HTLC are subtracted from your peer balance
+19:53:34 <t-bast> That's the important point, you can safely receive many HTLCs that make you go over your dust threshold, it only becomes dangerous if you relay them
+19:53:44 <t-bast> So if you simply fail them instead, you're always safe
+19:53:52 <crypt-iq> ariard: there are async issues but only for the exit-hop case, rather than forwarding
+19:53:53 <rusty> OK, so now the trap is that your own sent htlcs get dusted by an update_fee, which is fixed by zerofee-anchor.  Right.
+19:53:58 <ariard> t-bast: or accept them as a final payee
+19:54:06 <t-bast> (if you use anchor_outputs_zero_fee_htlc_tx or ignore the update_fee case)
+19:54:15 <t-bast> yes exactly
+19:54:22 <rusty> OK, I withdraw my objection.  I think the spec change should be far shorter though, textually.
+19:54:23 <niftynei> AOZFHT ftw lol
+19:55:00 <ariard> rusty: yeah if you have suggestion to short/improve i'll take them, there was a discussion with niftynei where to put the changes as it's forwarding recommendations
+19:55:09 <ariard> and not purely evaluation of `update_add_htlc`
+19:56:22 <niftynei> one thing that'd fix the feerate spike problems is changing the update_fee requirements
+19:56:38 <niftynei> and setting the max increase the same as the dust_limit checks for
+19:57:09 <t-bast> niftynei: but you can't really do that though
+19:57:11 <crypt-iq> what if it actually increases that high
+19:57:16 <ariard> niftynei: wdym? a new requirment on the sender?
+19:57:22 <niftynei> you can send multiple update_fees, but each can only increase the total feerate by the same factor as the pre-checked amount for the feerate bucket
+19:57:33 <t-bast> niftynei: if your peer has been offline for a while, and the feerate really rised a lot, your update_fee needs to match the reality of on-chain feerates, right?
+19:57:43 <niftynei> you just send a bunch of them
+19:58:09 <crypt-iq> how does that change fee spikes? you fail back earlier ?
+19:58:10 <t-bast> well ok, why not...to be honest I simply wouldn't bother and would focus on finalizing implementation of anchor_zero_fee :)
+19:58:15 <niftynei> ah wait you're right it doesnt matter if it's sudden or not, as soon as the dust goes over the bucket limit we kill the channel
+19:58:29 <ariard> niftynei: i think you're introducing a global as you need to have the same factor across sender/receiver
+19:58:39 <niftynei> so it doesnt matter if it's all at once or incremental the real problem is that you've exhausted your budget
+19:58:56 <BlueMatt> it appears we're about to run out of time.
+19:58:58 <niftynei> timing of budget exhaustion is irrelevant
+19:59:26 <ariard> BlueMatt: better to run out of time than running out of feerate :p
+19:59:51 <niftynei> feerate rises are basically a channel bomb now tho
+20:00:14 <niftynei> i mean, maybe they've always been?
+20:00:44 <ariard> Package Relay Solves This (tm)?
+20:00:47 <t-bast> ariard: :D
+20:00:48 <niftynei> i guess knowing you're going to close the channel isnt' any better than not knowing you're going to close the channel b/c of a feerate rise
+20:00:50 <roasbeef> dust begone
+20:00:55 <BlueMatt> fwiw, rusty, apologies we've been bad about spec stuff lately - I'm a bit under the weather but will stick my head back above water on spec stuff this week hopefully. would love to move our onion messages impl forward and also https://github.com/lightning/bolts/pull/910 but it seems like you still wanted to change that to use a channel type? Any updates on that? I've gotta run, but would https://github.com/lightning/bolts/pull/918#issuecomment
+20:00:55 <BlueMatt> -963519924 solve your issues, roasbeef? Then we can merge that cursed pr and move on with our lives. anyway, I've gotta run.
+20:00:56 <ariard> thoug not really because we don't have infinite fee-bumping reserve
+20:01:23 <t-bast> See ya BlueMatt!
+20:02:00 <niftynei> there's something kinda ironic here about how lightning is supposed to be the Thing to Use when feerates onchain rise, but also uhh have you seen how lightning runs into problems when feerates onchain rise?
+20:02:29 <limping> very interested in #910
+20:02:40 <niftynei> i guess the real problem is velocity of change here
+20:03:03 <t-bast> niftynei: and scale / number of channels
+20:03:15 <t-bast> If you have only a few channels, you're probably ok even with a large feerate update
+20:04:03 <roasbeef> is it really that diff in the LN case tho? similar scenario of leaking the value of an output if chain fees are high
+20:04:05 <rusty> BlueMatt: NP, thanks!
+20:04:15 <niftynei> t-bast, this is for zero-fee anchor outs yeah?  yeah... fewer channels definitely a real win there
+20:04:54 <t-bast> niftynei: yes, for that case, ideally with package relay as well (maybe I'm glimpsing too much into the future though!)
+20:05:04 <niftynei> i mean the reality of feerates rising is that a swath of utxos become uneconomical; higher feerates means that some subset of bitcoin is 'economically unspendable'
+20:05:38 <crypt-iq> then there are less txn for feerate maybe?
+20:05:40 <niftynei> lightning failures (htlcs onchain) are like having a front row seat to this particular reality
+20:06:19 <rusty> BlueMatt: I will revisit taht PR.  The channel_type is simply a type whihc says "don't ever fwd by real scid", which is simple.
+20:06:30 <niftynei> this is definitely not helpful or on topic but interesting nonetheless llol
+20:06:32 <t-bast> niftynei: but if the feerate ever comes back down, you'll be able to claim these utxos then, but no guarantee...
+20:06:49 <niftynei> which is fine for a wallet of utxos, but htlcs have time constraints iiuc
+20:06:58 <ariard> niftynei: yes it's described in the LN paper, ideally we could stuck the "time" for LN time-sensitive closes in case of fees spikes
+20:07:21 <t-bast> regarding #910 pm47 on our side spent time experimenting with it, he'll be able to provide more feedback as well
+20:07:22 <niftynei> i think you end up circling back around to the observation a friend of mine who works at stripe made about how "payment processors are actuallly insurance companies"
+20:07:31 <niftynei> which is to say there is some risk involved in routing payments!
+20:07:42 <niftynei> and you should expect a return that justifies the risk involved ;)
+20:08:15 <crypt-iq> It would be nice to have a channel_type for zero-conf option-scid_alias and nix the min_conf 0 setting. The spec wording as is basically the acceptor *hoping* that it's a zero-conf channel w/o knowing the intent of the initiator
+20:08:24 <t-bast> yes that's true, we should probably get that explained better for routing node operators and get them to raise their routing fees a bit ;)
+20:08:56 <t-bast> cdecker[m]: are you still around? I've got a quick q
+20:10:03 <niftynei> t-bast, hehe sounds like good blogpost/ blip(spark?) material ;)
+20:10:15 <niftynei> i'm headed out, thanks for chairing t-bast!
+20:10:16 <t-bast> Let's stop now, meeting time is over and we already covered a lot
+20:10:18 <t-bast> #endmeeting

@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<title>#lightning-dev: Lightning Spec Meeting</title>
+<style type="text/css">
+/* This is for the .html in the HTML2 writer */
+body {
+    font-family: Helvetica, sans-serif;
+    font-size:14px;
+}
+h1 {
+    text-align: center;
+}
+a {
+    color:navy;
+    text-decoration: none;
+    border-bottom:1px dotted navy;
+}
+a:hover {
+    text-decoration:none;
+    border-bottom: 0;
+    color:#0000B9;
+}
+hr {
+    border: 1px solid #ccc;
+}
+/* The (nick, time) item pairs, and other body text things. */
+.details {
+    font-size: 12px;
+    font-weight:bold;
+}
+/* The 'AGREED:', 'IDEA', etc, prefix to lines. */
+.itemtype {
+    font-style: normal;    /* un-italics it */
+    font-weight: bold;
+}
+/* Example: change single item types.  Capitalized command name.
+/* .TOPIC  {  color:navy;  } */
+/* .AGREED {  color:lime;  } */
+
+</style>
+</head>
+
+<body>
+<h1>#lightning-dev: Lightning Spec Meeting</h1>
+<span class="details">
+Meeting started by t-bast at 19:02:57 UTC
+(<a href="lightning_spec_meeting.2021-11-08-19.02.log.html">full logs</a>).</span>
+
+<br><br>
+
+
+
+<h3>Meeting summary</h3>
+<ol>
+<li><b class="TOPIC">Warning messages</b> <span class="details">(<a href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-5'>t-bast</a>, 19:03:18)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightning/bolts/pull/834">https://github.com/lightning/bolts/pull/834</a>
+    <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-6'>t-bast</a>,
+    19:03:21)</span></li>
+  <li><a
+    href="https://github.com/lightning/bolts/pull/834#discussion_r719977416">https://github.com/lightning/bolts/pull/834#discussion_r719977416</a>
+    was the last unresolved thing, iirc <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-8'>BlueMatt</a>,
+    19:04:06)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">Clarify channel reestablish behavior when remote is late</b> <span class="details">(<a href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-38'>t-bast</a>, 19:11:58)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightning/bolts/pull/932">https://github.com/lightning/bolts/pull/932</a>
+    <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-39'>t-bast</a>,
+    19:12:00)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">t-bast to
+    detail the scenario in a spec issue and tag faulty
+    implementations</span> <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-126'>t-bast</a>,
+    19:28:42)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">Drop ping sending limitations</b> <span class="details">(<a href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-129'>t-bast</a>, 19:29:37)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightning/bolts/pull/918">https://github.com/lightning/bolts/pull/918</a>
+    <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-130'>t-bast</a>,
+    19:29:40)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">Route Blinding</b> <span class="details">(<a href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-148'>t-bast</a>, 19:33:27)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightning/bolts/pull/765">https://github.com/lightning/bolts/pull/765</a>
+    <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-150'>t-bast</a>,
+    19:33:30)</span></li>
+  <li><i class="itemtype">ACTION</i>: <span class="ACTION">rusty check
+    https://github.com/lightning/bolts/pull/765 test vectors</span>
+    <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-165'>rusty</a>,
+    19:35:31)</span></li>
+</ol>
+<br></li>
+<li><b class="TOPIC">dust limit requirements</b> <span class="details">(<a href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-192'>t-bast</a>, 19:44:24)</span>
+<ol type="a">
+  <li><a
+    href="https://github.com/lightning/bolts/pull/919">https://github.com/lightning/bolts/pull/919</a>
+    <span class="details">(<a
+    href='lightning_spec_meeting.2021-11-08-19.02.log.html#l-193'>t-bast</a>,
+    19:44:26)</span></li>
+</ol>
+</li>
+</ol>
+<br><br>
+
+
+
+<span class="details">
+Meeting ended at 20:10:18 UTC
+(<a href="lightning_spec_meeting.2021-11-08-19.02.log.html">full logs</a>).</span>
+
+<br><br>
+
+
+
+<h3>Action items</h3>
+<ol>
+  <li>t-bast to detail the scenario in a spec issue and tag faulty implementations</li>
+  <li>rusty check https://github.com/lightning/bolts/pull/765 test vectors</li>
+</ol>
+<br><br>
+
+
+
+<h3>Action items, by person</h3>
+<ol>
+  <li> rusty <ol>
+    <li>rusty check https://github.com/lightning/bolts/pull/765 test vectors</li>
+  </ol></li>
+  <li> t-bast <ol>
+    <li>t-bast to detail the scenario in a spec issue and tag faulty implementations</li>
+  </ol></li>
+</ol>
+<br><br>
+
+
+
+<h3>People present (lines said)</h3>
+<ol>
+  <li>t-bast (108)</li>
+  <li>BlueMatt (47)</li>
+  <li>niftynei (45)</li>
+  <li>roasbeef (31)</li>
+  <li>rusty (29)</li>
+  <li>ariard (21)</li>
+  <li>crypt-iq (8)</li>
+  <li>cdecker[m] (7)</li>
+  <li>lndev-bot (3)</li>
+  <li>limping (1)</li>
+</ol>
+<br><br>
+
+
+
+<span class="details">Generated by <a href="http://wiki.debian.org/MeetBot">MeetBot</a> 0.1.4.</span>
+</body></html>
